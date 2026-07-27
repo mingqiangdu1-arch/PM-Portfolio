@@ -8,4 +8,4 @@
 - 页面或页面族的状态转换图
 - 状态、事件、守卫条件、进入/退出动作及异常恢复校验记录
 
-本阶段在 Interaction Design 确认后单独进入；不得提前混入交互设计阶段。当前所需 Skill 尚未检索、审查和安装，后续必须先完成 Skill 准备并获得用户明确授权。
+本阶段在 Interaction Design 确认后单独进入；不得提前混入交互设计阶段。Personal Skill `page-state-machine-design` 已完成创建、验证和启用，但正式设计仍须获得用户明确的阶段开始授权。

@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-Interaction Design（页面交互设计，已完成并通过用户验收）
+Page State Machine Skill Preparation（Skill 已创建并启用，等待阶段开始确认）
 
 ## Completed
 
@@ -48,16 +48,26 @@ Interaction Design（页面交互设计，已完成并通过用户验收）
 - [x] 将五份交互设计文档升级为当前有效交互设计基线
 - [x] 将稳定交互结论写入 `PROJECT_MEMORY.md`
 - [x] 将 `user-flow-mapping` 与 `wireframing` 调整为 disabled
+- [x] 审查官方 Figma Plugin 的 `figma-use`、`figma-generate-library` 与 `figma-generate-design`
+- [x] 确认三项 Figma Skill 已由官方 Plugin 提供，无需 GitHub 安装或项目内复制
+- [x] 验证 Figma Connector 已连接，并记录目标文件编辑权限仍需正式设计前验证
+- [x] 登记 Wireframe/UI 阶段 Skill 调用边界与专属产出目录规则
+- [x] 检索 Project、Personal、External 三层页面状态机 Skill，未发现匹配项
+- [x] 检索 OpenAI 官方 curated Skill 清单，未发现页面状态机候选；官方 experimental 路径当前不存在
+- [x] 排除来源不明或仅面向代码运行时状态机的替代 Skill，避免混入页面交互设计阶段
+- [x] 创建并验证 Personal Skill `page-state-machine-design`
+- [x] 验证 Personal 实体目录、Codex Junction 入口、frontmatter 与 Agent 元数据
+- [x] 更新全局 Skill 索引和项目内调用边界
 
 ## Current Task
 
-Interaction Design 已完成并通过用户验收，五份当前有效文档统一位于 `交互设计与页面状态机/交互设计/`。当前阶段收口后停止，等待后续 Page State Machine Skill 准备任务；不进入页面状态机，不安装新 Skill，不执行 Git Push。
+Wireframe/UI 阶段所需三项官方 Figma Plugin Skill 已完成审查和登记，无需安装本地副本。Personal Skill `page-state-machine-design` 已创建、验证并启用，Page State Machine 阶段能力已就绪。当前等待用户明确确认开始页面状态机设计；确认前不产生正式状态机文档，也不创建或修改 Figma 文件。
 
 ## Prohibited
 
 - 开始编码或修改代码
 - 提前进入独立的页面状态机阶段
-- 开始品牌视觉、高保真 UI、动效或前端实现
+- 在页面状态机验收前开始品牌视觉、高保真 UI、原型写入、动效或前端实现
 - 修改数据库、ER、API 或系统架构
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
 - 未经确认安装未知 Skill 或外部能力
@@ -74,10 +84,13 @@ Interaction Design 已完成并通过用户验收，五份当前有效文档统�
 - Flow 的流程图类型与范围选择、Review 交互、Mermaid 到 `.drawio` 的转换保真度、自动布局、逻辑校验、子流程关联细节和导出规格仍待后续阶段验证。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
 - Page State Machine 阶段所需 Skill 尚未检索、审查和安装；后续必须按 External Skill 管理流程单独处理，当前不是状态机设计阻塞修复任务。
+- 官方 Figma Plugin 已连接，但当前账号团队席位显示为 View；目标 Figma 文件的实际编辑权限必须在正式设计开始前验证。
+- Figma Plugin 包目录/清单版本为 2.0.16，内部 `plugin.lock.json` 的 `pluginVersion` 仍为 2.0.7；作为元数据差异记录，不影响当前 Skill 发现。
+- 外部检索未发现成熟可信的 Page State Machine Skill；已按用户确认创建 Personal Skill `page-state-machine-design`，后续需通过本项目实际任务持续验证和迭代。
 
 ## Next Phase
 
-Page State Machine（页面状态机），尚未启动。所需 Skill 尚未安装；后续先完成 Skill 检索、来源/许可证/依赖/安全审查和用户确认，再在明确授权下进入设计。
+Page State Machine（页面状态机）。在用户明确确认开始后，使用 `page-state-machine-design` 产出正式页面状态机并完成验收；状态机验收后方可正式进入 Wireframe/UI 阶段。
 
 ## Stage Roadmap
 

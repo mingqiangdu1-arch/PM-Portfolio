@@ -37,7 +37,21 @@
 
 目录：`交互设计与页面状态机/页面状态机/`
 
-当前尚未进入该阶段，仅保留 `README.md` 作为范围说明。所需 Skill 尚未安装；正式状态、事件、守卫条件和转换表必须在完成 Skill 审查、确认与安装，并获得用户明确授权后产生。
+当前尚未进入正式设计，仅保留 `README.md` 作为范围说明。Personal Skill `page-state-machine-design` 已创建、验证并启用；正式状态、事件、守卫条件和转换表必须在用户明确确认开始 Page State Machine 阶段后产生。
+
+## Wireframe 与 UI 设计
+
+目录：`Wireframe与UI设计/`
+
+当前仅建立阶段目录、产出归属和 Skill 调用规则，尚未开始视觉设计。官方 Figma Plugin 的 `figma-use`、`figma-generate-library` 与 `figma-generate-design` 已完成审查并登记启用；由于页面状态机尚未完成，不得创建或修改 Figma 文件，也不得生成高保真页面。
+
+计划产出位置：
+
+| 子目录 | 计划产出 | 当前状态 |
+|---|---|---|
+| `Wireframe/` | 低保真 Wireframe、页面布局与组件结构 | 待页面状态机验收后开始 |
+| `UI设计/` | `UI设计方案.md`、`设计系统规范.md` | 待页面状态机验收后开始 |
+| `高保真原型/` | 高保真页面、原型说明、Figma 文件链接与验收记录 | 待页面状态机验收后开始 |
 
 ## 跨阶段入口
 

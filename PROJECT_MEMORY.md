@@ -215,3 +215,21 @@ Interaction Design 已于 2026-07-27 通过用户验收。当前有效交互设�
 - 所有 MVP 核心页面族均定义正常、加载、空数据、失败、权限和只读反馈；这些是用户可感知交互，不替代正式页面状态机。
 - 数据反馈只使用真实业务事实；比率展示分子、分母和样本量，分母为零显示 `N/A`，样本不足或无基线时不下改善结论。
 - 页面状态机是下一独立阶段。所需 Skill 当前尚未安装，后续必须先完成检索、审查、用户确认和安装，不得直接开始状态机设计。
+
+## 17. Wireframe/UI 阶段能力与产出规则
+
+Wireframe、视觉规范与高保真原型阶段的正式产出统一存放在 `Wireframe与UI设计/`，不得放入项目根目录、`产品设计体系整理/` 或 `交互设计与页面状态机/`。其中：
+
+- 低保真线框及其说明归入 `Wireframe与UI设计/Wireframe/`；
+- `UI设计方案.md`、`设计系统规范.md` 及视觉规范材料归入 `Wireframe与UI设计/UI设计/`；
+- 高保真页面、原型说明、Figma 文件链接和验收记录归入 `Wireframe与UI设计/高保真原型/`。
+
+当前环境的官方 Figma Plugin 已提供并登记启用 `figma-use`、`figma-generate-library` 和 `figma-generate-design`，无需下载 GitHub 副本，也不得复制到项目目录。调用规则为：设计系统使用 `figma-generate-library + figma-use`；高保真页面使用 `figma-generate-design + figma-use`；画布或原型操作使用 `figma-use`；补充低保真结构时才临时启用 `wireframing`。任何 `use_figma` 调用前必须完整加载 `figma-use`。
+
+上述外部 Skill 只负责执行已确认的产品设计、交互设计和页面状态机，不得覆盖正式业务决策。当前页面状态机尚未形成，因此视觉阶段能力虽已就绪，但不得创建或修改 Figma 文件，也不得生成高保真页面。正式设计前还必须验证目标 Figma 文件的编辑权限。
+
+## 18. 页面状态机 Skill
+
+用户级 Personal Skill `page-state-machine-design` 已于 2026-07-27 创建并启用，实体位于 `F:\AI-Agent-System\skills\personal\page-state-machine-design`，Codex 通过 `C:\Users\10238\.codex\skills\personal\page-state-machine-design` 访问。该 Skill 用于页面或页面族的可观察状态、事件、守卫、转换、进入/退出动作、异步 AI 反馈、权限、持久化、并发冲突和异常恢复设计。
+
+该 Skill 不承载本项目业务规则，不得重定义业务实体生命周期、后端编排、API、数据库、视觉样式或实现代码；正式产品设计与当前有效交互设计始终优先。状态机正式产出只能保存到 `交互设计与页面状态机/页面状态机/`。Skill 已就绪不等于阶段已开始，仍需用户明确确认进入 Page State Machine 阶段。
