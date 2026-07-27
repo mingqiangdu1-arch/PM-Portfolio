@@ -1,0 +1,49 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Microsoft Office temporary files
+~$*.doc
+~$*.docx
+~$*.xls
+~$*.xlsx
+~$*.ppt
+~$*.pptx
+
+# Editor and IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+tmp/
+temp/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node.js and generated output
+node_modules/
+dist/
+build/
+coverage/
+
