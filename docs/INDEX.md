@@ -37,21 +37,25 @@
 
 目录：`交互设计与页面状态机/页面状态机/`
 
-当前尚未进入正式设计，仅保留 `README.md` 作为范围说明。Personal Skill `page-state-machine-design` 已创建、验证并启用；正式状态、事件、守卫条件和转换表必须在用户明确确认开始 Page State Machine 阶段后产生。
+| 文档 | 主责内容 | 当前状态 |
+|---|---|---|
+| `页面状态机.md` | 全局与核心页面族状态、事件、守卫、转换、权限、异常恢复和端到端验收路径 | 当前有效（2026-07-27 已验收） |
+
+该基线使用 Personal Skill `page-state-machine-design` 形成，作为 Wireframe、UI、原型和前端开发的直接输入；若与正式产品设计或已验收交互设计冲突，按既定权威层级修订状态机。
 
 ## Wireframe 与 UI 设计
 
 目录：`Wireframe与UI设计/`
 
-当前仅建立阶段目录、产出归属和 Skill 调用规则，尚未开始视觉设计。官方 Figma Plugin 的 `figma-use`、`figma-generate-library` 与 `figma-generate-design` 已完成审查并登记启用；由于页面状态机尚未完成，不得创建或修改 Figma 文件，也不得生成高保真页面。
+当前已建立阶段目录、产出归属和 Skill 调用规则，页面状态机前置基线已验收，视觉设计尚未正式开始。官方 Figma Plugin 的 `figma-use`、`figma-generate-library` 与 `figma-generate-design` 已完成审查并登记启用；正式操作目标 Figma 文件前仍需验证实际编辑权限。
 
 计划产出位置：
 
 | 子目录 | 计划产出 | 当前状态 |
 |---|---|---|
-| `Wireframe/` | 低保真 Wireframe、页面布局与组件结构 | 待页面状态机验收后开始 |
-| `UI设计/` | `UI设计方案.md`、`设计系统规范.md` | 待页面状态机验收后开始 |
-| `高保真原型/` | 高保真页面、原型说明、Figma 文件链接与验收记录 | 待页面状态机验收后开始 |
+| `Wireframe/` | 低保真 Wireframe、页面布局与组件结构 | 前置基线已就绪，待阶段启动 |
+| `UI设计/` | `UI设计方案.md`、`设计系统规范.md` | 前置基线已就绪，待阶段启动 |
+| `高保真原型/` | 高保真页面、原型说明、Figma 文件链接与验收记录 | 待 Wireframe/设计系统确认后开展 |
 
 ## 跨阶段入口
 

@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-Page State Machine Skill Preparation（Skill 已创建并启用，等待阶段开始确认）
+Page State Machine（已验收完成，Wireframe/UI 前置基线就绪）
 
 ## Completed
 
@@ -58,40 +58,47 @@ Page State Machine Skill Preparation（Skill 已创建并启用，等待阶段�
 - [x] 创建并验证 Personal Skill `page-state-machine-design`
 - [x] 验证 Personal 实体目录、Codex Junction 入口、frontmatter 与 Agent 元数据
 - [x] 更新全局 Skill 索引和项目内调用边界
+- [x] 用户确认正式进入 Page State Machine 阶段
+- [x] 使用 `page-state-machine-design` 完成 10 个页面/页面族状态机
+- [x] 完成 134 个状态、179 个唯一转换和 7 个 Mermaid 核心转换图
+- [x] 完成 AI 前/中/后、Review、修改、确认、版本保存与历史派生状态建模
+- [x] 完成加载、失败、空数据、权限、只读、并发、刷新与恢复状态建模
+- [x] 完成 T01～T07 端到端可达性与结构完整性校验
+- [x] 用户确认 Page State Machine 阶段验收通过
+- [x] 将 `页面状态机.md` 升级为当前有效 Page State Machine 基线
+- [x] 同步更新 `PROJECT_MEMORY.md`、`PROJECT_STATUS.md`、`docs/INDEX.md` 与阶段目录说明
 
 ## Current Task
 
-Wireframe/UI 阶段所需三项官方 Figma Plugin Skill 已完成审查和登记，无需安装本地副本。Personal Skill `page-state-machine-design` 已创建、验证并启用，Page State Machine 阶段能力已就绪。当前等待用户明确确认开始页面状态机设计；确认前不产生正式状态机文档，也不创建或修改 Figma 文件。
+页面状态机已于 2026-07-27 通过用户验收并升级为当前有效基线。当前完成阶段收口并等待 Git Commit 授权；下一阶段为 Wireframe/UI，正式开始前验证目标 Figma 文件编辑权限，并按 `Wireframe与UI设计/` 的子目录规则保存产出。
 
 ## Prohibited
 
 - 开始编码或修改代码
-- 提前进入独立的页面状态机阶段
-- 在页面状态机验收前开始品牌视觉、高保真 UI、原型写入、动效或前端实现
+- 未正式进入 Wireframe/UI 阶段即创建品牌视觉、高保真 UI、原型写入或动效
 - 修改数据库、ER、API 或系统架构
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
 - 未经确认安装未知 Skill 或外部能力
 
 ## Known Gaps / Blockers
 
-- `数据埋点与数据库设计方案.docx` 为 0 字节无效占位；产品层指标与 MVP 必采范围已补齐，字段级事件契约、状态映射、采集时机、物理存储和可执行数据血缘仍需在状态机与 Development Planning 阶段补充。
+- `数据埋点与数据库设计方案.docx` 为 0 字节无效占位；产品层指标、MVP 必采范围和页面可观察状态已补齐，字段级事件契约、采集时机、物理存储和可执行数据血缘仍需在 Development Planning 阶段补充。
 - `项目开发规划与MVP路线.docx` 为 0 字节无效占位；MVP 产品边界已由 `产品设计体系整理/产品设计总览.md` 建立，开发里程碑与工期仍待 Development Planning。
 - 数据库字段初稿与物理表初稿均标注“使用前需审查”，且存在实体数量、关系和索引/外键未收敛问题。
 - API 仍为资源与动作级草案，缺少字段级契约、鉴权、分页、幂等、错误码及异步任务协议。
 - 核心用户和流程参与身份已明确；细粒度 RBAC、团队空间和审批链仍待增强阶段设计。
 - 用户级 External Skill 库新增 `user-flow-mapping` 与 `wireframing`，来源为 `seb1n/awesome-ai-agent-skills` 1.0.0、Commit `a6c8c0ef3c240faefe1b0b5cabe1567beaea60fd`、MIT 许可证；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。
-- 当前产品层冲突已裁决；状态机、ER、字段级 API、字段级埋点与安全方案仍需在后续对应阶段形成技术基线。
+- 当前产品层冲突已裁决，页面状态机基线已验收；ER、字段级 API、字段级埋点与安全方案仍需在后续对应阶段形成技术基线。
 - Flow 的流程图类型与范围选择、Review 交互、Mermaid 到 `.drawio` 的转换保真度、自动布局、逻辑校验、子流程关联细节和导出规格仍待后续阶段验证。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
-- Page State Machine 阶段所需 Skill 尚未检索、审查和安装；后续必须按 External Skill 管理流程单独处理，当前不是状态机设计阻塞修复任务。
 - 官方 Figma Plugin 已连接，但当前账号团队席位显示为 View；目标 Figma 文件的实际编辑权限必须在正式设计开始前验证。
 - Figma Plugin 包目录/清单版本为 2.0.16，内部 `plugin.lock.json` 的 `pluginVersion` 仍为 2.0.7；作为元数据差异记录，不影响当前 Skill 发现。
 - 外部检索未发现成熟可信的 Page State Machine Skill；已按用户确认创建 Personal Skill `page-state-machine-design`，后续需通过本项目实际任务持续验证和迭代。
 
 ## Next Phase
 
-Page State Machine（页面状态机）。在用户明确确认开始后，使用 `page-state-machine-design` 产出正式页面状态机并完成验收；状态机验收后方可正式进入 Wireframe/UI 阶段。
+Wireframe 与 UI 设计。前置产品、交互和页面状态机基线均已就绪；正式启动后使用已登记的 `wireframing` 与官方 Figma Plugin Skills 开展低保真 Wireframe、设计系统、高保真原型与 Figma 文件工作。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（待后续 Skill 准备与授权）→ Wireframe → UI Design → Development Planning → Development → Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（待启动）→ UI Design → Development Planning → Development → Testing → Iteration
