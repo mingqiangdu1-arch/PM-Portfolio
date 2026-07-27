@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-Product Design Consolidation（产品设计体系整理，已完成，待用户验收）
+Interaction Design（页面交互设计，已完成并通过用户验收）
 
 ## Completed
 
@@ -32,15 +32,32 @@ Product Design Consolidation（产品设计体系整理，已完成，待用户�
 - [x] 记录 Flow 主流程、子流程、双重 Review、版本保存与交付路径初步方案
 - [x] 完善产品数据闭环，建立平台、AI、质量、知识与版本优化指标口径
 - [x] 明确 MVP 最小必采数据与核心功能统计覆盖
+- [x] 用户确认进入 Interaction Design 阶段
+- [x] 审查并安装 `user-flow-mapping` 与 `wireframing` 用户级 External Skill
+- [x] 验证 External 实体目录、Codex Junction 入口、许可证、依赖、安全性和重复性
+- [x] 将上一阶段产品设计 Skill 调整为非默认调用状态
+- [x] 完成用户任务分析与端到端用户流程设计
+- [x] 完成信息架构与页面编号体系
+- [x] 完成核心页面低保真结构与组件清单
+- [x] 完成 AI 生成前、中、后候选审核交互
+- [x] 完成 Review、修改、确认、版本保存与历史派生交互
+- [x] 完成数据反馈、异常、空数据、权限、只读与并发恢复设计
+- [x] 完成页面跳转关系与核心页面可感知状态覆盖检查
+- [x] 建立并更新 `docs/INDEX.md`
+- [x] 用户确认 Interaction Design 阶段验收通过
+- [x] 将五份交互设计文档升级为当前有效交互设计基线
+- [x] 将稳定交互结论写入 `PROJECT_MEMORY.md`
+- [x] 将 `user-flow-mapping` 与 `wireframing` 调整为 disabled
 
 ## Current Task
 
-已将产品数据闭环、数据指标体系、AI 质量评价和版本优化口径纳入产品设计基线，并明确 MVP 只同步落地最小必采数据，完整分析看板后置。当前仍处于 Product Design Consolidation；未获得下一阶段授权前，不进入 Interaction Design。
+Interaction Design 已完成并通过用户验收，五份当前有效文档统一位于 `交互设计与页面状态机/交互设计/`。当前阶段收口后停止，等待后续 Page State Machine Skill 准备任务；不进入页面状态机，不安装新 Skill，不执行 Git Push。
 
 ## Prohibited
 
 - 开始编码或修改代码
-- 开始页面交互设计、Wireframe 或 UI 设计
+- 提前进入独立的页面状态机阶段
+- 开始品牌视觉、高保真 UI、动效或前端实现
 - 修改数据库、ER、API 或系统架构
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
 - 未经确认安装未知 Skill 或外部能力
@@ -52,17 +69,16 @@ Product Design Consolidation（产品设计体系整理，已完成，待用户�
 - 数据库字段初稿与物理表初稿均标注“使用前需审查”，且存在实体数量、关系和索引/外键未收敛问题。
 - API 仍为资源与动作级草案，缺少字段级契约、鉴权、分页、幂等、错误码及异步任务协议。
 - 核心用户和流程参与身份已明确；细粒度 RBAC、团队空间和审批链仍待增强阶段设计。
-- 用户级 External Skill 库当前提供 `jobs-to-be-done`、`opportunity-solution-tree`、`epic-hypothesis`；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。来源为 deanpeters/Product-Manager-Skills v0.79，受 CC BY-NC-SA 4.0 约束。
+- 用户级 External Skill 库新增 `user-flow-mapping` 与 `wireframing`，来源为 `seb1n/awesome-ai-agent-skills` 1.0.0、Commit `a6c8c0ef3c240faefe1b0b5cabe1567beaea60fd`、MIT 许可证；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。
 - 当前产品层冲突已裁决；状态机、ER、字段级 API、字段级埋点与安全方案仍需在后续对应阶段形成技术基线。
 - Flow 的流程图类型与范围选择、Review 交互、Mermaid 到 `.drawio` 的转换保真度、自动布局、逻辑校验、子流程关联细节和导出规格仍待后续阶段验证。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
+- Page State Machine 阶段所需 Skill 尚未检索、审查和安装；后续必须按 External Skill 管理流程单独处理，当前不是状态机设计阻塞修复任务。
 
 ## Next Phase
 
-Interaction Design（交互设计），仅在用户明确授权后进入。
-
-进入 Interaction Design 时，应以 `产品设计体系整理/` 九份当前有效文档为输入，重点验证角色任务、一级导航、已有资料接续、评审循环、确认轮次、AI 长任务、质量反馈和异常反馈。
+Page State Machine（页面状态机），尚未启动。所需 Skill 尚未安装；后续先完成 Skill 检索、来源/许可证/依赖/安全审查和用户确认，再在明确授权下进入设计。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（当前已完成）→ Interaction Design → State Machine → Wireframe → UI Design → Development Planning → Development → Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（待后续 Skill 准备与授权）→ Wireframe → UI Design → Development Planning → Development → Testing → Iteration

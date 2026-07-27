@@ -118,6 +118,13 @@ AI 数据流：Business Backend 接收任务 → Task Router → Skill Manager �
 
 External Skill 只提供分析方法，不得覆盖 `产品设计体系整理/` 中的当前正式设计。默认单次任务使用一个主 Skill，确有必要时最多组合一个辅助 Skill，不同时调用全部三个。实体位于 `F:\AI-Agent-System\skills\external`，详细来源、版本、适配和安全记录见 `F:\AI-Agent-System\skills\INDEX.md`。
 
+Interaction Design 阶段启用 2 个用户级 External Skill：
+
+- `user-flow-mapping`：用户任务流、页面入口/出口、跨页面跳转、用户可感知分支及异常恢复；不得用于后端、API、数据库、Agent 内部链路或技术架构。
+- `wireframing`：页面目标、信息层级、内容区域、组件占位、操作入口和低保真结构；本项目不启用其高保真、视觉规范与开发实现内容。
+
+Interaction Design 执行时的调用顺序为先 `user-flow-mapping`、后 `wireframing`；阶段已于 2026-07-27 完成并验收，两个 Skill 现均调整为 disabled，不再默认加载。上一阶段的 `jobs-to-be-done` 保持 candidate，另外两个产品设计 Skill 保持 disabled。External Skill 只提供方法支持，不得覆盖正式产品设计。页面状态机仍是 Interaction Design 之后的独立阶段。
+
 ## 10. API 设计记忆
 
 API 采用 REST，统一前缀 `/api/v1/`，统一返回 `{code, message, data}`；常规能力以资源式 API 为主，评审提交、确认、版本派生等使用显式业务命令。查看版本、设置当前工作版本和基于历史派生必须分离。业务调用由 Frontend → Business API → Service → MySQL，AI 调用由 Business API → AI Agent API → Skill/Context/Knowledge/LLM → Result → Database。
@@ -182,6 +189,8 @@ Experience、Checklist、Skill 管理、RAG 检索、完整数据埋点和分析
 - 新任务先读 `PROJECT_STATUS.md`，再读本文，并回到 `产品设计体系整理/` 对应领域主责文档核实细节。
 - `PROJECT_MEMORY.md` 只保存稳定结论、跨文档关系和长期规则，不替代字段级设计。
 - `PROJECT_STATUS.md` 只记录阶段、完成项、当前任务、禁区、阻塞和下一阶段。
+- 交互设计与页面状态机共用阶段根目录 `交互设计与页面状态机/`，但正式产出必须分目录保存：交互设计产出统一放入 `交互设计与页面状态机/交互设计/`，页面状态机产出统一放入 `交互设计与页面状态机/页面状态机/`。
+- 两个阶段的正式产出不得放在项目根目录、`产品设计体系整理/` 或对方阶段目录；跨阶段导航与说明可放在 `交互设计与页面状态机/README.md`，每份正式文档仍应只有一个主责阶段目录。
 - 新增或调整设计时，先识别唯一主责文档，再更新所有引用/汇总文档和状态。
 - 决策记录中“暂定/待决定”的事项不得在实现中自行冻结。
 - 阶段完成后同步更新状态；涉及 Git 文件时结束前检查提交条件并征求 Commit/Push 确认。
@@ -191,3 +200,18 @@ Experience、Checklist、Skill 管理、RAG 检索、完整数据埋点和分析
 - `数据埋点与数据库设计方案.docx` 和 `项目开发规划与MVP路线.docx` 为 0 字节，无法读取。
 - 项目内不保留通用 Skill 副本；3 个产品设计 Skill 已归入用户级 External Skill 库。Template/Prompt 目录仍未建立；通用 `project-base` 模板未用于重建本项目。
 - 历史 Word 文档的内容已完成结构化全量读取；因环境缺少 LibreOffice，未做页面视觉核对。本阶段正式输出均为 Markdown。
+
+## 16. 当前有效交互设计基线
+
+Interaction Design 已于 2026-07-27 通过用户验收。当前有效交互设计统一位于 `交互设计与页面状态机/交互设计/`，包括《交互设计方案》《信息架构》《页面结构设计》《页面跳转关系》《异常与空状态设计》。
+
+稳定结论：
+
+- 一级导航沿用项目中心、产品设计、实现确认、产品验证、知识中心、系统设置；文件、AI、上下文和数据反馈保持跨模块支撑能力。
+- 项目与查看版本上下文在项目内页面持续可见；查看历史、设置当前工作版本和基于历史派生是三种独立交互。
+- 用户主链为项目/版本 → Requirement → PRD → 可选 Flow → Review → Implementation Plan → Confirmation Round → Test Record → Issue 去向/新版本派生。
+- AI 结果始终先进入候选审核；用户可直接采用、修改后采用、拒绝或重新生成，正式保存不得覆盖已评审或已确认历史。
+- AI 长任务支持离开页面和从全局任务中心恢复；未知时长使用阶段反馈，不显示虚假百分比。
+- 所有 MVP 核心页面族均定义正常、加载、空数据、失败、权限和只读反馈；这些是用户可感知交互，不替代正式页面状态机。
+- 数据反馈只使用真实业务事实；比率展示分子、分母和样本量，分母为零显示 `N/A`，样本不足或无基线时不下改善结论。
+- 页面状态机是下一独立阶段。所需 Skill 当前尚未安装，后续必须先完成检索、审查、用户确认和安装，不得直接开始状态机设计。
