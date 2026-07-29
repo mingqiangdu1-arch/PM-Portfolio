@@ -289,3 +289,23 @@ Penpot Phase 1 核心样板于 2026-07-28 通过用户人工验收并升格为 V
 - Qdrant 只保存可从 MySQL/对象存储重建的派生向量索引；MVP 只采预置知识来源，Sprint 6 再完整启用知识候选、检索、注入、引用和采用链路。
 - 当前登记 59 个唯一指标，按结果、驱动、护栏和数据质量组织；VO-01～09 以 `版本优化指标.md` 为唯一编号与定义来源。上线后先采集 2～4 周基线，不虚设业务目标。
 - 五份文档达到 DDL-ready，但不包含可执行 SQL、Alembic、OpenAPI、JSON Schema、分析后台页面或业务代码；这些实现仍须在用户明确启动 Development / Sprint 0 后开展。
+
+## 22. 当前有效 AI 能力体系设计基线
+
+AI 能力体系设计已于 2026-07-29 通过用户确认，阶段交接标记为“窗口切换节点 8”。当前有效主责文档为 `AI能力体系设计/AI能力设计文档.md`、`Agent架构设计.md`、`Skill体系设计.md`、`模板管理设计.md`、`Prompt管理设计.md` 与 `Context管理设计.md`。
+
+长期稳定规则：
+
+- 平台 AI 能力是受业务服务约束的候选生成与分析能力；Agent 不拥有 Project、Project Version、正式产物或流程节点的状态所有权，`ready` 不等于正式。
+- 标准主链为业务任务 → Task Router → Skill Version → Prompt/Template Version → Context Strategy Version → 动态检索与组合 → LLM Gateway → Result Processor → 用户审核/正式化 → 评价与反馈。
+- AI 任务同时按业务阶段、任务动作、目标对象、风险级别、输出形态和执行模式分类；生产任务类型来自受控目录，不接受前端任意字符串动态创建。
+- Task Router 先做权限、状态、任务、Schema 和兼容性硬过滤，再按“合法用户选择 > 精确规则 > 合法候选内语义排序 > 默认版本”选路；无合法能力时 blocked，不用通用模型冒充专用 Skill。
+- 每次调用冻结 Capability Bundle；AI Capability Version 以 Skill、Prompt、Template、Context Strategy、Model、Provider 运行配置和评价/结果规则版本组合形成规范化指纹，组件原始 ID 仍是权威追溯字段。
+- Agent 使用 precheck、queued、preparing、generating、checking、ready/partial/quality_blocked/failed/cancelled/expired/stale_target 等既有状态语义；重试新增 Call 或 Task，不覆盖失败历史，离页不自动取消。
+- 平台运行时 Skill 与开发环境 Codex Skill 分离；Skill 遵循来源登记、隔离、静态审核、动态测试、固定回归、人工批准、启用、版本迭代、停用/废弃的受控生命周期。MVP 不开放任意外部安装。
+- Prompt 负责版本化语言指令并绑定 Skill Version；Template 负责输出结构；Context 保存本次事实和参考；Experience 是 advisory 分析经验，Checklist 是场景化提醒和完整度检查，五者不得混用。
+- Context Strategy 区分必需/可选来源、权限、数量、Token、压缩和缺失处理；权限过滤先于语义/向量排序，当前正式事实与候选/历史/建议来源必须显式区分，必需来源不得因超限静默丢弃。
+- Qdrant 仅在 Sprint 6 启用并作为可从 MySQL/对象存储重建的派生索引；不可用时降级结构化/关键词检索，不影响 MVP 主链。
+- AI Task、Call、Context Usage、Result、Evaluation 与 Adoption 分域记录；正式结果必须 100% 追溯实际能力版本、目标快照和上下文来源，未采用正文和完整敏感上下文不得复制到分析明细。
+- 质量证据分运行可用、输出合格、用户可用和下游有效四层；结构、必填、追溯和安全是正式化硬门禁，重大错误不得被平均分掩盖，优化应按单一能力版本或明确组合变更归因。
+- 六份文档冻结逻辑能力、职责、生命周期、检索和追溯规则，不包含代码、可执行 DDL/Alembic、OpenAPI、JSON Schema 或管理页面实现；Development / Sprint 0 仍需用户明确启动。

@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-数据埋点与数据库设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
+AI 能力体系设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
 
 ## Completed
 
@@ -109,10 +109,18 @@
 - [x] 完成 59 个唯一指标的计算、血缘、迟到、去重、N/A 与数据质量门槛登记
 - [x] 将 VO-03～09 统一为专项《版本优化指标》的唯一编号和公式口径
 - [x] 用户确认数据埋点与数据库设计并将五份文档升级为当前有效 V1.0 基线
+- [x] 完成 AI 任务分类、标准任务目录与 Task Envelope
+- [x] 完成规则、语义和用户选择三级 Task Router 与 Capability Bundle/指纹设计
+- [x] 完成 Agent 组件职责、执行状态、重试、取消、过期、恢复和降级设计
+- [x] 完成平台运行时 Skill 查询匹配、隔离安装、安全审核、版本、发布和停用机制
+- [x] 完成 Prompt 分层组合、Template 结构管理与 Context 动态组合设计
+- [x] 完成 Experience/Checklist 检索、权限过滤、Token 预算与冲突处理规则
+- [x] 完成 AI Task/Call/Context/Result/Evaluation/Adoption 追溯和质量反馈闭环
+- [x] 用户确认 AI 能力体系设计并将六份文档升级为当前有效 V1.0 基线
 
 ## Current Task
 
-数据埋点与数据库设计已完成并通过用户确认。当前五份文档达到 DDL-ready；代码、可执行 DDL/Alembic、OpenAPI、JSON Schema、分析后台和部署实现均未启动，等待用户明确启动 Development / Sprint 0。
+AI 能力体系设计已完成并通过用户确认。六份 V1.0 文档已冻结任务分类、Agent 流程、Task Router、Skill、Prompt、Template、Context、Experience/Checklist 检索、AI 调用追溯与反馈机制；代码、可执行 DDL/Alembic、OpenAPI、JSON Schema、分析后台和部署实现均未启动，等待用户明确启动 Development / Sprint 0。
 
 ## Prohibited
 
@@ -139,6 +147,8 @@
 - 当前 Penpot Plugin API 不支持修改文件名称，文件仍为 `新建文件 1`，需在 Penpot 界面人工重命名。
 - Figma Plugin 包目录/清单版本为 2.0.16，内部 `plugin.lock.json` 的 `pluginVersion` 仍为 2.0.7；作为元数据差异记录，不影响当前 Skill 发现。
 - 外部检索未发现成熟可信的 Page State Machine Skill；已按用户确认创建 Personal Skill `page-state-machine-design`，后续需通过本项目实际任务持续验证和迭代。
+- AI Capability 指纹可由实际 Skill/Prompt/Template/Context Strategy/Model/Provider 版本组合计算；任务目录版本和 Router 策略版本的持久化映射仍需在 Sprint 0 字段级契约中复核，如需改变已确认数据结构必须重新进入数据设计评审。
+- AI 能力体系设计只冻结逻辑能力、职责、生命周期和追溯规则；可执行 Agent 编排、Provider Adapter、Router 配置、Prompt/Template/Context Schema 与管理页面仍由 Development 任务实现。
 
 ## Next Phase
 
@@ -146,4 +156,4 @@ Development / Sprint 0：项目与环境初始化、技术 ADR、将已确认 ER
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ AI Capability Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
