@@ -86,7 +86,7 @@ AI 数据流：Business Backend 接收任务 → Task Router → Skill Manager �
 - AI Call Record 1:N Context Record。
 - File 1:N File Version、1:N File Parse Result，并通过多态 File Relation 关联业务对象。
 
-物理设计目标为 MySQL 8.0、InnoDB、utf8mb4、BIGINT UNSIGNED 主键、DATETIME 时间、VARCHAR(32) 状态、JSON 配置；向量数据库初期建议 Chroma、后期 Milvus，MySQL 的 vector_embedding 仅作逻辑映射。
+当前确认的物理设计基线为 MySQL 8.4 LTS、InnoDB、utf8mb4、`BIGINT UNSIGNED` 主键、UTC `DATETIME(6)`、`row_version` 乐观锁；核心检索与约束字段结构化，JSON 仅用于非核心扩展。Qdrant 仅在 Sprint 6 知识增强阶段启用并保存可重建派生索引，MySQL/对象存储继续作为事实源，不建立 `vector_embedding` 事实表。
 
 ## 8. AI 设计原则
 
@@ -164,6 +164,11 @@ Experience、Checklist、Skill 管理、RAG 检索、完整数据埋点和分析
 | 平台、AI、质量、知识和版本指标 | `产品设计体系整理/数据指标体系.md` |
 | AI 输出评价口径 | `产品设计体系整理/AI质量评价指标.md` |
 | 版本前后对比与归因 | `产品设计体系整理/版本优化指标.md` |
+| 数据采集、事件触发与公共信封 | `数据埋点与数据库设计/数据埋点设计.md` |
+| 数据库表、约束、索引与迁移分期 | `数据埋点与数据库设计/数据库详细设计.md` |
+| 字段、枚举与表级字典 | `数据埋点与数据库设计/数据字典.md` |
+| 数据关系与六类 ER 视图 | `数据埋点与数据库设计/ER图.md` |
+| 指标计算、血缘与数据质量门槛 | `数据埋点与数据库设计/指标计算逻辑.md` |
 
 以下表格为历史来源索引：
 
@@ -180,7 +185,7 @@ Experience、Checklist、Skill 管理、RAG 检索、完整数据埋点和分析
 | 系统架构 | `草稿8平台系统架构设计.docx` | 开发交接文档 | 前后端、服务、存储、部署与技术栈 |
 | 数据闭环 | `产品数据闭环设计.docx` | 开发交接文档第16章 | 历史指标与后台功能初稿；当前口径已迁入正式 Markdown 基线 |
 | 开发交接/MVP | `开发交接文档_V1.1.docx` | `项目开发规划与MVP路线.docx`（0 字节） | 当前唯一有效的汇总与 MVP 来源 |
-| 埋点与数据方案 | `数据埋点与数据库设计方案.docx`（0 字节） | 正式数据闭环四文档 | 产品层已补齐；字段级技术方案仍为后续资料缺口 |
+| 埋点与数据方案 | `数据埋点与数据库设计方案.docx`（0 字节） | `数据埋点与数据库设计/` 五份当前有效 Markdown | DOCX 仅为历史无效占位；字段级 DDL-ready 设计已由当前基线补齐，可执行契约仍在 Sprint 0 实现 |
 
 后续按“当前领域主责文档 → PROJECT_MEMORY 摘要 → PROJECT_STATUS 阶段状态”的单向引用维护，不再由历史开发交接文档反向定义当前口径。
 
@@ -269,3 +274,18 @@ Penpot Phase 1 核心样板于 2026-07-28 通过用户人工验收并升格为 V
 - Penpot 全量稿曾因把像素行高写入倍率字段而导致固定文字层不可见；已按“原行高 ÷ 字号”恢复倍率，并完成 20 个正式画板的 PNG 真实渲染检查。后续写入 Penpot `lineHeight` 必须使用倍率，不得直接写入像素值。
 - 后续页面必须沿用本基线，不得修改已确认的业务逻辑、交互流程或页面状态机；具体色值可通过 Token 优化，但不得改变语义角色。
 - 全量高保真阶段已经验收关闭；后续视觉调整必须作为明确变更进入，不得在开发阶段静默改写当前设计基线。
+
+## 21. 当前有效数据埋点与数据库设计基线
+
+数据埋点与数据库设计已于 2026-07-29 通过用户确认。当前有效主责文档为 `数据埋点与数据库设计/数据埋点设计.md`、`数据库详细设计.md`、`数据字典.md`、`ER图.md` 与 `指标计算逻辑.md`。
+
+长期稳定规则：
+
+- 43 个页面、10 个页面族状态机和 179 个唯一转换均已按服务端业务事实、AI 运行事实、关键前端行为、审计记录或不采集分类；MVP 不采鼠标轨迹、完整点击流和停留时长。
+- 全量设计包含 77 张表，并按 MVP、Sprint 6 和未来阶段实施；MVP 迁移不提前创建无业务用途的空表。
+- `behavior_event` 与 `operation_audit_log` 分离；业务事实、AI 事实、Outbox、补偿、拒收和幂等记录职责独立，多个服务不得共享表级写权限。
+- Requirement、PRD、Flow、Implementation Plan、File、Template、Checklist 保持领域专属不可变版本与谱系；Implementation Plan 具有多轮不可变 Confirmation Round，Test Record 直接关联轮次，Issue 归属 Project Version，Bug/Optimization 为扩展。
+- AI Task、Call、Context、Result、Evaluation、Adoption 分表；重试新增 Call，不覆盖失败记录；未采用 AI 输出正文和完整敏感上下文不得复制到分析明细。
+- Qdrant 只保存可从 MySQL/对象存储重建的派生向量索引；MVP 只采预置知识来源，Sprint 6 再完整启用知识候选、检索、注入、引用和采用链路。
+- 当前登记 59 个唯一指标，按结果、驱动、护栏和数据质量组织；VO-01～09 以 `版本优化指标.md` 为唯一编号与定义来源。上线后先采集 2～4 周基线，不虚设业务目标。
+- 五份文档达到 DDL-ready，但不包含可执行 SQL、Alembic、OpenAPI、JSON Schema、分析后台页面或业务代码；这些实现仍须在用户明确启动 Development / Sprint 0 后开展。

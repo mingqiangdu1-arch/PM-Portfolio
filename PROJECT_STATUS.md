@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-Development Planning（已完成并通过用户确认；Development / Sprint 0 尚未开始）
+数据埋点与数据库设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
 
 ## Completed
 
@@ -102,10 +102,17 @@ Development Planning（已完成并通过用户确认；Development / Sprint 0 �
 - [x] 建立 79 个唯一开发任务及跨模块依赖和发布 Gate
 - [x] 输出 `开发规划/` 下五份 Development Planning 文档
 - [x] 用户确认 Development Planning 阶段成果并升级为当前有效 V1.0 基线
+- [x] 完成 43 个页面、10 个页面族状态机和 179 个转换的采集/不采集分类
+- [x] 完成事件触发时机、公共信封、幂等、Outbox、补偿、拒收和审计边界设计
+- [x] 完成 MySQL 8.4 下 77 张表的 DDL-ready 字段、约束、索引、归档与迁移分期设计
+- [x] 完成 AI 调用、领域文档版本、知识使用和数据分析后台需求设计
+- [x] 完成 59 个唯一指标的计算、血缘、迟到、去重、N/A 与数据质量门槛登记
+- [x] 将 VO-03～09 统一为专项《版本优化指标》的唯一编号和公式口径
+- [x] 用户确认数据埋点与数据库设计并将五份文档升级为当前有效 V1.0 基线
 
 ## Current Task
 
-Development Planning 已完成并通过用户确认。当前停止代码、DDL、OpenAPI、事件 Schema 和部署实现，等待用户明确启动 Development / Sprint 0。
+数据埋点与数据库设计已完成并通过用户确认。当前五份文档达到 DDL-ready；代码、可执行 DDL/Alembic、OpenAPI、JSON Schema、分析后台和部署实现均未启动，等待用户明确启动 Development / Sprint 0。
 
 ## Prohibited
 
@@ -117,13 +124,14 @@ Development Planning 已完成并通过用户确认。当前停止代码、DDL�
 
 ## Known Gaps / Blockers
 
-- `数据埋点与数据库设计方案.docx` 为 0 字节无效占位；产品层指标和 MVP 必采范围已补齐，字段级事件契约、采集时机、物理存储和可执行数据血缘已纳入 Sprint 0 的 `DATA-001/002` 实施任务。
+- `数据埋点与数据库设计方案.docx` 仍是 0 字节历史无效占位；其设计缺口已由 `数据埋点与数据库设计/` 五份当前有效 V1.0 Markdown 补齐，可执行事件 Schema、数据作业和验收查询仍由 Sprint 0 的 `DATA-001/002` 实现。
 - `项目开发规划与MVP路线.docx` 为 0 字节无效占位；其缺口已由 `开发规划/` 下五份当前有效 V1.0 Markdown 文档补齐，不再作为 Development Planning 阻塞项。
-- 数据库字段初稿与物理表初稿仍需在 Sprint 0 的 `BE-003` 中审查并形成唯一 ER、DDL、约束与索引基线。
+- 唯一 DDL-ready ER、字段、约束与索引基线已冻结；可执行 MySQL DDL 和 Alembic 迁移仍由 Sprint 0 的 `BE-003` 形成并验证。
 - 字段级 OpenAPI、错误码、分页、幂等、乐观锁和异步任务协议已冻结设计原则，具体契约由 Sprint 0 的 `BE-002` 形成。
 - 核心用户和流程参与身份已明确；细粒度 RBAC、团队空间和审批链仍待增强阶段设计。
 - 用户级 External Skill 库新增 `user-flow-mapping` 与 `wireframing`，来源为 `seb1n/awesome-ai-agent-skills` 1.0.0、Commit `a6c8c0ef3c240faefe1b0b5cabe1567beaea60fd`、MIT 许可证；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。
-- 当前产品层冲突已裁决，页面状态机与 Development Planning 基线已验收；ER、字段级 API、事件契约与安全配置将在 Sprint 0 形成实施层技术基线。
+- 当前产品层冲突已裁决，页面状态机、Development Planning、ER、数据字典和事件设计基线已验收；字段级 API、可执行事件契约与安全配置将在 Sprint 0 形成实施层技术基线。
+- Mermaid ER 已完成静态围栏、实体引用和关系覆盖检查；当前环境缺少 Mermaid 运行时解析器，渲染级语法验证留待文档工具链或 Sprint 0 CI 补充，不阻塞本阶段确认。
 - Flow 采用条件启用：Sprint 0 通过 `AI-003` 完成固定样本 Gate；通过后在 Sprint 3 实现完整链路，失败则保持 `flow_enabled=false` 且不阻断 MVP 主链。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
 - Figma 写入路径因 Starter 限额/权限暂停；未来仅在官方额度或权限恢复后同步核心展示页面，不作为当前阶段阻塞依赖。
@@ -134,8 +142,8 @@ Development Planning 已完成并通过用户确认。当前停止代码、DDL�
 
 ## Next Phase
 
-Development / Sprint 0：项目与环境初始化、技术 ADR、唯一 ER/DDL、OpenAPI 与事件契约、Design Token 管线、DeepSeek 连通性验证和 Flow 可行性 Gate。仅在用户明确启动后执行。
+Development / Sprint 0：项目与环境初始化、技术 ADR、将已确认 ER 落实为 MySQL DDL/Alembic、形成 OpenAPI 与事件 JSON Schema、建立 Design Token 管线、验证 DeepSeek 连通性和 Flow 可行性 Gate。仅在用户明确启动后执行。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Development（待启动）→ Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
