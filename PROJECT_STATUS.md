@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-Wireframe 与 UI 设计（已完成并通过阶段人工验收；Development Planning 尚未开始）
+Development Planning（已完成并通过用户确认；Development / Sprint 0 尚未开始）
 
 ## Completed
 
@@ -95,29 +95,36 @@ Wireframe 与 UI 设计（已完成并通过阶段人工验收；Development Pla
 - [x] 完成 20 个正式画板的官方 Penpot PNG 真实渲染检查
 - [x] 用户确认 V1 全量高保真原型阶段人工验收通过
 - [x] 将全量高保真原型升级为当前有效 V1 视觉与开发输入基线
+- [x] 用户明确启动 Development Planning
+- [x] 确认 Next.js 16、FastAPI 模块化单体 + 独立 AI 服务、MySQL 8.4、Redis、MinIO、DeepSeek 与 Qdrant 技术路线
+- [x] 确认 Sprint 0～5 为十二周 MVP，Sprint 6 为知识中心与 AI 增强版本
+- [x] 完成开发阶段、Sprint、前后端、AI、数据、测试、依赖、验收、上线和降级规划
+- [x] 建立 79 个唯一开发任务及跨模块依赖和发布 Gate
+- [x] 输出 `开发规划/` 下五份 Development Planning 文档
+- [x] 用户确认 Development Planning 阶段成果并升级为当前有效 V1.0 基线
 
 ## Current Task
 
-Wireframe、视觉规范与全量高保真原型阶段已完成并通过用户人工验收。当前停止设计扩展和开发操作，等待用户在新窗口明确启动 Development Planning。
+Development Planning 已完成并通过用户确认。当前停止代码、DDL、OpenAPI、事件 Schema 和部署实现，等待用户明确启动 Development / Sprint 0。
 
 ## Prohibited
 
-- 开始编码或修改代码
+- 未明确启动 Development / Sprint 0 即开始编码、DDL、OpenAPI、事件 Schema 或部署实现
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑
-- 修改数据库、ER、API 或系统架构
+- 绕过当前有效开发规划自行修改技术栈、MVP 边界、Sprint、模块依赖或发布 Gate
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
 - 未经确认安装未知 Skill 或外部能力
 
 ## Known Gaps / Blockers
 
-- `数据埋点与数据库设计方案.docx` 为 0 字节无效占位；产品层指标、MVP 必采范围和页面可观察状态已补齐，字段级事件契约、采集时机、物理存储和可执行数据血缘仍需在 Development Planning 阶段补充。
-- `项目开发规划与MVP路线.docx` 为 0 字节无效占位；MVP 产品边界已由 `产品设计体系整理/产品设计总览.md` 建立，开发里程碑与工期仍待 Development Planning。
-- 数据库字段初稿与物理表初稿均标注“使用前需审查”，且存在实体数量、关系和索引/外键未收敛问题。
-- API 仍为资源与动作级草案，缺少字段级契约、鉴权、分页、幂等、错误码及异步任务协议。
+- `数据埋点与数据库设计方案.docx` 为 0 字节无效占位；产品层指标和 MVP 必采范围已补齐，字段级事件契约、采集时机、物理存储和可执行数据血缘已纳入 Sprint 0 的 `DATA-001/002` 实施任务。
+- `项目开发规划与MVP路线.docx` 为 0 字节无效占位；其缺口已由 `开发规划/` 下五份当前有效 V1.0 Markdown 文档补齐，不再作为 Development Planning 阻塞项。
+- 数据库字段初稿与物理表初稿仍需在 Sprint 0 的 `BE-003` 中审查并形成唯一 ER、DDL、约束与索引基线。
+- 字段级 OpenAPI、错误码、分页、幂等、乐观锁和异步任务协议已冻结设计原则，具体契约由 Sprint 0 的 `BE-002` 形成。
 - 核心用户和流程参与身份已明确；细粒度 RBAC、团队空间和审批链仍待增强阶段设计。
 - 用户级 External Skill 库新增 `user-flow-mapping` 与 `wireframing`，来源为 `seb1n/awesome-ai-agent-skills` 1.0.0、Commit `a6c8c0ef3c240faefe1b0b5cabe1567beaea60fd`、MIT 许可证；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。
-- 当前产品层冲突已裁决，页面状态机基线已验收；ER、字段级 API、字段级埋点与安全方案仍需在后续对应阶段形成技术基线。
-- Flow 的流程图类型与范围选择、Review 交互、Mermaid 到 `.drawio` 的转换保真度、自动布局、逻辑校验、子流程关联细节和导出规格仍待后续阶段验证。
+- 当前产品层冲突已裁决，页面状态机与 Development Planning 基线已验收；ER、字段级 API、事件契约与安全配置将在 Sprint 0 形成实施层技术基线。
+- Flow 采用条件启用：Sprint 0 通过 `AI-003` 完成固定样本 Gate；通过后在 Sprint 3 实现完整链路，失败则保持 `flow_enabled=false` 且不阻断 MVP 主链。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
 - Figma 写入路径因 Starter 限额/权限暂停；未来仅在官方额度或权限恢复后同步核心展示页面，不作为当前阶段阻塞依赖。
 - 20 个正式画板已通过官方 Penpot PNG 真实渲染检查和用户人工验收；正式 SVG/PNG 文件包仍未保存到项目目录，作为非阻塞补交付物在需要交付或前端切图时补做。
@@ -127,8 +134,8 @@ Wireframe、视觉规范与全量高保真原型阶段已完成并通过用户�
 
 ## Next Phase
 
-在新窗口明确启动 Development Planning，优先收敛开发范围、技术基线、字段级 API、数据模型、埋点契约、权限与安全边界。正式 SVG/PNG 文件包按前端切图或交付需要补做；Figma 仅在官方额度或权限恢复后同步核心展示页面。
+Development / Sprint 0：项目与环境初始化、技术 ADR、唯一 ER/DDL、OpenAPI 与事件契约、Design Token 管线、DeepSeek 连通性验证和 Flow 可行性 Gate。仅在用户明确启动后执行。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（待启动）→ Development → Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Development（待启动）→ Testing → Iteration
