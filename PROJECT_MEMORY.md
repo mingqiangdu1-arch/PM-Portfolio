@@ -222,11 +222,11 @@ Wireframe、视觉规范与高保真原型阶段的正式产出统一存放在 `
 
 - 低保真线框及其说明归入 `Wireframe与UI设计/Wireframe/`；
 - `UI设计方案.md`、`设计系统规范.md` 及视觉规范材料归入 `Wireframe与UI设计/UI设计/`；
-- 高保真页面、原型说明、Figma 文件链接和验收记录归入 `Wireframe与UI设计/高保真原型/`。
+- 高保真页面、原型说明、Penpot/Figma 设计源记录、导出件和验收记录归入 `Wireframe与UI设计/高保真原型/`。
 
-当前环境的官方 Figma Plugin 已提供并登记启用 `figma-use`、`figma-generate-library` 和 `figma-generate-design`，无需下载 GitHub 副本，也不得复制到项目目录。调用规则为：设计系统使用 `figma-generate-library + figma-use`；高保真页面使用 `figma-generate-design + figma-use`；画布或原型操作使用 `figma-use`；补充低保真结构时才临时启用 `wireframing`。任何 `use_figma` 调用前必须完整加载 `figma-use`。
+当前主要可编辑设计工具为 Penpot 官方 MCP，采用 Foundations、Components、Product UI 三 Pages 结构；Figma 路径因 Starter 限额/权限暂停，未来仅在官方额度或权限恢复后同步核心展示页面，不作为阶段阻塞依赖。官方 Figma Plugin 的 `figma-use`、`figma-generate-library` 和 `figma-generate-design` 保留登记，不复制到项目目录。
 
-上述外部 Skill 只负责执行已确认的产品设计、交互设计和页面状态机，不得覆盖正式业务决策。页面状态机已于 2026-07-27 验收，视觉阶段前置基线现已就绪；Wireframe/UI 阶段正式启动和写入 Figma 前仍必须验证目标文件编辑权限。
+设计工具与外部 Skill 只负责执行已确认的产品设计、交互设计和页面状态机，不得覆盖正式业务决策。所有视觉阶段正式产出继续遵守本节目录边界。
 
 ## 18. 页面状态机 Skill
 
@@ -250,3 +250,22 @@ Page State Machine 已于 2026-07-27 通过用户验收。当前有效主责文�
 - Flow 保持文本 Review → Mermaid Review → `.drawio` → 逻辑校验 → 版本保存的分层路径，AI 和自动布局结果仍是候选。
 
 尚未冻结的边界继续沿用上游决策状态：仅布局变化的 Flow Version 策略、已提交 Test Record 的正式更正机制、细粒度 RBAC，以及 API 幂等/错误码/任务协议不得由 UI 或实现自行决定。
+
+## 20. 当前有效 Wireframe/UI 视觉基线
+
+Penpot Phase 1 核心样板于 2026-07-28 通过用户人工验收并升格为 V1 正式视觉基线。全量高保真原型于 2026-07-29 通过用户人工验收并升格为当前有效 V1 高保真基线。主责文档为 `Wireframe与UI设计/UI设计/UI设计方案.md`、`Wireframe与UI设计/UI设计/设计系统规范.md` 与 `Wireframe与UI设计/高保真原型/高保真原型说明.md`；可编辑设计源和验证记录见 `Wireframe与UI设计/高保真原型/Penpot MCP配置与验证.md`。
+
+长期稳定规则：
+
+- 产品形态优先桌面端 Web SaaS；采用浅色、中高密度的“轻盈可信工作台 / Light Trace Workspace”。
+- 不使用蓝色作为主色，不使用紫罗兰表示 AI；Sage 只承担主操作与选中，Apricot 只承担 AI 身份和候选差异，Amber 表示一般提醒，Red 表示错误、拒绝和删除。
+- 段落级操作放在内容区顶部，整篇级操作放在底部；`修改后采用` 是候选审核页唯一主按钮，避免重复操作竞争。
+- 主对比区优先于右侧检查栏；来源可追溯默认展开，质量检查显示摘要，业务规则默认折叠或只显示异常。
+- 双栏内容保持章节水平对齐、充分行高和内边距；只高亮真正变化的词句，并明确区分新增、修改和删除。
+- 核心任务区必须显示当前审核对象和进度，例如 `当前正在审核：1.1 背景与目标`、`第 1/12 段`。
+- 基础控件默认使用 40px 高度、8px 圆角、1px 暖灰边框及统一图标粗细；状态不得只依赖颜色表达。
+- Penpot 的 Foundations、Components、Product UI 三 Pages、98 个活动 Token、首批五类组件和 PRD Candidate Review 样板构成当前 V1 执行基线；项目内 `design-tokens.json` 是机器可读副本。
+- 当前有效全量设计包括 16 个基础组件家族、14 个业务 Pattern、11 个 Wireframe 页面族映射、43/43 页面编号覆盖、43 个代表状态、AI 前中后生命周期、全局任务中心与 T01～T07 原型入口。
+- Penpot 全量稿曾因把像素行高写入倍率字段而导致固定文字层不可见；已按“原行高 ÷ 字号”恢复倍率，并完成 20 个正式画板的 PNG 真实渲染检查。后续写入 Penpot `lineHeight` 必须使用倍率，不得直接写入像素值。
+- 后续页面必须沿用本基线，不得修改已确认的业务逻辑、交互流程或页面状态机；具体色值可通过 Token 优化，但不得改变语义角色。
+- 全量高保真阶段已经验收关闭；后续视觉调整必须作为明确变更进入，不得在开发阶段静默改写当前设计基线。

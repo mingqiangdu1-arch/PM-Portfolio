@@ -1,0 +1,50 @@
+{
+  "runId": "light-trace-phase1-20260727",
+  "fileKey": "NXf0WP2U68gKX9vdfpTzvo",
+  "phase": "phase1-foundations",
+  "step": "effect-styles-rate-limit",
+  "pages": {
+    "00 Foundations": "0:1",
+    "01 Components": "8:2",
+    "02 Product UI": "8:3"
+  },
+  "collections": {
+    "Primitives": "VariableCollectionId:9:2",
+    "Semantic": "VariableCollectionId:9:3",
+    "Scale": "VariableCollectionId:9:4",
+    "Typography": "VariableCollectionId:9:5"
+  },
+  "counts": {
+    "variables": 94,
+    "primitiveColors": 30,
+    "semanticColors": 25,
+    "spacing": 12,
+    "radius": 7,
+    "typographyVariables": 20,
+    "textStyles": 10,
+    "effectStyles": 0
+  },
+  "completedSteps": [
+    "permission-test",
+    "three-page-structure",
+    "variable-collections",
+    "primitive-colors",
+    "semantic-colors",
+    "spacing-radius",
+    "typography-variables",
+    "text-styles"
+  ],
+  "blocker": {
+    "type": "figma-mcp-starter-call-limit",
+    "failedOperation": "create Shadow/Subtle, Shadow/Overlay, Shadow/Modal effect styles",
+    "message": "You've reached the Figma MCP tool call limit on the Starter plan.",
+    "retryAttempted": false
+  },
+  "pendingValidations": [
+    "token-count-scope-syntax-alias-audit",
+    "effect-styles",
+    "foundations-docs",
+    "five-core-components",
+    "core-sample"
+  ]
+}

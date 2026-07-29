@@ -1,10 +1,10 @@
 # PROJECT STATUS
 
-> 最后更新：2026-07-27
+> 最后更新：2026-07-29
 
 ## Current Phase
 
-Page State Machine（已验收完成，Wireframe/UI 前置基线就绪）
+Wireframe 与 UI 设计（已完成并通过阶段人工验收；Development Planning 尚未开始）
 
 ## Completed
 
@@ -67,15 +67,43 @@ Page State Machine（已验收完成，Wireframe/UI 前置基线就绪）
 - [x] 用户确认 Page State Machine 阶段验收通过
 - [x] 将 `页面状态机.md` 升级为当前有效 Page State Machine 基线
 - [x] 同步更新 `PROJECT_MEMORY.md`、`PROJECT_STATUS.md`、`docs/INDEX.md` 与阶段目录说明
+- [x] 用户确认继续进入 Wireframe、视觉规范与高保真原型阶段
+- [x] 使用 `wireframing` 检查并补齐 43 个页面的低保真模板覆盖
+- [x] 完成 11 个复用 Wireframe、共用组件、核心状态界面和响应式规则候选
+- [x] 形成“可信工作台 / Traceable Workspace”视觉方向候选
+- [x] 用户确认除色彩外的视觉方向，并要求取消蓝色主色和紫罗兰 AI 色
+- [x] 用户确认低保真 Wireframe 和其余视觉方向继续执行
+- [x] 将视觉方向调整为浅色 Sage 主操作、Apricot AI 候选的 Light Trace Workspace
+- [x] 完成设计系统 Phase 0 发现、差距分析、Token/样式/组件范围锁定
+- [x] 验证 Figma 账号与唯一 Starter 团队计划；席位显示 View，创建/写入权限待实测
+- [x] 暂停受 Starter 限额影响的 Figma 写入路径，改用 Penpot 官方 MCP 作为当前主要可编辑设计工具
+- [x] 完成 Penpot 官方来源、版本、许可证、用户级配置与最小连接/写入验证记录
+- [x] 在 Penpot 建立 Foundations、Components、Product UI 三 Pages 结构
+- [x] 写入 Primitives、Semantic Light、Metrics 共 98 个活动 Token，并同步 `design-tokens.json`
+- [x] 创建 Button、Input、Tabs、Modal、AI Status 五类核心组件样板
+- [x] 创建 1440 × 1024 的 PRD Candidate Review 核心页面样板并落实六项必要优化
+- [x] 完成 Penpot 文件结构校验、越界检查与重复名称检查
+- [x] 用户确认 Penpot 核心样板通过人工视觉验收并升格为 V1 正式视觉基线
+- [x] 用户明确发出“开始全量设计”执行指令
+- [x] 补齐 Foundations 的 Grid、Accessibility 与 Delivery 规范板
+- [x] 完成 16 个基础组件家族、14 个业务 Pattern 与 30 个本地组件入口
+- [x] 完成 11 个高保真页面族模板并覆盖 43/43 页面编号
+- [x] 完成 43 个代表状态、AI 前中后生命周期与全局任务中心/覆盖层
+- [x] 完成 T01～T07 原型入口与 16 条 `click → navigate-to` 交互
+- [x] 完成 Penpot 文件校验、同级重复名称检查、组件计数和原型交互检查
+- [x] 修复 Penpot 全量稿文字行高倍率错误，并保持节点、布局、文案和 16 条原型交互不变
+- [x] 完成 20 个正式画板的官方 Penpot PNG 真实渲染检查
+- [x] 用户确认 V1 全量高保真原型阶段人工验收通过
+- [x] 将全量高保真原型升级为当前有效 V1 视觉与开发输入基线
 
 ## Current Task
 
-页面状态机已于 2026-07-27 通过用户验收并升级为当前有效基线。当前完成阶段收口并等待 Git Commit 授权；下一阶段为 Wireframe/UI，正式开始前验证目标 Figma 文件编辑权限，并按 `Wireframe与UI设计/` 的子目录规则保存产出。
+Wireframe、视觉规范与全量高保真原型阶段已完成并通过用户人工验收。当前停止设计扩展和开发操作，等待用户在新窗口明确启动 Development Planning。
 
 ## Prohibited
 
 - 开始编码或修改代码
-- 未正式进入 Wireframe/UI 阶段即创建品牌视觉、高保真 UI、原型写入或动效
+- 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑
 - 修改数据库、ER、API 或系统架构
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
 - 未经确认安装未知 Skill 或外部能力
@@ -91,14 +119,16 @@ Page State Machine（已验收完成，Wireframe/UI 前置基线就绪）
 - 当前产品层冲突已裁决，页面状态机基线已验收；ER、字段级 API、字段级埋点与安全方案仍需在后续对应阶段形成技术基线。
 - Flow 的流程图类型与范围选择、Review 交互、Mermaid 到 `.drawio` 的转换保真度、自动布局、逻辑校验、子流程关联细节和导出规格仍待后续阶段验证。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
-- 官方 Figma Plugin 已连接，但当前账号团队席位显示为 View；目标 Figma 文件的实际编辑权限必须在正式设计开始前验证。
+- Figma 写入路径因 Starter 限额/权限暂停；未来仅在官方额度或权限恢复后同步核心展示页面，不作为当前阶段阻塞依赖。
+- 20 个正式画板已通过官方 Penpot PNG 真实渲染检查和用户人工验收；正式 SVG/PNG 文件包仍未保存到项目目录，作为非阻塞补交付物在需要交付或前端切图时补做。
+- 当前 Penpot Plugin API 不支持修改文件名称，文件仍为 `新建文件 1`，需在 Penpot 界面人工重命名。
 - Figma Plugin 包目录/清单版本为 2.0.16，内部 `plugin.lock.json` 的 `pluginVersion` 仍为 2.0.7；作为元数据差异记录，不影响当前 Skill 发现。
 - 外部检索未发现成熟可信的 Page State Machine Skill；已按用户确认创建 Personal Skill `page-state-machine-design`，后续需通过本项目实际任务持续验证和迭代。
 
 ## Next Phase
 
-Wireframe 与 UI 设计。前置产品、交互和页面状态机基线均已就绪；正式启动后使用已登记的 `wireframing` 与官方 Figma Plugin Skills 开展低保真 Wireframe、设计系统、高保真原型与 Figma 文件工作。
+在新窗口明确启动 Development Planning，优先收敛开发范围、技术基线、字段级 API、数据模型、埋点契约、权限与安全边界。正式 SVG/PNG 文件包按前端切图或交付需要补做；Figma 仅在官方额度或权限恢复后同步核心展示页面。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（待启动）→ UI Design → Development Planning → Development → Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（待启动）→ Development → Testing → Iteration

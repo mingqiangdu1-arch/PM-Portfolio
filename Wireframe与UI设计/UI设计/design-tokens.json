@@ -1,0 +1,189 @@
+{
+  "$description": "AI 产品设计与验证平台 V1 设计 Token。Light Trace Workspace：Sage 主操作、Apricot AI/差异、Amber 提醒、Red 错误与拒绝。",
+  "$extensions": {
+    "project": {
+      "stage": "Wireframe、视觉规范与高保真原型",
+      "status": "V1 视觉基线已验收；全量高保真候选已生成，待阶段验收",
+      "updatedAt": "2026-07-28"
+    },
+    "penpot": {
+      "fileId": "bd31e32d-d69f-81e2-8008-6403c41c6a83",
+      "pluginApiVersion": "2.17.1",
+      "activeVariableTokenCount": 98,
+      "pageIds": {
+        "foundations": "bd31e32d-d69f-81e2-8008-6403c41c6a84",
+        "components": "0b6cce22-0755-8065-8008-64eb31495a84",
+        "productUi": "0b6cce22-0755-8065-8008-64eb314e889c"
+      }
+    }
+  },
+  "color": {
+    "$type": "color",
+    "primitive": {
+      "warm": {
+        "0": { "$value": "#FFFFFF" },
+        "25": { "$value": "#FFFDFC" },
+        "50": { "$value": "#FAF8F4" },
+        "100": { "$value": "#F3F0EA" },
+        "200": { "$value": "#E5E0D8" },
+        "300": { "$value": "#D2CCC2" },
+        "500": { "$value": "#7B746B" },
+        "700": { "$value": "#4B463F" },
+        "900": { "$value": "#211F1C" }
+      },
+      "sage": {
+        "50": { "$value": "#F1F6EF" },
+        "100": { "$value": "#E4EEE1" },
+        "200": { "$value": "#C9DEC4" },
+        "300": { "$value": "#A8C79F" },
+        "500": { "$value": "#6F9368" },
+        "600": { "$value": "#587B53" },
+        "700": { "$value": "#41603E" },
+        "800": { "$value": "#30482E" }
+      },
+      "apricot": {
+        "50": { "$value": "#FFF7ED" },
+        "100": { "$value": "#FCEBD8" },
+        "200": { "$value": "#F7D8B4" },
+        "300": { "$value": "#F0BE89" },
+        "500": { "$value": "#C97A3D" },
+        "600": { "$value": "#A85F2D" },
+        "700": { "$value": "#7E4423" }
+      },
+      "success": {
+        "50": { "$value": "#EDF8F1" },
+        "600": { "$value": "#2F7D57" },
+        "700": { "$value": "#236443" }
+      },
+      "warning": {
+        "50": { "$value": "#FFF7E6" },
+        "600": { "$value": "#A66300" },
+        "700": { "$value": "#7D4A00" }
+      },
+      "error": {
+        "50": { "$value": "#FFF0ED" },
+        "600": { "$value": "#B84A3A" },
+        "700": { "$value": "#94382C" }
+      },
+      "info": {
+        "50": { "$value": "#F3F1ED" },
+        "600": { "$value": "#665F56" },
+        "700": { "$value": "#4B463F" }
+      }
+    },
+    "semantic": {
+      "bg": {
+        "canvas": { "$value": "{color.primitive.warm.50}" },
+        "surface": { "$value": "{color.primitive.warm.0}" },
+        "subtle": { "$value": "{color.primitive.warm.100}" },
+        "elevated": { "$value": "{color.primitive.warm.25}" },
+        "primarySubtle": { "$value": "{color.primitive.sage.50}" },
+        "aiSubtle": { "$value": "{color.primitive.apricot.50}" }
+      },
+      "text": {
+        "primary": { "$value": "{color.primitive.warm.900}" },
+        "secondary": { "$value": "{color.primitive.warm.700}" },
+        "muted": { "$value": "{color.primitive.warm.500}" },
+        "inverse": { "$value": "{color.primitive.warm.0}" },
+        "primaryAction": { "$value": "{color.primitive.sage.700}" },
+        "ai": { "$value": "{color.primitive.apricot.700}" }
+      },
+      "icon": {
+        "default": { "$value": "{color.primitive.warm.700}" },
+        "primary": { "$value": "{color.primitive.sage.700}" },
+        "ai": { "$value": "{color.primitive.apricot.700}" }
+      },
+      "border": {
+        "default": { "$value": "{color.primitive.warm.200}" },
+        "strong": { "$value": "{color.primitive.warm.300}" },
+        "focus": { "$value": "{color.primitive.sage.600}" }
+      },
+      "action": {
+        "primary": { "$value": "{color.primitive.sage.700}" },
+        "primaryHover": { "$value": "{color.primitive.sage.800}" },
+        "primaryDisabled": { "$value": "{color.primitive.sage.200}" },
+        "secondary": { "$value": "{color.primitive.warm.0}" }
+      },
+      "state": {
+        "successBg": { "$value": "{color.primitive.success.50}" },
+        "successFg": { "$value": "{color.primitive.success.700}" },
+        "warningBg": { "$value": "{color.primitive.warning.50}" },
+        "warningFg": { "$value": "{color.primitive.warning.700}" },
+        "errorBg": { "$value": "{color.primitive.error.50}" },
+        "errorFg": { "$value": "{color.primitive.error.700}" },
+        "infoBg": { "$value": "{color.primitive.info.50}" },
+        "infoFg": { "$value": "{color.primitive.info.700}" }
+      }
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "0": { "$value": { "value": 0, "unit": "px" } },
+    "2xs": { "$value": { "value": 2, "unit": "px" } },
+    "xs": { "$value": { "value": 4, "unit": "px" } },
+    "sm": { "$value": { "value": 8, "unit": "px" } },
+    "md": { "$value": { "value": 12, "unit": "px" } },
+    "lg": { "$value": { "value": 16, "unit": "px" } },
+    "xl": { "$value": { "value": 20, "unit": "px" } },
+    "2xl": { "$value": { "value": 24, "unit": "px" } },
+    "3xl": { "$value": { "value": 32, "unit": "px" } },
+    "4xl": { "$value": { "value": 40, "unit": "px" } },
+    "5xl": { "$value": { "value": 48, "unit": "px" } },
+    "6xl": { "$value": { "value": 64, "unit": "px" } }
+  },
+  "radius": {
+    "$type": "dimension",
+    "none": { "$value": { "value": 0, "unit": "px" } },
+    "xs": { "$value": { "value": 4, "unit": "px" } },
+    "sm": { "$value": { "value": 6, "unit": "px" } },
+    "md": { "$value": { "value": 8, "unit": "px" } },
+    "lg": { "$value": { "value": 12, "unit": "px" } },
+    "xl": { "$value": { "value": 16, "unit": "px" } },
+    "full": { "$value": { "value": 999, "unit": "px" } }
+  },
+  "dimension": {
+    "$type": "dimension",
+    "icon": {
+      "sm": { "$value": { "value": 16, "unit": "px" } },
+      "md": { "$value": { "value": 20, "unit": "px" } },
+      "lg": { "$value": { "value": 24, "unit": "px" } }
+    },
+    "control": {
+      "xs": { "$value": { "value": 32, "unit": "px" } },
+      "sm": { "$value": { "value": 36, "unit": "px" } },
+      "md": { "$value": { "value": 40, "unit": "px" } },
+      "lg": { "$value": { "value": 44, "unit": "px" } },
+      "xl": { "$value": { "value": 48, "unit": "px" } }
+    },
+    "layout": {
+      "sidebar": { "$value": { "value": 216, "unit": "px" } },
+      "rightPanel": { "$value": { "value": 320, "unit": "px" } },
+      "contentMax": { "$value": { "value": 1440, "unit": "px" } }
+    }
+  },
+  "borderWidth": {
+    "$type": "dimension",
+    "hairline": { "$value": { "value": 1, "unit": "px" } },
+    "strong": { "$value": { "value": 2, "unit": "px" } }
+  },
+  "typography": {
+    "$type": "typography",
+    "displayPage": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 28, "fontWeight": 600, "lineHeight": 36 } },
+    "headingH1": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 24, "fontWeight": 600, "lineHeight": 32 } },
+    "headingH2": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": 600, "lineHeight": 28 } },
+    "headingH3": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": 600, "lineHeight": 24 } },
+    "bodyLarge": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": 400, "lineHeight": 24 } },
+    "bodyMedium": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": 400, "lineHeight": 22 } },
+    "bodySmall": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 13, "fontWeight": 400, "lineHeight": 20 } },
+    "labelMedium": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 13, "fontWeight": 500, "lineHeight": 18 } },
+    "labelSmall": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": 500, "lineHeight": 16 } },
+    "caption": { "$value": { "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": 400, "lineHeight": 18 } },
+    "codeSmall": { "$value": { "fontFamily": "JetBrains Mono", "fontSize": 12, "fontWeight": 400, "lineHeight": 18 } }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "subtle": { "$value": { "color": "#211F1C0F", "offsetX": 0, "offsetY": 1, "blur": 2, "spread": 0 } },
+    "overlay": { "$value": { "color": "#211F1C24", "offsetX": 0, "offsetY": 8, "blur": 24, "spread": 0 } },
+    "modal": { "$value": { "color": "#211F1C2E", "offsetX": 0, "offsetY": 16, "blur": 48, "spread": 0 } }
+  }
+}
