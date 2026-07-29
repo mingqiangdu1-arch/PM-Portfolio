@@ -149,6 +149,10 @@ MVP 是端到端薄闭环：Project Version → Requirement → PRD → Review �
 
 Experience、Checklist、Skill 管理、RAG 检索、完整数据埋点和分析看板属于增强能力；但 MVP 必须同步记录核心业务事实、AI 调用追溯、采用/修改/拒绝、基础质量检查和版本归因。组织级协作、外部平台集成、生态市场与自动评测属于未来规划。
 
+### CloudBase 云端验证补充记录
+
+CloudBase 仅作为 MVP 核心闭环完成后、集成测试阶段的候选云端部署 PoC 环境，不构成生产技术基线，也不改变当前 Development Planning 的基础设施可替换原则。本阶段技术方案不得以 CloudBase 专有能力形成业务、数据、文件、缓存、权限或部署锁定。生产服务器、云厂商、实例规格与容量方案应根据 MVP 测试和 CloudBase PoC 结果另行评审并冻结。
+
 ## 13. 文档索引与引用关系
 
 当前权威层级：`产品设计体系整理/` 领域基线 → `PROJECT_MEMORY.md` 长期摘要 → `PROJECT_STATUS.md` 阶段状态。历史 DOCX 和 `项目初始化/` 分析文档只作追溯证据。
@@ -309,3 +313,21 @@ AI 能力体系设计已于 2026-07-29 通过用户确认，阶段交接标记�
 - AI Task、Call、Context Usage、Result、Evaluation 与 Adoption 分域记录；正式结果必须 100% 追溯实际能力版本、目标快照和上下文来源，未采用正文和完整敏感上下文不得复制到分析明细。
 - 质量证据分运行可用、输出合格、用户可用和下游有效四层；结构、必填、追溯和安全是正式化硬门禁，重大错误不得被平均分掩盖，优化应按单一能力版本或明确组合变更归因。
 - 六份文档冻结逻辑能力、职责、生命周期、检索和追溯规则，不包含代码、可执行 DDL/Alembic、OpenAPI、JSON Schema 或管理页面实现；Development / Sprint 0 仍需用户明确启动。
+
+## 23. 当前有效技术方案设计基线
+
+技术方案设计已于 2026-07-29 通过用户确认。当前有效主责文档为 `技术方案设计/技术架构设计.md`、`接口设计.md`、`部署方案.md`、`权限设计.md`、`日志与监控设计.md` 与 `技术风险清单.md`。
+
+长期稳定规则：
+
+- 运行边界为 Next.js Web → Business API；Business API 通过内部契约调用 AI API/Worker。Browser 不直接访问 AI 服务、数据库、Redis 或模型供应商；AI 候选只能由 Business API 在用户确认后正式化。
+- Business API 是身份、权限、Project Version、正式业务产物、文件元数据、审计和 Business Outbox 的写入方；AI Service/Worker 只写 AI 运行与追溯事实。多个服务使用独立数据库账号和表级写权限。
+- MySQL 8.4 是业务、AI 追溯、事件与审计事实源；MinIO/S3 保存文件正文；Redis 只承担 Celery Broker、短期进度/SSE、限流和可重建缓存，故障时不得产生虚假成功。
+- 文件使用初始化、短期单对象签名传输、完成 HEAD/大小/校验和验证和元数据生效的两阶段协议；对象键和签名 URL 不属于业务 ID，不进入日志或长期事件。
+- 公共接口统一 `/api/v1`，内部接口统一 `/internal/v1`；字段级 Markdown 契约已覆盖身份、项目/版本、文件、Requirement、PRD/Flow、Review/Plan、Confirmation、Test/Issue、AI Task、SSE、正式化和内部 Context。Sprint 0 据此生成 OpenAPI 3.1、内部契约与事件 JSON Schema。
+- 写命令使用 `Idempotency-Key`，可变对象使用 `expected_version`；ID 对外为字符串，时间为 UTC RFC 3339，列表使用稳定游标。历史与正式事实不可原位覆盖。
+- 权限采用 `owner/reviewer/implementer/tester` 固定项目角色和 `admin` 系统角色；owner 保留最终确认权，admin 不自动获得项目内容决策权。Access JWT 短期有效，Refresh Token 七天、轮换、哈希存储并使用 Secure/HttpOnly Cookie。
+- MVP 可观测性使用结构化 JSON 日志、Loki、Prometheus、Alertmanager 和 Grafana，通过 trace/command/task ID 关联服务、Outbox、事件与审计；MVP 不部署 Tempo。
+- 三人团队按目录和契约分工：前端负责 `apps/web`，后端负责 `services/api`、OpenAPI、Alembic 和部署 DRI，AI/数据负责 `services/ai`、AI/事件 Schema、数据质量与监控。跨端能力必须先冻结契约；Alembic 迁移链由后端串行维护。
+- 部署基线是可替换的 Local/CI/Staging/生产候选 Docker Compose 拓扑，不冻结生产云厂商、服务器型号或容量。CloudBase 只作为 MVP 核心闭环完成后的集成测试 PoC 候选，不能自动升格为生产技术基线。
+- 六份文档冻结技术行为与实施边界，不包含业务代码、可执行 DDL/Alembic、OpenAPI/JSON Schema、Compose 或部署脚本；这些产物由明确启动后的 Development / Sprint 0 实现并验证。

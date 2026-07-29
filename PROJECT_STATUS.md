@@ -4,7 +4,7 @@
 
 ## Current Phase
 
-AI 能力体系设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
+技术方案设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
 
 ## Completed
 
@@ -117,10 +117,20 @@ AI 能力体系设计（已完成并通过用户确认；Development / Sprint 0 
 - [x] 完成 Experience/Checklist 检索、权限过滤、Token 预算与冲突处理规则
 - [x] 完成 AI Task/Call/Context/Result/Evaluation/Adoption 追溯和质量反馈闭环
 - [x] 用户确认 AI 能力体系设计并将六份文档升级为当前有效 V1.0 基线
+- [x] 用户明确启动技术方案设计并确认采用独立 `技术方案设计/` 阶段目录
+- [x] 完成 Next.js Web、FastAPI 业务模块化单体、独立 AI API/Worker、MySQL、Redis、S3/MinIO 的实施层架构设计
+- [x] 冻结 Business API 对外、AI API 内网、候选与正式化分离、分服务表级写权限和基础设施可替换边界
+- [x] 完成 107 个公共/内部接口引用的字段级 Markdown 契约，覆盖身份、项目、文件、产物、评审、确认、验证、AI Task、SSE 和内部 Context
+- [x] 完成固定项目角色、关键写实时授权、服务身份、签名文件访问与安全测试矩阵
+- [x] 完成 Local/CI/Staging/生产候选 Compose 拓扑、发布、备份、恢复和 CloudBase PoC 隔离规则
+- [x] 完成结构化日志、Loki、Prometheus、Alertmanager、Grafana、trace 传播、告警与故障排查设计
+- [x] 建立 24 项技术风险及概率、影响、触发、预防、降级、DRI 和关闭 Gate
+- [x] 明确 1 名前端、1 名后端、1 名 AI/数据工程师的目录主责、契约先行、迁移串行和并行联调规则
+- [x] 用户确认六份技术方案并将其升级为当前有效 V1.0 技术设计基线
 
 ## Current Task
 
-AI 能力体系设计已完成并通过用户确认。六份 V1.0 文档已冻结任务分类、Agent 流程、Task Router、Skill、Prompt、Template、Context、Experience/Checklist 检索、AI 调用追溯与反馈机制；代码、可执行 DDL/Alembic、OpenAPI、JSON Schema、分析后台和部署实现均未启动，等待用户明确启动 Development / Sprint 0。
+技术方案设计已完成并通过用户确认。六份 V1.0 文档已冻结前端、业务后端、AI 服务、数据/文件/缓存、权限、字段级接口、部署、日志监控、错误处理、测试、技术风险以及三人团队并行规则；代码、可执行 DDL/Alembic、OpenAPI、事件 JSON Schema、Compose 和部署脚本均未启动，等待用户明确启动 Development / Sprint 0。
 
 ## Prohibited
 
@@ -135,10 +145,10 @@ AI 能力体系设计已完成并通过用户确认。六份 V1.0 文档已冻�
 - `数据埋点与数据库设计方案.docx` 仍是 0 字节历史无效占位；其设计缺口已由 `数据埋点与数据库设计/` 五份当前有效 V1.0 Markdown 补齐，可执行事件 Schema、数据作业和验收查询仍由 Sprint 0 的 `DATA-001/002` 实现。
 - `项目开发规划与MVP路线.docx` 为 0 字节无效占位；其缺口已由 `开发规划/` 下五份当前有效 V1.0 Markdown 文档补齐，不再作为 Development Planning 阻塞项。
 - 唯一 DDL-ready ER、字段、约束与索引基线已冻结；可执行 MySQL DDL 和 Alembic 迁移仍由 Sprint 0 的 `BE-003` 形成并验证。
-- 字段级 OpenAPI、错误码、分页、幂等、乐观锁和异步任务协议已冻结设计原则，具体契约由 Sprint 0 的 `BE-002` 形成。
+- 字段级 Markdown 接口、错误码、分页、幂等、乐观锁、SSE 和内部 AI Task/Context 协议已冻结；可执行 OpenAPI 3.1、内部契约与事件 JSON Schema 仍由 Sprint 0 的 `BE-002`、`AI-001`、`DATA-001` 形成并通过契约 Gate。
 - 核心用户和流程参与身份已明确；细粒度 RBAC、团队空间和审批链仍待增强阶段设计。
 - 用户级 External Skill 库新增 `user-flow-mapping` 与 `wireframing`，来源为 `seb1n/awesome-ai-agent-skills` 1.0.0、Commit `a6c8c0ef3c240faefe1b0b5cabe1567beaea60fd`、MIT 许可证；实际文件位于 `F:\AI-Agent-System\skills\external`，项目内不保留重复副本。
-- 当前产品层冲突已裁决，页面状态机、Development Planning、ER、数据字典和事件设计基线已验收；字段级 API、可执行事件契约与安全配置将在 Sprint 0 形成实施层技术基线。
+- 当前产品层冲突已裁决，页面状态机、Development Planning、ER、数据字典、事件、AI 能力和技术设计基线已验收；可执行 OpenAPI、事件契约、Alembic、安全配置和运行脚本将在 Sprint 0 形成实现事实源。
 - Mermaid ER 已完成静态围栏、实体引用和关系覆盖检查；当前环境缺少 Mermaid 运行时解析器，渲染级语法验证留待文档工具链或 Sprint 0 CI 补充，不阻塞本阶段确认。
 - Flow 采用条件启用：Sprint 0 通过 `AI-003` 完成固定样本 Gate；通过后在 Sprint 3 实现完整链路，失败则保持 `flow_enabled=false` 且不阻断 MVP 主链。
 - 当前环境缺少 LibreOffice，未完成历史 DOCX 页面渲染核对；已完成结构化全量读取。本阶段只交付 Markdown，不受 DOCX 排版限制影响。
@@ -149,6 +159,8 @@ AI 能力体系设计已完成并通过用户确认。六份 V1.0 文档已冻�
 - 外部检索未发现成熟可信的 Page State Machine Skill；已按用户确认创建 Personal Skill `page-state-machine-design`，后续需通过本项目实际任务持续验证和迭代。
 - AI Capability 指纹可由实际 Skill/Prompt/Template/Context Strategy/Model/Provider 版本组合计算；任务目录版本和 Router 策略版本的持久化映射仍需在 Sprint 0 字段级契约中复核，如需改变已确认数据结构必须重新进入数据设计评审。
 - AI 能力体系设计只冻结逻辑能力、职责、生命周期和追溯规则；可执行 Agent 编排、Provider Adapter、Router 配置、Prompt/Template/Context Schema 与管理页面仍由 Development 任务实现。
+- 技术设计冻结可替换的单服务器 Compose 拓扑和运维规则，但生产云厂商、服务器型号、容量与最终日志/指标保留值仍需依据 MVP 性能、增长和恢复测试另行评审。
+- CloudBase 仅作为 MVP 核心闭环完成后、集成测试阶段的部署 PoC 候选，不构成生产技术基线；PoC 结果不得替代生产安全、容量、RPO/RTO 和合规评审。
 
 ## Next Phase
 
@@ -156,4 +168,4 @@ Development / Sprint 0：项目与环境初始化、技术 ADR、将已确认 ER
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ AI Capability Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ AI Capability Design（已完成并确认）→ Technical Solution Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
