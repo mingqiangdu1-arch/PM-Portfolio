@@ -1,0 +1,20 @@
+{
+  "name": "@aipdv/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./generated/tokens.css",
+    "./tailwind.css": "./generated/tailwind.css"
+  },
+  "scripts": {
+    "build": "node scripts/build-tokens.mjs",
+    "lint": "node --check scripts/build-tokens.mjs",
+    "typecheck": "node --check scripts/build-tokens.mjs",
+    "test": "vitest run",
+    "test:update": "vitest run -u"
+  },
+  "devDependencies": {
+    "vitest": "4.1.10"
+  }
+}

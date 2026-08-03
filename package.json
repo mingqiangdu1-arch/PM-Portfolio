@@ -1,0 +1,18 @@
+{
+  "name": "ai-product-design-validation-platform",
+  "private": true,
+  "packageManager": "pnpm@9.12.3",
+  "engines": {
+    "node": "24.14.1",
+    "pnpm": "9.12.3"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @aipdv/web dev",
+    "build": "pnpm tokens:build && pnpm --filter @aipdv/web build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm tokens:build && pnpm -r test",
+    "tokens:build": "pnpm --filter @aipdv/design-tokens build",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  }
+}

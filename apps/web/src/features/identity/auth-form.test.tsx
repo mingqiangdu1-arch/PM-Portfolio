@@ -1,0 +1,6 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
+import { AuthForm } from "./auth-form";
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+describe("AuthForm", () => { beforeEach(() => push.mockClear()); it("preserves credentials after failure", async () => { render(<AuthForm mode="login" />); fireEvent.change(screen.getByLabelText("邮箱"), { target: { value: "fail@example.com" } }); fireEvent.change(screen.getByLabelText("密码"), { target: { value: "password1" } }); fireEvent.click(screen.getByRole("button", { name: "登录" })); expect(await screen.findByRole("alert")).toHaveTextContent("邮箱或密码不正确"); expect(screen.getByLabelText("邮箱")).toHaveValue("fail@example.com"); expect(push).not.toHaveBeenCalled(); }); it("returns to a safe target", async () => { render(<AuthForm mode="login" returnTo="/projects/atlas" />); fireEvent.change(screen.getByLabelText("邮箱"), { target: { value: "ok@example.com" } }); fireEvent.change(screen.getByLabelText("密码"), { target: { value: "password1" } }); fireEvent.click(screen.getByRole("button", { name: "登录" })); await waitFor(() => expect(push).toHaveBeenCalledWith("/projects/atlas")); }); });

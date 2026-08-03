@@ -43,6 +43,8 @@ venv/
 
 # Node.js and generated output
 node_modules/
+.next/
+*.tsbuildinfo
 dist/
 build/
 coverage/

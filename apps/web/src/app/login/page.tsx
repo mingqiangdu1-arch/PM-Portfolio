@@ -1,0 +1,2 @@
+import { AuthForm } from "@/features/identity/auth-form";
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ returnTo?: string; loggedOut?: string }> }) { const params = await searchParams; return <main className="min-h-screen bg-canvas px-token-md py-token-3xl"><AuthForm mode="login" returnTo={params.returnTo} />{params.loggedOut ? <p role="status" className="mx-auto mt-token-md max-w-md text-center text-sm text-success">已安全退出。</p> : null}</main>; }

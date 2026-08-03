@@ -1,0 +1,36 @@
+/* Generated Tailwind semantic aliases. Do not edit. */
+@theme inline {
+  --color-canvas: var(--color-semantic-bg-canvas);
+  --color-surface: var(--color-semantic-bg-surface);
+  --color-subtle: var(--color-semantic-bg-subtle);
+  --color-primary-subtle: var(--color-semantic-bg-primary-subtle);
+  --color-ai-subtle: var(--color-semantic-bg-ai-subtle);
+  --color-text-primary: var(--color-semantic-text-primary);
+  --color-secondary: var(--color-semantic-text-secondary);
+  --color-muted: var(--color-semantic-text-muted);
+  --color-inverse: var(--color-semantic-text-inverse);
+  --color-primary-action: var(--color-semantic-text-primary-action);
+  --color-ai: var(--color-semantic-text-ai);
+  --color-default: var(--color-semantic-border-default);
+  --color-focus: var(--color-semantic-border-focus);
+  --color-brand-primary: var(--color-semantic-action-primary);
+  --color-brand-primary-hover: var(--color-semantic-action-primary-hover);
+  --color-brand-primary-disabled: var(--color-semantic-action-primary-disabled);
+  --color-success: var(--color-semantic-state-success-fg);
+  --color-warning: var(--color-semantic-state-warning-fg);
+  --color-warning-subtle: var(--color-semantic-state-warning-bg);
+  --color-error: var(--color-semantic-state-error-fg);
+  --color-error-subtle: var(--color-semantic-state-error-bg);
+  --spacing-token-xs: var(--spacing-xs);
+  --spacing-token-sm: var(--spacing-sm);
+  --spacing-token-md: var(--spacing-md);
+  --spacing-token-lg: var(--spacing-lg);
+  --spacing-token-xl: var(--spacing-xl);
+  --spacing-token-2xl: var(--spacing-2xl);
+  --spacing-token-3xl: var(--spacing-3xl);
+  --spacing-control-md: var(--dimension-control-md);
+  --spacing-control-lg: var(--dimension-control-lg);
+  --radius-token-md: var(--radius-md);
+  --radius-token-lg: var(--radius-lg);
+  --container-content: var(--dimension-layout-content-max);
+}
