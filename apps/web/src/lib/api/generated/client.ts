@@ -9,19 +9,34 @@ import type {
   AbortFileUploadHeaders,
   AbortFileUploadRequest,
   AbortFileUploadResponse,
+  AiResultResponse,
+  AiTaskCommandRequest,
+  AiTaskListResponse,
+  AiTaskResponse,
   ApiResponseHealthData,
   ArchiveFileHeaders,
   ArchiveProjectHeaders,
   AuthLoginRequest,
   AuthRegisterRequest,
   AuthTokenResponse,
+  CancelAiTaskHeaders,
+  ClarificationAnswerResponse,
   CompareProjectVersionsParams,
   CompleteFileUploadHeaders,
   CompleteFileUploadRequest,
+  ConfirmRequirementResponse,
+  ConfirmRequirementVersionHeaders,
+  ConfirmRequirementVersionRequest,
+  CreateAiTaskHeaders,
+  CreateAiTaskRequest,
   CreateFileRelationHeaders,
   CreateProjectHeaders,
   CreateProjectRequest,
   CreateProjectResponse,
+  CreateRequirementHeaders,
+  CreateRequirementRequest,
+  CreateRequirementVersionHeaders,
+  CreateRequirementVersionRequest,
   DeriveProjectVersionHeaders,
   DeriveProjectVersionRequest,
   DownloadFileVersionRequest,
@@ -32,11 +47,16 @@ import type {
   FileUploadInitRequest,
   FileUploadResponse,
   FileVersionListResponse,
+  FormalizeAiResultHeaders,
+  FormalizeAiResultRequest,
+  FormalizeAiResultResponse,
   InitFileUploadHeaders,
   InternalHealthResponse,
+  ListAiTasksParams,
   ListFileVersionsParams,
   ListProjectVersionsParams,
   ListProjectsParams,
+  ListRequirementsParams,
   LogoutHeaders,
   LogoutResponse,
   ProjectCommandRequest,
@@ -52,15 +72,703 @@ import type {
   PutProjectMemberRequest,
   RefreshAccessTokenHeaders,
   RefreshTokenResponse,
+  RequirementListResponse,
+  RequirementResponse,
+  RequirementVersionResponse,
   RestoreProjectHeaders,
+  RetryAiTaskHeaders,
+  RetryAiTaskRequest,
+  ReviseRequirementVersionRequest,
   SessionResponse,
+  SetClarificationModeRequest,
+  SetRequirementClarificationModeHeaders,
   SetWorkingProjectVersionHeaders,
   SetWorkingVersionRequest,
+  Sprint2Error401Response,
+  Sprint2Error403Response,
+  Sprint2Error404Response,
+  Sprint2Error409Response,
+  Sprint2Error422Response,
+  Sprint2Error429Response,
+  Sprint2Error503Response,
   StandardErrorResponse,
+  StreamAiTaskEventsHeaders,
+  SubmitClarificationAnswersRequest,
+  SubmitRequirementClarificationAnswersHeaders,
   UpdateProjectContextRequest,
   UpdateProjectRequest,
   WorkingVersionChangeResponse
 } from './models';
+
+
+// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
+type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <
+T,
+>() => T extends Y ? 1 : 2
+? A
+: B;
+
+type WritableKeys<T> = {
+[P in keyof T]-?: IfEquals<
+  { [Q in P]: T[P] },
+  { -readonly [Q in P]: T[P] },
+  P
+>;
+}[keyof T];
+
+type UnionToIntersection<U> =
+  (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
+type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
+
+type Writable<T> = Pick<T, WritableKeys<T>>;
+type NonReadonly<T> = [T] extends [UnionToIntersection<T>] ? {
+  [P in keyof Writable<T>]: T[P] extends object
+    ? NonReadonly<NonNullable<T[P]>>
+    : T[P];
+} : DistributeReadOnlyOverUnions<T>;
+
+
+export type getAiResultResponse200 = {
+  data: AiResultResponse
+  status: 200
+}
+
+export type getAiResultResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type getAiResultResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type getAiResultResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type getAiResultResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type getAiResultResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type getAiResultResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type getAiResultResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type getAiResultResponseSuccess = (getAiResultResponse200) & {
+  headers: Headers;
+};
+export type getAiResultResponseError = (getAiResultResponse401 | getAiResultResponse403 | getAiResultResponse404 | getAiResultResponse409 | getAiResultResponse422 | getAiResultResponse429 | getAiResultResponse503) & {
+  headers: Headers;
+};
+
+export type getAiResultResponse = (getAiResultResponseSuccess | getAiResultResponseError)
+
+export const getGetAiResultUrl = (resultId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/results/${resultId}`
+}
+
+export const getAiResult = async (resultId: string, options?: RequestInit): Promise<getAiResultResponse> => {
+
+  const res = await fetch(getGetAiResultUrl(resultId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getAiResultResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getAiResultResponse
+}
+
+
+
+export type formalizeAiResultResponse200 = {
+  data: FormalizeAiResultResponse
+  status: 200
+}
+
+export type formalizeAiResultResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type formalizeAiResultResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type formalizeAiResultResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type formalizeAiResultResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type formalizeAiResultResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type formalizeAiResultResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type formalizeAiResultResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type formalizeAiResultResponseSuccess = (formalizeAiResultResponse200) & {
+  headers: Headers;
+};
+export type formalizeAiResultResponseError = (formalizeAiResultResponse401 | formalizeAiResultResponse403 | formalizeAiResultResponse404 | formalizeAiResultResponse409 | formalizeAiResultResponse422 | formalizeAiResultResponse429 | formalizeAiResultResponse503) & {
+  headers: Headers;
+};
+
+export type formalizeAiResultResponse = (formalizeAiResultResponseSuccess | formalizeAiResultResponseError)
+
+export const getFormalizeAiResultUrl = (resultId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/results/${resultId}:formalize`
+}
+
+/**
+ * Ready is only a candidate. Formalization preserves old facts on failure or stale target.
+ */
+export const formalizeAiResult = async (resultId: string,
+    formalizeAiResultRequest: FormalizeAiResultRequest,
+    headers: FormalizeAiResultHeaders, options?: RequestInit): Promise<formalizeAiResultResponse> => {
+
+  const res = await fetch(getFormalizeAiResultUrl(resultId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(formalizeAiResultRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: formalizeAiResultResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as formalizeAiResultResponse
+}
+
+
+
+export type listAiTasksResponse200 = {
+  data: AiTaskListResponse
+  status: 200
+}
+
+export type listAiTasksResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type listAiTasksResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type listAiTasksResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type listAiTasksResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type listAiTasksResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type listAiTasksResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type listAiTasksResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type listAiTasksResponseSuccess = (listAiTasksResponse200) & {
+  headers: Headers;
+};
+export type listAiTasksResponseError = (listAiTasksResponse401 | listAiTasksResponse403 | listAiTasksResponse404 | listAiTasksResponse409 | listAiTasksResponse422 | listAiTasksResponse429 | listAiTasksResponse503) & {
+  headers: Headers;
+};
+
+export type listAiTasksResponse = (listAiTasksResponseSuccess | listAiTasksResponseError)
+
+export const getListAiTasksUrl = (params?: ListAiTasksParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/api/v1/ai/tasks?${stringifiedParams}` : `${apiBaseUrl}/api/v1/ai/tasks`
+}
+
+export const listAiTasks = async (params?: ListAiTasksParams, options?: RequestInit): Promise<listAiTasksResponse> => {
+
+  const res = await fetch(getListAiTasksUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listAiTasksResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listAiTasksResponse
+}
+
+
+
+export type createAiTaskResponse200 = {
+  data: AiTaskResponse
+  status: 200
+}
+
+export type createAiTaskResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type createAiTaskResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type createAiTaskResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type createAiTaskResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type createAiTaskResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type createAiTaskResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type createAiTaskResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type createAiTaskResponseSuccess = (createAiTaskResponse200) & {
+  headers: Headers;
+};
+export type createAiTaskResponseError = (createAiTaskResponse401 | createAiTaskResponse403 | createAiTaskResponse404 | createAiTaskResponse409 | createAiTaskResponse422 | createAiTaskResponse429 | createAiTaskResponse503) & {
+  headers: Headers;
+};
+
+export type createAiTaskResponse = (createAiTaskResponseSuccess | createAiTaskResponseError)
+
+export const getCreateAiTaskUrl = () => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/tasks`
+}
+
+/**
+ * Creates one traceable requirement.clarify Task; it does not call a Provider synchronously.
+ */
+export const createAiTask = async (createAiTaskRequest: CreateAiTaskRequest,
+    headers: CreateAiTaskHeaders, options?: RequestInit): Promise<createAiTaskResponse> => {
+
+  const res = await fetch(getCreateAiTaskUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(createAiTaskRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createAiTaskResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createAiTaskResponse
+}
+
+
+
+export type getAiTaskResponse200 = {
+  data: AiTaskResponse
+  status: 200
+}
+
+export type getAiTaskResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type getAiTaskResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type getAiTaskResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type getAiTaskResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type getAiTaskResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type getAiTaskResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type getAiTaskResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type getAiTaskResponseSuccess = (getAiTaskResponse200) & {
+  headers: Headers;
+};
+export type getAiTaskResponseError = (getAiTaskResponse401 | getAiTaskResponse403 | getAiTaskResponse404 | getAiTaskResponse409 | getAiTaskResponse422 | getAiTaskResponse429 | getAiTaskResponse503) & {
+  headers: Headers;
+};
+
+export type getAiTaskResponse = (getAiTaskResponseSuccess | getAiTaskResponseError)
+
+export const getGetAiTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/tasks/${taskId}`
+}
+
+export const getAiTask = async (taskId: string, options?: RequestInit): Promise<getAiTaskResponse> => {
+
+  const res = await fetch(getGetAiTaskUrl(taskId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getAiTaskResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getAiTaskResponse
+}
+
+
+
+export type streamAiTaskEventsResponse200 = {
+  data: string
+  status: 200
+}
+
+export type streamAiTaskEventsResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type streamAiTaskEventsResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type streamAiTaskEventsResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type streamAiTaskEventsResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type streamAiTaskEventsResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type streamAiTaskEventsResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type streamAiTaskEventsResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type streamAiTaskEventsResponseSuccess = (streamAiTaskEventsResponse200) & {
+  headers: Headers;
+};
+export type streamAiTaskEventsResponseError = (streamAiTaskEventsResponse401 | streamAiTaskEventsResponse403 | streamAiTaskEventsResponse404 | streamAiTaskEventsResponse409 | streamAiTaskEventsResponse422 | streamAiTaskEventsResponse429 | streamAiTaskEventsResponse503) & {
+  headers: Headers;
+};
+
+export type streamAiTaskEventsResponse = (streamAiTaskEventsResponseSuccess | streamAiTaskEventsResponseError)
+
+export const getStreamAiTaskEventsUrl = (taskId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/tasks/${taskId}/events`
+}
+
+/**
+ * SSE disconnect does not cancel the Task; clients may fall back to the Task snapshot.
+ */
+export const streamAiTaskEvents = async (taskId: string,
+    headers?: StreamAiTaskEventsHeaders, options?: RequestInit): Promise<streamAiTaskEventsResponse> => {
+
+  const res = await fetch(getStreamAiTaskEventsUrl(taskId),
+  {
+    ...options,
+    method: 'GET',
+    headers: { ...headers, ...options?.headers }
+
+  }
+)
+
+  const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: streamAiTaskEventsResponse['data'] = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
+  return { data, status: res.status, headers: res.headers } as streamAiTaskEventsResponse
+}
+
+
+
+export type cancelAiTaskResponse200 = {
+  data: AiTaskResponse
+  status: 200
+}
+
+export type cancelAiTaskResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type cancelAiTaskResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type cancelAiTaskResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type cancelAiTaskResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type cancelAiTaskResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type cancelAiTaskResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type cancelAiTaskResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type cancelAiTaskResponseSuccess = (cancelAiTaskResponse200) & {
+  headers: Headers;
+};
+export type cancelAiTaskResponseError = (cancelAiTaskResponse401 | cancelAiTaskResponse403 | cancelAiTaskResponse404 | cancelAiTaskResponse409 | cancelAiTaskResponse422 | cancelAiTaskResponse429 | cancelAiTaskResponse503) & {
+  headers: Headers;
+};
+
+export type cancelAiTaskResponse = (cancelAiTaskResponseSuccess | cancelAiTaskResponseError)
+
+export const getCancelAiTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/tasks/${taskId}:cancel`
+}
+
+export const cancelAiTask = async (taskId: string,
+    aiTaskCommandRequest: AiTaskCommandRequest,
+    headers: CancelAiTaskHeaders, options?: RequestInit): Promise<cancelAiTaskResponse> => {
+
+  const res = await fetch(getCancelAiTaskUrl(taskId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(aiTaskCommandRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: cancelAiTaskResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as cancelAiTaskResponse
+}
+
+
+
+export type retryAiTaskResponse200 = {
+  data: AiTaskResponse
+  status: 200
+}
+
+export type retryAiTaskResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type retryAiTaskResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type retryAiTaskResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type retryAiTaskResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type retryAiTaskResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type retryAiTaskResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type retryAiTaskResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type retryAiTaskResponseSuccess = (retryAiTaskResponse200) & {
+  headers: Headers;
+};
+export type retryAiTaskResponseError = (retryAiTaskResponse401 | retryAiTaskResponse403 | retryAiTaskResponse404 | retryAiTaskResponse409 | retryAiTaskResponse422 | retryAiTaskResponse429 | retryAiTaskResponse503) & {
+  headers: Headers;
+};
+
+export type retryAiTaskResponse = (retryAiTaskResponseSuccess | retryAiTaskResponseError)
+
+export const getRetryAiTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/ai/tasks/${taskId}:retry`
+}
+
+/**
+ * Creates a new Task and never overwrites a failed, cancelled or expired Task fact.
+ */
+export const retryAiTask = async (taskId: string,
+    retryAiTaskRequest: RetryAiTaskRequest,
+    headers: RetryAiTaskHeaders, options?: RequestInit): Promise<retryAiTaskResponse> => {
+
+  const res = await fetch(getRetryAiTaskUrl(taskId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(retryAiTaskRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: retryAiTaskResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as retryAiTaskResponse
+}
+
 
 
 export type loginResponse200 = {
@@ -1258,6 +1966,174 @@ export const getProjectVersion = async (versionId: string, options?: RequestInit
 
 
 
+export type listRequirementsResponse200 = {
+  data: RequirementListResponse
+  status: 200
+}
+
+export type listRequirementsResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type listRequirementsResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type listRequirementsResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type listRequirementsResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type listRequirementsResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type listRequirementsResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type listRequirementsResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type listRequirementsResponseSuccess = (listRequirementsResponse200) & {
+  headers: Headers;
+};
+export type listRequirementsResponseError = (listRequirementsResponse401 | listRequirementsResponse403 | listRequirementsResponse404 | listRequirementsResponse409 | listRequirementsResponse422 | listRequirementsResponse429 | listRequirementsResponse503) & {
+  headers: Headers;
+};
+
+export type listRequirementsResponse = (listRequirementsResponseSuccess | listRequirementsResponseError)
+
+export const getListRequirementsUrl = (versionId: string,
+    params?: ListRequirementsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/api/v1/project-versions/${versionId}/requirements?${stringifiedParams}` : `${apiBaseUrl}/api/v1/project-versions/${versionId}/requirements`
+}
+
+export const listRequirements = async (versionId: string,
+    params?: ListRequirementsParams, options?: RequestInit): Promise<listRequirementsResponse> => {
+
+  const res = await fetch(getListRequirementsUrl(versionId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listRequirementsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listRequirementsResponse
+}
+
+
+
+export type createRequirementResponse200 = {
+  data: RequirementResponse
+  status: 200
+}
+
+export type createRequirementResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type createRequirementResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type createRequirementResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type createRequirementResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type createRequirementResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type createRequirementResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type createRequirementResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type createRequirementResponseSuccess = (createRequirementResponse200) & {
+  headers: Headers;
+};
+export type createRequirementResponseError = (createRequirementResponse401 | createRequirementResponse403 | createRequirementResponse404 | createRequirementResponse409 | createRequirementResponse422 | createRequirementResponse429 | createRequirementResponse503) & {
+  headers: Headers;
+};
+
+export type createRequirementResponse = (createRequirementResponseSuccess | createRequirementResponseError)
+
+export const getCreateRequirementUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/requirements`
+}
+
+/**
+ * Persists raw_input unchanged at requirement_version.content_json.raw_input. Subsequent Requirement Versions inherit raw_input and cannot modify it.
+ */
+export const createRequirement = async (versionId: string,
+    createRequirementRequest: CreateRequirementRequest,
+    headers: CreateRequirementHeaders, options?: RequestInit): Promise<createRequirementResponse> => {
+
+  const res = await fetch(getCreateRequirementUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(createRequirementRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createRequirementResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createRequirementResponse
+}
+
+
+
 export type listProjectsResponse200 = {
   data: ProjectListResponse
   status: 200
@@ -2297,6 +3173,486 @@ export const restoreProject = async (projectId: string,
 
   const data: restoreProjectResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as restoreProjectResponse
+}
+
+
+
+export type reviseRequirementVersionResponse200 = {
+  data: RequirementVersionResponse
+  status: 200
+}
+
+export type reviseRequirementVersionResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type reviseRequirementVersionResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type reviseRequirementVersionResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type reviseRequirementVersionResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type reviseRequirementVersionResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type reviseRequirementVersionResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type reviseRequirementVersionResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type reviseRequirementVersionResponseSuccess = (reviseRequirementVersionResponse200) & {
+  headers: Headers;
+};
+export type reviseRequirementVersionResponseError = (reviseRequirementVersionResponse401 | reviseRequirementVersionResponse403 | reviseRequirementVersionResponse404 | reviseRequirementVersionResponse409 | reviseRequirementVersionResponse422 | reviseRequirementVersionResponse429 | reviseRequirementVersionResponse503) & {
+  headers: Headers;
+};
+
+export type reviseRequirementVersionResponse = (reviseRequirementVersionResponseSuccess | reviseRequirementVersionResponseError)
+
+export const getReviseRequirementVersionUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirement-versions/${versionId}`
+}
+
+/**
+ * Creates a new immutable Requirement Version and never overwrites the addressed version; raw_input is inherited and cannot be modified.
+ */
+export const reviseRequirementVersion = async (versionId: string,
+    reviseRequirementVersionRequest: NonReadonly<ReviseRequirementVersionRequest>, options?: RequestInit): Promise<reviseRequirementVersionResponse> => {
+
+  const res = await fetch(getReviseRequirementVersionUrl(versionId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(reviseRequirementVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: reviseRequirementVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as reviseRequirementVersionResponse
+}
+
+
+
+export type submitRequirementClarificationAnswersResponse200 = {
+  data: ClarificationAnswerResponse
+  status: 200
+}
+
+export type submitRequirementClarificationAnswersResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type submitRequirementClarificationAnswersResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type submitRequirementClarificationAnswersResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type submitRequirementClarificationAnswersResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type submitRequirementClarificationAnswersResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type submitRequirementClarificationAnswersResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type submitRequirementClarificationAnswersResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type submitRequirementClarificationAnswersResponseSuccess = (submitRequirementClarificationAnswersResponse200) & {
+  headers: Headers;
+};
+export type submitRequirementClarificationAnswersResponseError = (submitRequirementClarificationAnswersResponse401 | submitRequirementClarificationAnswersResponse403 | submitRequirementClarificationAnswersResponse404 | submitRequirementClarificationAnswersResponse409 | submitRequirementClarificationAnswersResponse422 | submitRequirementClarificationAnswersResponse429 | submitRequirementClarificationAnswersResponse503) & {
+  headers: Headers;
+};
+
+export type submitRequirementClarificationAnswersResponse = (submitRequirementClarificationAnswersResponseSuccess | submitRequirementClarificationAnswersResponseError)
+
+export const getSubmitRequirementClarificationAnswersUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirement-versions/${versionId}/clarification-answers`
+}
+
+/**
+ * Every answer submission creates a new immutable Requirement Version.
+ */
+export const submitRequirementClarificationAnswers = async (versionId: string,
+    submitClarificationAnswersRequest: SubmitClarificationAnswersRequest,
+    headers: SubmitRequirementClarificationAnswersHeaders, options?: RequestInit): Promise<submitRequirementClarificationAnswersResponse> => {
+
+  const res = await fetch(getSubmitRequirementClarificationAnswersUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(submitClarificationAnswersRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: submitRequirementClarificationAnswersResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as submitRequirementClarificationAnswersResponse
+}
+
+
+
+export type confirmRequirementVersionResponse200 = {
+  data: ConfirmRequirementResponse
+  status: 200
+}
+
+export type confirmRequirementVersionResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type confirmRequirementVersionResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type confirmRequirementVersionResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type confirmRequirementVersionResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type confirmRequirementVersionResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type confirmRequirementVersionResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type confirmRequirementVersionResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type confirmRequirementVersionResponseSuccess = (confirmRequirementVersionResponse200) & {
+  headers: Headers;
+};
+export type confirmRequirementVersionResponseError = (confirmRequirementVersionResponse401 | confirmRequirementVersionResponse403 | confirmRequirementVersionResponse404 | confirmRequirementVersionResponse409 | confirmRequirementVersionResponse422 | confirmRequirementVersionResponse429 | confirmRequirementVersionResponse503) & {
+  headers: Headers;
+};
+
+export type confirmRequirementVersionResponse = (confirmRequirementVersionResponseSuccess | confirmRequirementVersionResponseError)
+
+export const getConfirmRequirementVersionUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirement-versions/${versionId}:confirm`
+}
+
+export const confirmRequirementVersion = async (versionId: string,
+    confirmRequirementVersionRequest: ConfirmRequirementVersionRequest,
+    headers: ConfirmRequirementVersionHeaders, options?: RequestInit): Promise<confirmRequirementVersionResponse> => {
+
+  const res = await fetch(getConfirmRequirementVersionUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(confirmRequirementVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: confirmRequirementVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as confirmRequirementVersionResponse
+}
+
+
+
+export type setRequirementClarificationModeResponse200 = {
+  data: RequirementVersionResponse
+  status: 200
+}
+
+export type setRequirementClarificationModeResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type setRequirementClarificationModeResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type setRequirementClarificationModeResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type setRequirementClarificationModeResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type setRequirementClarificationModeResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type setRequirementClarificationModeResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type setRequirementClarificationModeResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type setRequirementClarificationModeResponseSuccess = (setRequirementClarificationModeResponse200) & {
+  headers: Headers;
+};
+export type setRequirementClarificationModeResponseError = (setRequirementClarificationModeResponse401 | setRequirementClarificationModeResponse403 | setRequirementClarificationModeResponse404 | setRequirementClarificationModeResponse409 | setRequirementClarificationModeResponse422 | setRequirementClarificationModeResponse429 | setRequirementClarificationModeResponse503) & {
+  headers: Headers;
+};
+
+export type setRequirementClarificationModeResponse = (setRequirementClarificationModeResponseSuccess | setRequirementClarificationModeResponseError)
+
+export const getSetRequirementClarificationModeUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirement-versions/${versionId}:set-clarification-mode`
+}
+
+export const setRequirementClarificationMode = async (versionId: string,
+    setClarificationModeRequest: SetClarificationModeRequest,
+    headers: SetRequirementClarificationModeHeaders, options?: RequestInit): Promise<setRequirementClarificationModeResponse> => {
+
+  const res = await fetch(getSetRequirementClarificationModeUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(setClarificationModeRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: setRequirementClarificationModeResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as setRequirementClarificationModeResponse
+}
+
+
+
+export type getRequirementResponse200 = {
+  data: RequirementResponse
+  status: 200
+}
+
+export type getRequirementResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type getRequirementResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type getRequirementResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type getRequirementResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type getRequirementResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type getRequirementResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type getRequirementResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type getRequirementResponseSuccess = (getRequirementResponse200) & {
+  headers: Headers;
+};
+export type getRequirementResponseError = (getRequirementResponse401 | getRequirementResponse403 | getRequirementResponse404 | getRequirementResponse409 | getRequirementResponse422 | getRequirementResponse429 | getRequirementResponse503) & {
+  headers: Headers;
+};
+
+export type getRequirementResponse = (getRequirementResponseSuccess | getRequirementResponseError)
+
+export const getGetRequirementUrl = (requirementId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirements/${requirementId}`
+}
+
+export const getRequirement = async (requirementId: string, options?: RequestInit): Promise<getRequirementResponse> => {
+
+  const res = await fetch(getGetRequirementUrl(requirementId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getRequirementResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getRequirementResponse
+}
+
+
+
+export type createRequirementVersionResponse200 = {
+  data: RequirementVersionResponse
+  status: 200
+}
+
+export type createRequirementVersionResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type createRequirementVersionResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type createRequirementVersionResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type createRequirementVersionResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type createRequirementVersionResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type createRequirementVersionResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type createRequirementVersionResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type createRequirementVersionResponseSuccess = (createRequirementVersionResponse200) & {
+  headers: Headers;
+};
+export type createRequirementVersionResponseError = (createRequirementVersionResponse401 | createRequirementVersionResponse403 | createRequirementVersionResponse404 | createRequirementVersionResponse409 | createRequirementVersionResponse422 | createRequirementVersionResponse429 | createRequirementVersionResponse503) & {
+  headers: Headers;
+};
+
+export type createRequirementVersionResponse = (createRequirementVersionResponseSuccess | createRequirementVersionResponseError)
+
+export const getCreateRequirementVersionUrl = (requirementId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/requirements/${requirementId}/versions`
+}
+
+/**
+ * Creates a new immutable Requirement Version and preserves every prior fact; raw_input is inherited and cannot be modified.
+ */
+export const createRequirementVersion = async (requirementId: string,
+    createRequirementVersionRequest: NonReadonly<CreateRequirementVersionRequest>,
+    headers: CreateRequirementVersionHeaders, options?: RequestInit): Promise<createRequirementVersionResponse> => {
+
+  const res = await fetch(getCreateRequirementVersionUrl(requirementId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(createRequirementVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createRequirementVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createRequirementVersionResponse
 }
 
 
