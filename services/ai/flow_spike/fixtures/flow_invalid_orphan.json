@@ -1,0 +1,19 @@
+{
+  "fixture_id": "FLOW-FIX-003",
+  "title": "孤立节点失败样本",
+  "source_version": "fixture-v1",
+  "nodes": [
+    {"id": "start", "type": "start", "label": "开始"},
+    {"id": "end", "type": "end", "label": "结束"},
+    {"id": "orphan", "type": "action", "label": "孤立动作"}
+  ],
+  "edges": [
+    {"from": "start", "to": "end"}
+  ],
+  "expected": {
+    "reachable_nodes": 2,
+    "decision_nodes": 0,
+    "terminal_nodes": 1,
+    "logic_errors": ["orphan_node:orphan"]
+  }
+}

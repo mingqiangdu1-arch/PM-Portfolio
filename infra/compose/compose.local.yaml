@@ -1,0 +1,27 @@
+services:
+  api:
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+  web:
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+  mysql:
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+    networks:
+      data: {}
+      gate_access: {}
+  redis:
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    networks:
+      data: {}
+      gate_access: {}
+  minio:
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+
+networks:
+  gate_access:
+    internal: false

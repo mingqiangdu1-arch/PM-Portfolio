@@ -1,0 +1,233 @@
+{
+  "fixture_status": "valid",
+  "task": {
+    "schema_version": "0.2.0",
+    "task_public_id": "task-m2-standard-1",
+    "user_id": "7",
+    "project_id": "11",
+    "project_version_id": "13",
+    "module": "product_design",
+    "task_type": "requirement.clarify",
+    "target": {"object_type": "requirement", "object_id": "17", "object_version_id": "19"},
+    "target_snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_ref_ids": ["requirement-version:19"],
+    "capability_selection": null,
+    "risk_acceptances": [{"risk_id": "risk-1", "impact": "medium", "accepted": true}],
+    "command_id": "command-m2-1",
+    "trace_id": "trace-m2-1",
+    "requested_at": "2026-08-08T15:00:00Z",
+    "input": {"mode": "standard", "round_no": 1, "continue_deep_confirmed": false},
+    "status": "queued"
+  },
+  "results": [
+    {
+      "schema_version": "0.2.0",
+      "task_public_id": "task-m2-assessment-1",
+      "task_type": "requirement.clarify",
+      "target_snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mode": "auto",
+      "round_no": 0,
+      "result_kind": "assessment",
+      "status": "ready",
+      "dimensions": {
+        "goal": {"status": "complete", "reasons": ["目标明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "users_and_roles": {"status": "partial", "reasons": ["角色边界不完整"], "missing_items": ["确认审批角色"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "usage_scenarios": {"status": "complete", "reasons": ["主场景明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "functional_scope": {"status": "complete", "reasons": ["范围明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "business_rules": {"status": "partial", "reasons": ["结束条件待确认"], "missing_items": ["确认人工结束条件"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "exception_cases": {"status": "missing", "reasons": ["未描述异常"], "missing_items": ["补充AI不可用路径"], "source_refs": []},
+        "permission_requirements": {"status": "partial", "reasons": ["只定义了owner"], "missing_items": ["确认只读成员范围"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "acceptance_criteria": {"status": "missing", "reasons": ["无可观察标准"], "missing_items": ["补充验收条件"], "source_refs": []}
+      },
+      "assessment": {
+        "dimension_completeness": {
+          "goal": {"status": "complete", "reasons": ["目标明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "users_and_roles": {"status": "partial", "reasons": ["角色边界不完整"], "missing_items": ["确认审批角色"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "usage_scenarios": {"status": "complete", "reasons": ["主场景明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "functional_scope": {"status": "complete", "reasons": ["范围明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "business_rules": {"status": "partial", "reasons": ["结束条件待确认"], "missing_items": ["确认人工结束条件"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "exception_cases": {"status": "missing", "reasons": ["未描述异常"], "missing_items": ["补充AI不可用路径"], "source_refs": []},
+          "permission_requirements": {"status": "partial", "reasons": ["只定义了owner"], "missing_items": ["确认只读成员范围"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+          "acceptance_criteria": {"status": "missing", "reasons": ["无可观察标准"], "missing_items": ["补充验收条件"], "source_refs": []}
+        },
+        "complexity_band": "medium",
+        "reasons": ["存在三个高价值信息缺口"],
+        "recommended_mode": "standard",
+        "missing_items": ["异常路径", "验收条件", "角色边界"],
+        "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]
+      },
+      "questions": [],
+      "baseline": null,
+      "convergence": {"should_finish": false, "finish_reason": null, "next_round_no": 1},
+      "quality": {"format_status": "passed", "traceability_status": "passed", "safety_status": "passed", "major_error": false, "blocker_codes": [], "required_items_total": 8, "required_items_met": 5}
+    },
+    {
+      "schema_version": "0.2.0",
+      "task_public_id": "task-m2-standard-1",
+      "task_type": "requirement.clarify",
+      "target_snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mode": "standard",
+      "round_no": 1,
+      "result_kind": "questions",
+      "status": "ready",
+      "dimensions": {
+        "goal": {"status": "complete", "reasons": ["目标明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "users_and_roles": {"status": "partial", "reasons": ["角色边界不完整"], "missing_items": ["审批角色"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "usage_scenarios": {"status": "complete", "reasons": ["场景明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "functional_scope": {"status": "complete", "reasons": ["范围明确"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "business_rules": {"status": "partial", "reasons": ["规则不完整"], "missing_items": ["结束规则"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "exception_cases": {"status": "missing", "reasons": ["异常未描述"], "missing_items": ["AI不可用"], "source_refs": []},
+        "permission_requirements": {"status": "partial", "reasons": ["权限不完整"], "missing_items": ["只读成员"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        "acceptance_criteria": {"status": "missing", "reasons": ["标准未描述"], "missing_items": ["验收条件"], "source_refs": []}
+      },
+      "assessment": null,
+      "questions": [
+        {"question_id": "q-1", "dimension": "exception_cases", "question_text": "AI不可用时如何继续确认？", "reason": "人工降级路径未明确", "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]},
+        {"question_id": "q-2", "dimension": "acceptance_criteria", "question_text": "哪些可观察条件表示可以确认？", "reason": "验收标准缺失", "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]}
+      ],
+      "baseline": null,
+      "convergence": {"should_finish": false, "finish_reason": null, "next_round_no": 2},
+      "quality": {"format_status": "passed", "traceability_status": "passed", "safety_status": "passed", "major_error": false, "blocker_codes": [], "required_items_total": 2, "required_items_met": 2}
+    },
+    {
+      "schema_version": "0.2.0",
+      "task_public_id": "task-m2-standard-3",
+      "task_type": "requirement.clarify",
+      "target_snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "mode": "standard",
+      "round_no": 3,
+      "result_kind": "baseline",
+      "status": "ready",
+      "dimensions": {
+        "goal": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "users_and_roles": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "usage_scenarios": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "functional_scope": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "business_rules": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "exception_cases": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "permission_requirements": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]},
+        "acceptance_criteria": {"status": "complete", "reasons": ["已确认"], "missing_items": [], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}]}
+      },
+      "assessment": null,
+      "questions": [],
+      "baseline": {
+        "dimensions": {
+          "goal": {"confirmed_facts": ["形成可确认需求基线"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "users_and_roles": {"confirmed_facts": ["owner负责澄清和确认"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "usage_scenarios": {"confirmed_facts": ["手工输入后进行澄清"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "functional_scope": {"confirmed_facts": ["覆盖八类预检与基线"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "business_rules": {"confirmed_facts": ["standard最多三轮"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "exception_cases": {"confirmed_facts": ["AI不可用时走人工路径"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "permission_requirements": {"confirmed_facts": ["仅owner可正式化"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []},
+          "acceptance_criteria": {"confirmed_facts": ["八类均存在且可追溯"], "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "23", "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "label": "Requirement Version 23"}], "deferred_items": [], "not_applicable_items": []}
+        },
+        "assumptions": ["外部依赖暂按当前可用性评估"],
+        "unresolved_items": ["后续确认跨服务工件哈希"]
+      },
+      "convergence": {"should_finish": true, "finish_reason": "round_limit", "next_round_no": null},
+      "quality": {"format_status": "passed", "traceability_status": "passed", "safety_status": "passed", "major_error": false, "blocker_codes": [], "required_items_total": 8, "required_items_met": 8}
+    }
+  ],
+  "requirement_content": {
+    "raw_input": "用户原始输入：需要在 AI 不可用时保留人工编辑、回答与确认路径。\n原文中的换行、标点与大小写必须无损保留。",
+    "raw_input_ref": {
+      "source_type": "requirement_version",
+      "source_id": "17",
+      "source_version_id": "19",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "label": "Requirement Version 19"
+    },
+    "clarification": {
+      "mode": "standard",
+      "assessment": {
+        "assessment_version": "assessment-v1",
+        "dimensions": {
+          "goal": {"status": "complete", "missing_items": [], "source_refs": []},
+          "users_and_roles": {"status": "partial", "missing_items": ["确认审批角色"], "source_refs": []},
+          "usage_scenarios": {"status": "complete", "missing_items": [], "source_refs": []},
+          "functional_scope": {"status": "complete", "missing_items": [], "source_refs": []},
+          "business_rules": {"status": "partial", "missing_items": ["确认人工结束条件"], "source_refs": []},
+          "exception_cases": {"status": "missing", "missing_items": ["补充AI不可用路径"], "source_refs": []},
+          "permission_requirements": {"status": "partial", "missing_items": ["确认只读成员范围"], "source_refs": []},
+          "acceptance_criteria": {"status": "missing", "missing_items": ["补充验收条件"], "source_refs": []}
+        },
+        "complexity_band": "medium",
+        "complexity_reason": "存在三个高价值信息缺口",
+        "recommended_mode": "standard",
+        "missing_dimensions": ["exception_cases", "acceptance_criteria"],
+        "source_refs": [
+          {
+            "source_type": "requirement_version",
+            "source_id": "17",
+            "source_version_id": "19",
+            "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "label": "Requirement Version 19"
+          }
+        ],
+        "ai_result_id": "result-m2-assessment-1"
+      },
+      "assessment_ref": {"object_type": "ai_result", "object_id": "result-assessment-1", "object_version_id": null},
+      "assessment_summary": "八类预检后按 standard 澄清。",
+      "rounds": [
+        {
+          "round_no": 1,
+          "ai_task_id": "task-m2-standard-1",
+          "ai_result_id": "result-m2-standard-1",
+          "questions": [
+            {
+              "question_id": "q-1",
+              "dimension": "exception_cases",
+              "question_text": "AI不可用时如何继续确认？",
+              "reason": "人工降级路径未明确",
+              "source_refs": [
+                {
+                  "source_type": "requirement_version",
+                  "source_id": "17",
+                  "source_version_id": "19",
+                  "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "label": "Requirement Version 19"
+                }
+              ]
+            }
+          ],
+          "answers": [{"question_id": "q-1", "answer": "保留人工编辑、回答与确认路径。"}]
+        }
+      ],
+      "finish_reason": "round_limit"
+    },
+    "baseline": {
+      "dimensions": {
+        "goal": {"confirmed_facts": ["形成可确认需求基线"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "users_and_roles": {"confirmed_facts": ["owner负责澄清和确认"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "usage_scenarios": {"confirmed_facts": ["手工输入后进行澄清"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "functional_scope": {"confirmed_facts": ["覆盖八类预检与基线"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "business_rules": {"confirmed_facts": ["standard最多三轮"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "exception_cases": {"confirmed_facts": ["AI不可用时走人工路径"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "permission_requirements": {"confirmed_facts": ["仅owner可正式化"], "source_refs": [], "deferred_items": [], "not_applicable_items": []},
+        "acceptance_criteria": {"confirmed_facts": ["八类均存在且可追溯"], "source_refs": [], "deferred_items": [], "not_applicable_items": []}
+      },
+      "assumptions": ["外部依赖暂按当前可用性评估"],
+      "unresolved_items": ["后续确认跨服务工件哈希"]
+    }
+  },
+  "context_snapshot": {
+    "schema_version": "0.2.0",
+    "snapshot_id": "context-m2-1",
+    "task_public_id": "task-m2-standard-1",
+    "target_snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sources": [
+      {"source_id": "requirement-version:19", "source_version_id": "19", "source_type": "requirement_version", "content_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "was_injected": true, "exclusion_reason": null, "token_count": 240},
+      {"source_id": "file-version:31", "source_version_id": "31", "source_type": "file_version", "content_fingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "was_injected": false, "exclusion_reason": "not_selected", "token_count": 0}
+    ],
+    "injections": [{"source_id": "requirement-version:19", "injection_order": 1, "token_count": 240, "content_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}],
+    "exclusions": [{"source_id": "file-version:31", "reason": "not_selected"}],
+    "context_fingerprint": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "token_count": 240
+  },
+  "requirement_events": [
+    {"schema_version": "0.2.0", "event_id": "11111111-1111-4111-8111-111111111111", "event_name": "requirement.clarification.assessed", "occurred_at": "2026-08-08T15:01:00Z", "producer": "Business API", "module": "product_design", "result_status": "success", "source_type": "server", "privacy_class": "internal_id", "user_id": "7", "project_id": "11", "project_version_id": "13", "object_type": "requirement", "object_id": "17", "object_version_id": "19", "trace_id": "trace-m2-a", "command_id": "command-m2-a", "payload_json": {"assessment_version": "result-1", "complexity_band": "medium", "recommended_mode": "standard", "missing_dimensions": ["exception_cases", "acceptance_criteria"]}},
+    {"schema_version": "0.2.0", "event_id": "22222222-2222-4222-8222-222222222222", "event_name": "requirement.clarification.mode_selected", "occurred_at": "2026-08-08T15:02:00Z", "producer": "Business API", "module": "product_design", "result_status": "success", "source_type": "server", "privacy_class": "internal_id", "user_id": "7", "project_id": "11", "project_version_id": "13", "object_type": "requirement", "object_id": "17", "object_version_id": "20", "trace_id": "trace-m2-b", "command_id": "command-m2-b", "payload_json": {"selected_mode": "standard", "recommended_mode": "standard", "is_override": false, "reason_code": null}},
+    {"schema_version": "0.2.0", "event_id": "33333333-3333-4333-8333-333333333333", "event_name": "requirement.clarification.round_completed", "occurred_at": "2026-08-08T15:03:00Z", "producer": "Business API", "module": "product_design", "result_status": "success", "source_type": "server", "privacy_class": "internal_id", "user_id": "7", "project_id": "11", "project_version_id": "13", "object_type": "requirement", "object_id": "17", "object_version_id": "21", "trace_id": "trace-m2-c", "command_id": "command-m2-c", "payload_json": {"round_no": 1, "question_count": 2, "answered_count": 2, "remaining_rounds": 2}},
+    {"schema_version": "0.2.0", "event_id": "44444444-4444-4444-8444-444444444444", "event_name": "requirement.clarification.finished", "occurred_at": "2026-08-08T15:04:00Z", "producer": "Business API", "module": "product_design", "result_status": "success", "source_type": "server", "privacy_class": "internal_id", "user_id": "7", "project_id": "11", "project_version_id": "13", "object_type": "requirement", "object_id": "17", "object_version_id": "23", "trace_id": "trace-m2-d", "command_id": "command-m2-d", "payload_json": {"finish_reason": "round_limit", "round_count": 3, "unresolved_count": 1, "baseline_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}
+  ]
+}

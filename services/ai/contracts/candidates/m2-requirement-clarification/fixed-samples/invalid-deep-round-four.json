@@ -1,0 +1,12 @@
+{
+  "fixture_status": "invalid",
+  "schema": "requirement-clarify-task-envelope.schema.json",
+  "valid_pointer": "/task",
+  "mutations": [
+    {"path": "/input/mode", "value": "deep"},
+    {"path": "/input/round_no", "value": 4},
+    {"path": "/input/continue_deep_confirmed", "value": false}
+  ],
+  "expected_validator": "const",
+  "expected_path": "/input/continue_deep_confirmed"
+}

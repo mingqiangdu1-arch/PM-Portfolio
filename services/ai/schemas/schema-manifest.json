@@ -1,0 +1,60 @@
+{
+  "candidate_version": "0.1.3",
+  "current_schema_version": "0.2.0",
+  "status": "ready_for_review",
+  "runtime_integration_status": "passed",
+  "current_runtime_status": "formal_mock_preserved_contract_review_required",
+  "previous_r2_bundle_sha256_audit_only": "ce70eda604ced1291f838ccb880d041a164b51c2aac586520681cbf856f88c5d",
+  "previous_r3_bundle_sha256_audit_only": "479102227d77d6e93d3d091e2012fb68f437748fec2f47cafe55c08071c74d39",
+  "implementation_candidate_bundle_sha256": "feaf27e63ffc45e18b10ab3db0332531d2fb410a7ac207c9af15387378ca10d6",
+  "implementation_candidate_bundle_algorithm": "sha256 of UTF-8 LF-terminated sorted basename=sha256(file_bytes) rows for schema_versions[0.2.0] files",
+  "historical_manifest_sha256": {
+    "0.1.3": "1685211f2e6e63d272f826d996b131cb04c7b364c3be5d20396550db4153c4ff"
+  },
+  "draft": "https://json-schema.org/draft/2020-12/schema",
+  "owners": ["ai-data"],
+  "schemas": [
+    "v0.1/ai-task.schema.json",
+    "v0.1/ai-call.schema.json",
+    "v0.1/ai-context-usage.schema.json",
+    "v0.1/ai-result.schema.json",
+    "v0.1/operation-audit.schema.json",
+    "v0.1/event-envelope.schema.json",
+    "v0.1/sprint1-business-event.schema.json",
+    "v0.1/ai-outbox-event.schema.json",
+    "v0.1/event-compensation.schema.json",
+    "v0.2/requirement-clarify-task-envelope.schema.json",
+    "v0.2/requirement-clarify-result-content.schema.json",
+    "v0.2/context-snapshot-0.2.schema.json",
+    "v0.2/requirement-content.schema.json",
+    "v0.2/requirement-business-event-0.2.schema.json"
+  ],
+  "schema_versions": {
+    "0.1.3": [
+      "v0.1/ai-task.schema.json",
+      "v0.1/ai-call.schema.json",
+      "v0.1/ai-context-usage.schema.json",
+      "v0.1/ai-result.schema.json",
+      "v0.1/operation-audit.schema.json",
+      "v0.1/event-envelope.schema.json",
+      "v0.1/sprint1-business-event.schema.json",
+      "v0.1/ai-outbox-event.schema.json",
+      "v0.1/event-compensation.schema.json"
+    ],
+    "0.2.0": [
+      "v0.2/requirement-clarify-task-envelope.schema.json",
+      "v0.2/requirement-clarify-result-content.schema.json",
+      "v0.2/context-snapshot-0.2.schema.json",
+      "v0.2/requirement-content.schema.json",
+      "v0.2/requirement-business-event-0.2.schema.json"
+    ]
+  },
+  "notes": [
+    "Candidate only; it does not supersede the confirmed Markdown contracts.",
+    "0.1.3 keeps operation_audit_log.object_type required and non-null while allowing nullable object IDs, matching the formal data dictionary.",
+    "Backend consumer and Review approved the 0.1.3 contract/schema/event integration for Sprint 1; real MySQL 8.4.8 and MinIO runtime gates passed while persistence remains disabled pending an explicit enablement decision.",
+    "DATA-101 Identity event names are Review-accepted; operation_audit_log remains separate and has no behavior-event projection.",
+    "The R2 and R3 candidate hashes remain audit-only; the R4 formal Schema bundle candidate is awaiting Review.",
+    "candidate_version remains the legacy 0.1.3 compatibility field; current_schema_version is authoritative for the promoted bundle."
+  ]
+}

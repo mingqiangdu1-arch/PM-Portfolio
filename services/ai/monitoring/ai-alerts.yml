@@ -1,0 +1,31 @@
+groups:
+  - name: ai-foundation
+    rules:
+      - alert: AIQueueRejectingNewTasks
+        expr: ai_queue_accepting == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: AI queue is rejecting new tasks
+          runbook: Verify Redis connectivity; do not accept tasks that cannot be durably recorded.
+      - alert: AIProviderFailureRateHigh
+        expr: >-
+          sum(rate(ai_calls_total{outcome="failed"}[10m]))
+          /
+          clamp_min(sum(rate(ai_calls_total[10m])), 1)
+          > 0.20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI provider failure rate exceeds 20 percent
+          runbook: Inspect stable error classes and trace IDs; never log credentials or full context.
+      - alert: AIEventQualityFailures
+        expr: increase(ai_event_quality_failures_total[15m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: AI event quality failures require compensation review
+          runbook: Classify duplicate, missing, association, or delivery failure and preserve the original event.

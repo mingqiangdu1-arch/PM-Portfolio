@@ -1,0 +1,72 @@
+{
+  "base_catalog": "schema_catalog.json",
+  "status": "review-required-candidate",
+  "revision": "20260729_0004",
+  "tables": {
+    "ai_task": {
+      "revision": "20260729_0002",
+      "add": {
+        "target_snapshot_hash": {"type": "CHAR(64)", "charset": "ascii", "collation": "ascii_bin", "nullable": true},
+        "command_id": {"type": "VARCHAR(64)", "charset": "ascii", "collation": "ascii_bin", "nullable": true}
+      },
+      "indexes": [{"name": "idx_ai_task_command_id", "columns": ["command_id"], "unique": false}]
+    },
+    "ai_call": {
+      "revision": "20260729_0002",
+      "add": {
+        "capability_fingerprint": {"type": "CHAR(64)", "charset": "ascii", "collation": "ascii_bin", "nullable": true},
+        "cost_source": {"type": "VARCHAR(32)", "nullable": true},
+        "pricing_version": {"type": "VARCHAR(32)", "nullable": true},
+        "provider_error_class": {"type": "VARCHAR(64)", "charset": "ascii", "collation": "ascii_bin", "nullable": true}
+      },
+      "indexes": [{"name": "idx_ai_call_provider_error_class", "columns": ["provider_error_class", "started_at", "id"], "unique": false}],
+      "checks": ["ck_ai_call_cost_source", "ck_ai_call_calculated_pricing"]
+    },
+    "user_session": {
+      "alter": {
+        "revoked_at": {
+          "type": "DATETIME(6)",
+          "nullable": true
+        }
+      },
+      "add": {
+        "token_family_id": {
+          "type": "CHAR(36)",
+          "charset": "ascii",
+          "collation": "ascii_bin",
+          "nullable": false,
+          "backfill": "session_public_id"
+        },
+        "rotated_at": {
+          "type": "DATETIME(6)",
+          "nullable": true
+        },
+        "replaced_by_session_id": {
+          "type": "BIGINT UNSIGNED",
+          "nullable": true,
+          "foreign_key": "user_session.id"
+        }
+      },
+      "indexes": [
+        {
+          "name": "uk_user_session_replaced_by",
+          "columns": ["replaced_by_session_id"],
+          "unique": true
+        },
+        {
+          "name": "idx_session_family_state",
+          "columns": ["token_family_id", "revoked_at", "expires_at", "id"],
+          "unique": false
+        }
+      ]
+    },
+    "file_version": {
+      "revision": "20260729_0004",
+      "add": {
+        "storage_version_id": {"type": "VARCHAR(255)", "nullable": true, "new_available_write_required": true}
+      },
+      "indexes": [{"name": "idx_file_storage_version", "columns": ["storage_version_id"], "unique": false}],
+      "downgrade": "reject_if_populated"
+    }
+  }
+}

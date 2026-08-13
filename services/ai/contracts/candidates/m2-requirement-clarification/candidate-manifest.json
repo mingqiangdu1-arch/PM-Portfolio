@@ -1,0 +1,75 @@
+{
+  "candidate_version": "0.2.0-proposed",
+  "schema_identity": "0.2.0",
+  "status": "ready_for_review",
+  "effective": false,
+  "runtime_authorized": false,
+  "formal_schema_history_preserved": "0.1.3",
+  "task_type": "requirement.clarify",
+  "structured_source_ref_fields": ["source_type", "source_id", "source_version_id", "content_hash", "label"],
+  "task_source_ref_ids_remain_strings": true,
+  "previous_r2_bundle_sha256_audit_only": "ce70eda604ced1291f838ccb880d041a164b51c2aac586520681cbf856f88c5d",
+  "requirement_content_public_shape": {
+    "raw_input_required": true,
+    "raw_input_and_ref_read_only": true,
+    "raw_input_ref": "SourceRef",
+    "assessment": "ClarificationAssessment|null",
+    "assessment_required_fields": [
+      "assessment_version", "dimensions", "complexity_band", "complexity_reason",
+      "recommended_mode", "missing_dimensions", "source_refs", "ai_result_id"
+    ],
+    "assessment_dimension_fields": ["status", "missing_items", "source_refs"],
+    "clarification_rounds": "ClarificationRound[]",
+    "round_question_answer_items": {"minimum": 1, "maximum": 3}
+  },
+  "artifacts": [
+    "candidate-manifest.json",
+    "requirement-clarify-task-envelope.schema.json",
+    "requirement-clarify-result-content.schema.json",
+    "context-snapshot-0.2.schema.json",
+    "requirement-content.schema.json",
+    "requirement-business-event-0.2.schema.json",
+    "contract-mapping.md",
+    "freeze-request.md",
+    "fixed-samples/valid.json",
+    "fixed-samples/invalid-deep-round-four.json",
+    "fixed-samples/invalid-four-questions.json",
+    "fixed-samples/invalid-baseline-dimension-key.json",
+    "fixed-samples/invalid-context-source-version-omitted.json",
+    "fixed-samples/invalid-event-ingested-at.json",
+    "test_candidate_contracts.py"
+  ],
+  "dimension_keys": [
+    "goal", "users_and_roles", "usage_scenarios", "functional_scope",
+    "business_rules", "exception_cases", "permission_requirements", "acceptance_criteria"
+  ],
+  "modes": ["auto", "standard", "deep", "skip"],
+  "round_limits": {"standard": 3, "deep": 5},
+  "deep_rounds_requiring_confirmation": [4, 5],
+  "questions_per_round": {"minimum": 1, "maximum": 3},
+  "task_statuses": [
+    "prechecking", "blocked", "queued", "preparing", "generating", "checking",
+    "ready", "partial_result", "quality_blocked", "cancel_requested", "cancelled",
+    "failed", "expired", "stale_target"
+  ],
+  "result_statuses": ["ready", "partial_result", "quality_blocked", "failed", "expired", "stale_target"],
+  "result_kinds": ["assessment", "questions", "baseline"],
+  "adoption_mapping": {
+    "adopt": "adopted",
+    "modified_adopt": "adopted_after_edit",
+    "reject": "rejected"
+  },
+  "derived_when_no_adoption_record": "not_reviewed",
+  "modification_intensities": ["none", "minor", "major"],
+  "requirement_event_producer": "Business API",
+  "ai_runtime_event_producer": "AI Service",
+  "ready_is_candidate_only": true,
+  "prohibitions": [
+    "not m2_contracts_frozen",
+    "no runtime or Provider implementation",
+    "no formal schema or manifest change",
+    "no database migration",
+    "no persistence adapter or Flow enablement",
+    "no Stage, Commit, Push, Merge or Rebase"
+  ]
+}

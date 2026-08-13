@@ -1,0 +1,178 @@
+name: ${COMPOSE_PROJECT_NAME:-ai-product-design-validation}
+
+services:
+  api:
+    image: ${API_IMAGE:-ai-product-design-validation-api:0.1.0-dev}
+    build:
+      context: ../../services/api
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_NAME: ${APP_NAME:-ai-product-design-validation-api}
+      APP_RELEASE: ${APP_RELEASE:-0.1.0-dev}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL_FILE: /run/secrets/database_url
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      OBJECT_STORAGE_ACCESS_KEY_FILE: /run/secrets/object_storage_access_key
+      OBJECT_STORAGE_SECRET_KEY_FILE: /run/secrets/object_storage_secret_key
+      ACCESS_JWT_SECRET_FILE: /run/secrets/access_jwt_secret
+      UPLOAD_SIGNING_SECRET_FILE: /run/secrets/upload_signing_secret
+      INTERNAL_SERVICE_JWT_SECRET_FILE: /run/secrets/internal_service_jwt_secret
+      OBJECT_STORAGE_ENDPOINT: http://minio:9000
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-ai-product-design-validation-api}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+    secrets:
+      - database_url
+      - redis_password
+      - object_storage_access_key
+      - object_storage_secret_key
+      - access_jwt_secret
+      - upload_signing_secret
+      - internal_service_jwt_secret
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks: [application, data]
+
+  web:
+    image: ${WEB_IMAGE:-ai-product-design-validation-web:0.1.0-dev}
+    profiles: [full-stack]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [application]
+
+  ai-api:
+    image: ${AI_IMAGE:-ai-product-design-validation-ai:0.1.0-dev}
+    profiles: [full-stack]
+    command: ["python", "-m", "app.api"]
+    secrets:
+      - database_url
+      - redis_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [application, data]
+
+  ai-worker:
+    image: ${AI_IMAGE:-ai-product-design-validation-ai:0.1.0-dev}
+    profiles: [full-stack]
+    command: ["python", "-m", "app.worker"]
+    secrets:
+      - database_url
+      - redis_password
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [data]
+
+  mysql:
+    image: mysql:8.4.8
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ai_product_design_validation}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_app_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+      - --transaction-isolation=READ-COMMITTED
+    secrets:
+      - mysql_app_password
+      - mysql_root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot --password=$$(cat /run/secrets/mysql_root_password) --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+    networks: [data]
+
+  redis:
+    image: redis:7.4.2-alpine
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$(cat /run/secrets/redis_password)\""]
+    secrets:
+      - redis_password
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$(cat /run/secrets/redis_password)\" ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    networks: [data]
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        export MINIO_ROOT_USER="$$(cat /run/secrets/object_storage_access_key)";
+        export MINIO_ROOT_PASSWORD="$$(cat /run/secrets/object_storage_secret_key)";
+        exec minio server /data --console-address :9001
+    secrets:
+      - object_storage_access_key
+      - object_storage_secret_key
+    volumes:
+      - object_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [data]
+
+networks:
+  application: {}
+  data:
+    internal: true
+
+volumes:
+  mysql_data: {}
+  redis_data: {}
+  object_data: {}
+
+secrets:
+  database_url:
+    file: ${DATABASE_URL_SECRET_FILE:-./secrets/database_url.txt}
+  mysql_app_password:
+    file: ${MYSQL_APP_PASSWORD_SECRET_FILE:-./secrets/mysql_app_password.txt}
+  mysql_root_password:
+    file: ${MYSQL_ROOT_PASSWORD_SECRET_FILE:-./secrets/mysql_root_password.txt}
+  redis_password:
+    file: ${REDIS_PASSWORD_SECRET_FILE:-./secrets/redis_password.txt}
+  object_storage_access_key:
+    file: ${OBJECT_STORAGE_ACCESS_KEY_SECRET_FILE:-./secrets/object_storage_access_key.txt}
+  object_storage_secret_key:
+    file: ${OBJECT_STORAGE_SECRET_KEY_SECRET_FILE:-./secrets/object_storage_secret_key.txt}
+  access_jwt_secret:
+    file: ${ACCESS_JWT_SECRET_FILE_SOURCE:-./secrets/access_jwt_secret.txt}
+  upload_signing_secret:
+    file: ${UPLOAD_SIGNING_SECRET_FILE_SOURCE:-./secrets/upload_signing_secret.txt}
+  internal_service_jwt_secret:
+    file: ${INTERNAL_SERVICE_JWT_SECRET_FILE_SOURCE:-./secrets/internal_service_jwt_secret.txt}

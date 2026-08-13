@@ -1,0 +1,10 @@
+{
+  "fixture_status": "invalid",
+  "schema": "context-snapshot-0.2.schema.json",
+  "valid_pointer": "/context_snapshot",
+  "mutations": [
+    {"path": "/sources/0/source_version_id", "operation": "remove"}
+  ],
+  "expected_validator": "required",
+  "expected_path": "/sources/0"
+}

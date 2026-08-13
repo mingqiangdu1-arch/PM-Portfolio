@@ -1,0 +1,36 @@
+{
+  "task_id": "AI-003",
+  "rubric_version": "0.1.0",
+  "evaluated_at": "2026-07-29T16:06:53+08:00",
+  "status": "failed_closed",
+  "score": 25,
+  "flow_enabled": false,
+  "reason": "Fixed JSON samples and their logic expectations passed, but human Review, editable draw.io, exports, full trace, and conversion failure recovery evidence are absent.",
+  "checks": {
+    "fixed_samples": true,
+    "text_review": false,
+    "mermaid_review": false,
+    "drawio_editable": false,
+    "derived_exports": false,
+    "logic_validation": true,
+    "version_trace": false,
+    "failure_recovery": false
+  },
+  "fixture_results": [
+    {
+      "fixture_id": "FLOW-FIX-001",
+      "sha256": "a6d6ca3c217c0d33c5d719cbd1341529b75d2b8622dc9b5e355bd3cffea353e1",
+      "passed": true
+    },
+    {
+      "fixture_id": "FLOW-FIX-002",
+      "sha256": "de3e5cea6ae3dd5528c5b2bee340df5dd0c51fdff2de7787d1e7f8a25c3b040a",
+      "passed": true
+    },
+    {
+      "fixture_id": "FLOW-FIX-003",
+      "sha256": "e63ebac66e211991e383e2224daef6ea51e7c1193303e0270d005357d63d0050",
+      "passed": true
+    }
+  ]
+}

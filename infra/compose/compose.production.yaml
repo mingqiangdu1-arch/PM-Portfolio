@@ -1,0 +1,42 @@
+services:
+  api:
+    environment:
+      APP_ENV: production
+      DOCS_ENABLED: "false"
+    deploy:
+      replicas: 3
+      update_config:
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+  mysql:
+    ports: []
+  redis:
+    ports: []
+  minio:
+    ports: []
+
+secrets:
+  database_url:
+    external: true
+  mysql_app_password:
+    external: true
+  mysql_root_password:
+    external: true
+  redis_password:
+    external: true
+  object_storage_access_key:
+    external: true
+  object_storage_secret_key:
+    external: true
+  access_jwt_secret:
+    external: true
+  upload_signing_secret:
+    external: true
+  internal_service_jwt_secret:
+    external: true

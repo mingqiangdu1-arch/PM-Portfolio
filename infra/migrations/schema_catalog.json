@@ -1,0 +1,7978 @@
+{
+  "catalog_version": "2026-07-29.candidate.1",
+  "review_required": [
+    "ai-data",
+    "review"
+  ],
+  "source": "数据埋点与数据库设计/数据字典.md",
+  "tables": [
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "email",
+          "nullable": false,
+          "type": "VARCHAR(254)"
+        },
+        {
+          "generated": null,
+          "name": "password_hash",
+          "nullable": false,
+          "type": "VARCHAR(255)"
+        },
+        {
+          "generated": null,
+          "name": "display_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "system_role",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "last_login_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "email"
+          ],
+          "name": "uk_user_email",
+          "unique": true
+        }
+      ],
+      "name": "user_account"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "refresh_token_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "session_public_id",
+          "nullable": false,
+          "type": "CHAR(36)"
+        },
+        {
+          "generated": null,
+          "name": "issued_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "revoked_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "revoke_reason",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "user_id",
+            "expires_at"
+          ],
+          "name": "idx_session_user_expiry",
+          "unique": false
+        },
+        {
+          "columns": [
+            "session_public_id"
+          ],
+          "name": "uk_session_public_id",
+          "unique": true
+        },
+        {
+          "columns": [
+            "refresh_token_hash"
+          ],
+          "name": "uk_refresh_hash",
+          "unique": true
+        }
+      ],
+      "name": "user_session"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "role_code",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_id",
+            "user_id",
+            "role_code"
+          ],
+          "name": "uk_project_user_role",
+          "unique": true
+        }
+      ],
+      "name": "project_member"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "owner_user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "last_module",
+          "nullable": true,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "owner_user_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_project_owner_status",
+          "unique": false
+        }
+      ],
+      "name": "project"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "parent_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "version_name",
+          "nullable": true,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "creation_reason",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "lifecycle_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "workflow_node",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_working",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_working = 1 THEN project_id END",
+          "name": "current_project_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_id",
+            "version_no"
+          ],
+          "name": "uk_project_version_no",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_project_key"
+          ],
+          "name": "uk_project_one_working",
+          "unique": true
+        },
+        {
+          "columns": [
+            "project_id",
+            "parent_version_id"
+          ],
+          "name": "idx_project_version_lineage",
+          "unique": false
+        }
+      ],
+      "name": "project_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "background",
+          "nullable": true,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "business_goal",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "target_user",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "core_module_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "key_constraint",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "decision_summary",
+          "nullable": true,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "history_summary",
+          "nullable": true,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_id"
+          ],
+          "name": "uk_project_context",
+          "unique": true
+        }
+      ],
+      "name": "project_context"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "from_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "to_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_issue_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "change_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "change_reason",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "inheritance_summary_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "trace_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "to_version_id"
+          ],
+          "name": "uk_version_change_to",
+          "unique": true
+        },
+        {
+          "columns": [
+            "from_version_id",
+            "created_at"
+          ],
+          "name": "idx_version_change_source",
+          "unique": false
+        }
+      ],
+      "name": "version_change_record"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "owner_user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "logical_name",
+          "nullable": false,
+          "type": "VARCHAR(255)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_file_project_status",
+          "unique": false
+        }
+      ],
+      "name": "stored_file"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "stored_file_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "object_key",
+          "nullable": false,
+          "type": "VARCHAR(768)"
+        },
+        {
+          "generated": null,
+          "name": "mime_type",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "extension",
+          "nullable": true,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "size_bytes",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "checksum_sha256",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "storage_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "change_note",
+          "nullable": true,
+          "type": "TEXT"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "stored_file_id",
+            "version_no"
+          ],
+          "name": "uk_file_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "object_key"
+          ],
+          "name": "uk_file_object_key",
+          "unique": true
+        },
+        {
+          "columns": [
+            "checksum_sha256"
+          ],
+          "name": "idx_file_checksum",
+          "unique": false
+        }
+      ],
+      "name": "file_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "object_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "relation_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "file_version_id",
+            "object_type",
+            "object_id",
+            "object_version_id",
+            "relation_type"
+          ],
+          "name": "uk_file_relation",
+          "unique": true
+        },
+        {
+          "columns": [
+            "object_type",
+            "object_id",
+            "object_version_id"
+          ],
+          "name": "idx_relation_object",
+          "unique": false
+        }
+      ],
+      "name": "file_relation"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "parse_attempt_no",
+          "nullable": false,
+          "type": "SMALLINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "parser_name",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "parser_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "ai_call_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "result_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_summary",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "failure_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "started_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "finished_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "file_version_id",
+            "parse_attempt_no"
+          ],
+          "name": "uk_file_parse_attempt",
+          "unique": true
+        },
+        {
+          "columns": [
+            "status",
+            "finished_at"
+          ],
+          "name": "idx_parse_status",
+          "unique": false
+        }
+      ],
+      "name": "file_parse_result"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "priority",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_requirement_version_status",
+          "unique": false
+        }
+      ],
+      "name": "requirement"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "requirement_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_format",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "confirmation_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "unresolved_count",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "risk_acceptance_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "created_from_ai_result_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "is_effective",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_effective = 1 THEN requirement_id END",
+          "name": "effective_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "requirement_id",
+            "version_no"
+          ],
+          "name": "uk_requirement_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "effective_owner_key"
+          ],
+          "name": "uk_requirement_effective",
+          "unique": true
+        }
+      ],
+      "name": "requirement_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "prd_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "is_main",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_main = 1 THEN project_version_id END",
+          "name": "main_prd_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "main_prd_key"
+          ],
+          "name": "uk_version_one_main_prd",
+          "unique": true
+        },
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_prd_version_status",
+          "unique": false
+        }
+      ],
+      "name": "prd"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "prd_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_format",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "rendered_summary",
+          "nullable": true,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "change_note",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "created_from_ai_result_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "is_effective",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_effective = 1 THEN prd_id END",
+          "name": "effective_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "prd_id",
+            "version_no"
+          ],
+          "name": "uk_prd_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "effective_owner_key"
+          ],
+          "name": "uk_prd_effective",
+          "unique": true
+        }
+      ],
+      "name": "prd_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "prd_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "supersedes_decision_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decision_no",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decision",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reason_code",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "reason_text",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "suggested_by",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "decided_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decided_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN prd_id END",
+          "name": "current_prd_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "prd_id",
+            "decision_no"
+          ],
+          "name": "uk_flow_decision_no",
+          "unique": true
+        },
+        {
+          "columns": [
+            "supersedes_decision_id"
+          ],
+          "name": "uk_flow_decision_successor",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_prd_key"
+          ],
+          "name": "uk_flow_one_current",
+          "unique": true
+        }
+      ],
+      "name": "flow_decision"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "prd_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "parent_flow_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_prd_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_location",
+          "nullable": true,
+          "type": "VARCHAR(255)"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "flow_scope",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "flow_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "prd_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_flow_prd_status",
+          "unique": false
+        },
+        {
+          "columns": [
+            "parent_flow_id"
+          ],
+          "name": "idx_flow_parent",
+          "unique": false
+        }
+      ],
+      "name": "flow"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "flow_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "text_flow",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "mermaid_source",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "drawio_file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "validation_rule_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "validation_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "validation_result_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "change_scope",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "created_from_ai_result_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "is_effective",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_effective = 1 THEN flow_id END",
+          "name": "effective_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "flow_id",
+            "version_no"
+          ],
+          "name": "uk_flow_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "effective_owner_key"
+          ],
+          "name": "uk_flow_effective",
+          "unique": true
+        }
+      ],
+      "name": "flow_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "flow_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "export_format",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "exporter_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "source_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "flow_version_id",
+            "export_format",
+            "source_hash"
+          ],
+          "name": "uk_flow_export",
+          "unique": true
+        }
+      ],
+      "name": "flow_export"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "round_no",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "summary",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "submitted_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "passed_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "submitted_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "passed_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_version_id",
+            "round_no"
+          ],
+          "name": "uk_review_round",
+          "unique": true
+        },
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_review_status",
+          "unique": false
+        }
+      ],
+      "name": "design_review"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "design_review_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "object_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "design_review_id",
+            "object_type",
+            "object_id",
+            "object_version_id"
+          ],
+          "name": "uk_review_scope",
+          "unique": true
+        }
+      ],
+      "name": "design_review_scope"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "design_review_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "scope_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "category",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "severity",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "is_blocking",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "location_ref",
+          "nullable": true,
+          "type": "VARCHAR(255)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "suggestion",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "design_review_id",
+            "status",
+            "is_blocking",
+            "id"
+          ],
+          "name": "idx_feedback_review_status",
+          "unique": false
+        }
+      ],
+      "name": "review_feedback"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "review_feedback_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sequence_no",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "disposition",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reason",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "resulting_object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decided_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decided_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "review_feedback_id",
+            "sequence_no"
+          ],
+          "name": "uk_feedback_disposition",
+          "unique": true
+        }
+      ],
+      "name": "review_feedback_disposition"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_plan_version_status",
+          "unique": false
+        }
+      ],
+      "name": "implementation_plan"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "implementation_plan_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "review_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "content_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "change_note",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "created_from_ai_result_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "is_effective",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_effective = 1 THEN implementation_plan_id END",
+          "name": "effective_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "implementation_plan_id",
+            "version_no"
+          ],
+          "name": "uk_plan_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "effective_owner_key"
+          ],
+          "name": "uk_plan_effective",
+          "unique": true
+        }
+      ],
+      "name": "implementation_plan_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "implementation_plan_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "plan_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "round_no",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "confirm_status",
+          "nullable": true,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "is_effective",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_effective = 1 THEN implementation_plan_id END",
+          "name": "effective_plan_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmed_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmed_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "superseded_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "implementation_plan_id",
+            "round_no"
+          ],
+          "name": "uk_confirmation_round",
+          "unique": true
+        },
+        {
+          "columns": [
+            "effective_plan_key"
+          ],
+          "name": "uk_plan_one_effective_round",
+          "unique": true
+        }
+      ],
+      "name": "confirmation_round"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmation_round_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "material_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": true,
+          "type": "TEXT"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "confirmation_round_id",
+            "file_version_id",
+            "material_type"
+          ],
+          "name": "uk_confirmation_material",
+          "unique": true
+        }
+      ],
+      "name": "confirmation_material"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmation_round_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "item_key",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "difference_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "design_content",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "actual_content",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "reason",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "impact",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "severity",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "is_blocking",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "disposition",
+          "nullable": true,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "confirmation_round_id",
+            "item_key"
+          ],
+          "name": "uk_difference_item",
+          "unique": true
+        },
+        {
+          "columns": [
+            "confirmation_round_id",
+            "is_blocking",
+            "severity"
+          ],
+          "name": "idx_difference_blocking",
+          "unique": false
+        }
+      ],
+      "name": "difference_record"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmation_round_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "rule_set_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "check_key",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "result",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "evidence_ref",
+          "nullable": true,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "failure_reason",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "checked_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "confirmation_round_id",
+            "rule_set_version",
+            "check_key"
+          ],
+          "name": "uk_readiness_check",
+          "unique": true
+        }
+      ],
+      "name": "readiness_check_result"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "confirmation_round_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "supersedes_test_record_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "test_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "scope",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "environment_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "steps_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "expected_result",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "actual_result",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "result_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "no_issue_conclusion",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "tester_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "submitted_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "supersedes_test_record_id"
+          ],
+          "name": "uk_test_successor",
+          "unique": true
+        },
+        {
+          "columns": [
+            "confirmation_round_id",
+            "submitted_at",
+            "id"
+          ],
+          "name": "idx_test_round_time",
+          "unique": false
+        }
+      ],
+      "name": "test_record"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "test_record_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "file_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "evidence_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": true,
+          "type": "TEXT"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "test_record_id",
+            "file_version_id",
+            "evidence_type"
+          ],
+          "name": "uk_test_evidence",
+          "unique": true
+        }
+      ],
+      "name": "test_evidence"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "test_record_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "issue_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "priority",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "severity",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "assignee_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "priority",
+            "created_at",
+            "id"
+          ],
+          "name": "idx_issue_version_status",
+          "unique": false
+        },
+        {
+          "columns": [
+            "test_record_id",
+            "id"
+          ],
+          "name": "idx_issue_test",
+          "unique": false
+        }
+      ],
+      "name": "issue"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "issue_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "reproduce_steps",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "expected_result",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "actual_result",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "environment_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "fix_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "fixed_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "issue_id"
+          ],
+          "name": "uk_bug_issue",
+          "unique": true
+        }
+      ],
+      "name": "bug_detail"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "issue_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "problem_evidence",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "hypothesis",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "expected_outcome",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "impact_scope",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "need_new_version",
+          "nullable": false,
+          "type": "BOOLEAN"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "issue_id"
+          ],
+          "name": "uk_optimization_issue",
+          "unique": true
+        }
+      ],
+      "name": "optimization_detail"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "issue_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sequence_no",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "disposition_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reason",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "target_project_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "responsible_user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decided_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "decided_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "issue_id",
+            "sequence_no"
+          ],
+          "name": "uk_issue_disposition",
+          "unique": true
+        },
+        {
+          "columns": [
+            "target_project_version_id"
+          ],
+          "name": "idx_disposition_target",
+          "unique": false
+        }
+      ],
+      "name": "issue_disposition"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "provider_code",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "model_code",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "display_name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "capability_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "provider_code",
+            "model_code"
+          ],
+          "name": "uk_model_catalog",
+          "unique": true
+        }
+      ],
+      "name": "model_catalog"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "provider_code",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "profile_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "base_url",
+          "nullable": false,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "secret_ref",
+          "nullable": false,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "runtime_config_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "config_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "user_id",
+            "profile_name",
+            "config_version"
+          ],
+          "name": "uk_provider_profile",
+          "unique": true
+        }
+      ],
+      "name": "provider_profile"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "skill_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "source_ref",
+          "nullable": true,
+          "type": "VARCHAR(768)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "name"
+          ],
+          "name": "uk_skill_name",
+          "unique": true
+        }
+      ],
+      "name": "skill"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "skill_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "input_schema_ref",
+          "nullable": true,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "output_schema_ref",
+          "nullable": true,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "rule_text",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN skill_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "skill_id",
+            "version_no"
+          ],
+          "name": "uk_skill_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_skill_current",
+          "unique": true
+        }
+      ],
+      "name": "skill_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "skill_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "skill_version_id",
+            "name"
+          ],
+          "name": "uk_prompt_name",
+          "unique": true
+        }
+      ],
+      "name": "prompt"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "prompt_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "system_prompt",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "user_template",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "variables_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN prompt_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "prompt_id",
+            "version_no"
+          ],
+          "name": "uk_prompt_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_prompt_current",
+          "unique": true
+        }
+      ],
+      "name": "prompt_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "template_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "name",
+            "template_type"
+          ],
+          "name": "uk_template_name",
+          "unique": true
+        }
+      ],
+      "name": "template"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "template_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_format",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "variables_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN template_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "template_id",
+            "version_no"
+          ],
+          "name": "uk_template_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_template_current",
+          "unique": true
+        }
+      ],
+      "name": "template_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "task_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "name",
+            "task_type"
+          ],
+          "name": "uk_context_strategy_name",
+          "unique": true
+        }
+      ],
+      "name": "context_strategy"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "context_strategy_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "skill_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "required_context_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "optional_context_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "limit_config_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "compression_policy_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN context_strategy_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "context_strategy_id",
+            "version_no"
+          ],
+          "name": "uk_context_strategy_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_context_strategy_current",
+          "unique": true
+        }
+      ],
+      "name": "context_strategy_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "task_public_id",
+          "nullable": false,
+          "type": "CHAR(36)"
+        },
+        {
+          "generated": null,
+          "name": "retry_of_task_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "module",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "task_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "target_object_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "target_object_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "target_object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "queued_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "started_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "finished_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "failure_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "trace_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "task_public_id"
+          ],
+          "name": "uk_ai_task_public",
+          "unique": true
+        },
+        {
+          "columns": [
+            "project_version_id",
+            "status",
+            "created_at",
+            "id"
+          ],
+          "name": "idx_ai_task_project",
+          "unique": false
+        },
+        {
+          "columns": [
+            "trace_id"
+          ],
+          "name": "idx_ai_task_trace",
+          "unique": false
+        }
+      ],
+      "name": "ai_task"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_task_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sequence_no",
+          "nullable": false,
+          "type": "SMALLINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "provider_profile_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "model_catalog_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "skill_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "prompt_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "context_strategy_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "template_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "runtime_config_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "retry_reason",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "started_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "finished_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "input_tokens",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "output_tokens",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "billed_tokens",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "estimated_cost",
+          "nullable": true,
+          "type": "DECIMAL(18,6)"
+        },
+        {
+          "generated": null,
+          "name": "currency_code",
+          "nullable": true,
+          "type": "CHAR(3)"
+        },
+        {
+          "generated": null,
+          "name": "provider_request_id",
+          "nullable": true,
+          "type": "VARCHAR(255)"
+        },
+        {
+          "generated": null,
+          "name": "failure_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "ai_task_id",
+            "sequence_no"
+          ],
+          "name": "uk_ai_call_sequence",
+          "unique": true
+        },
+        {
+          "columns": [
+            "provider_profile_id",
+            "status",
+            "started_at",
+            "id"
+          ],
+          "name": "idx_ai_call_provider",
+          "unique": false
+        }
+      ],
+      "name": "ai_call"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_call_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sequence_no",
+          "nullable": false,
+          "type": "SMALLINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "source_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retrieval_method",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "candidate_rank",
+          "nullable": true,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "relevance_score",
+          "nullable": true,
+          "type": "DECIMAL(10,6)"
+        },
+        {
+          "generated": null,
+          "name": "was_injected",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "exclusion_reason",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "content_fingerprint",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "content_summary",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "token_count",
+          "nullable": true,
+          "type": "INT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "ai_call_id",
+            "sequence_no"
+          ],
+          "name": "uk_ai_context_sequence",
+          "unique": true
+        },
+        {
+          "columns": [
+            "source_type",
+            "source_id",
+            "source_version_id"
+          ],
+          "name": "idx_context_source",
+          "unique": false
+        }
+      ],
+      "name": "ai_context_usage"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_call_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "result_no",
+          "nullable": false,
+          "type": "SMALLINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "target_snapshot_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "content_ref",
+          "nullable": true,
+          "type": "VARCHAR(768)"
+        },
+        {
+          "generated": null,
+          "name": "content_summary",
+          "nullable": true,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "content_fingerprint",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "format_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "required_items_total",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "required_items_met",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "traceability_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "safety_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "major_error",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "ai_call_id",
+            "result_no"
+          ],
+          "name": "uk_ai_result",
+          "unique": true
+        },
+        {
+          "columns": [
+            "status",
+            "created_at",
+            "id"
+          ],
+          "name": "idx_result_status",
+          "unique": false
+        }
+      ],
+      "name": "ai_result"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_result_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "evaluation_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "evaluator_user_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "rule_engine_version",
+          "nullable": true,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "rubric_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "dimension_scores_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "major_error_labels_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "passed",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "notes",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "evaluated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "ai_result_id",
+            "evaluation_type",
+            "evaluated_at",
+            "id"
+          ],
+          "name": "idx_evaluation_result_type",
+          "unique": false
+        }
+      ],
+      "name": "ai_evaluation"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_result_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "supersedes_adoption_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "adoption_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "modification_intensity",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reason_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "reason_text",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "formal_object_type",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "formal_object_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "formal_object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "reviewed_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "reviewed_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": "CASE WHEN supersedes_adoption_id IS NULL THEN ai_result_id END",
+          "name": "initial_result_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "supersedes_adoption_id"
+          ],
+          "name": "uk_adoption_successor",
+          "unique": true
+        },
+        {
+          "columns": [
+            "initial_result_key"
+          ],
+          "name": "uk_adoption_initial",
+          "unique": true
+        },
+        {
+          "columns": [
+            "ai_result_id",
+            "reviewed_at",
+            "id"
+          ],
+          "name": "idx_adoption_result_time",
+          "unique": false
+        }
+      ],
+      "name": "ai_adoption"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "event_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "event_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "schema_version",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ingested_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "session_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "module",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "object_type",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "object_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "ai_task_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "ai_call_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "result_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "failure_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "trace_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "command_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "correlation_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "causation_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "product_release",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "client_version",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "ai_capability_versions_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "privacy_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "payload_json",
+          "nullable": false,
+          "type": "JSON"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": "uk_behavior_event_id",
+          "unique": true
+        },
+        {
+          "columns": [
+            "event_name",
+            "occurred_at",
+            "id"
+          ],
+          "name": "idx_event_name_time",
+          "unique": false
+        },
+        {
+          "columns": [
+            "project_version_id",
+            "occurred_at",
+            "id"
+          ],
+          "name": "idx_event_project_time",
+          "unique": false
+        },
+        {
+          "columns": [
+            "ai_task_id",
+            "occurred_at",
+            "id"
+          ],
+          "name": "idx_event_ai_time",
+          "unique": false
+        }
+      ],
+      "name": "behavior_event"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "event_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "event_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "schema_version",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "payload_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "publish_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "attempt_count",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "next_attempt_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "published_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": "uk_business_outbox_event",
+          "unique": true
+        },
+        {
+          "columns": [
+            "publish_status",
+            "next_attempt_at",
+            "id"
+          ],
+          "name": "idx_business_outbox_publish",
+          "unique": false
+        }
+      ],
+      "name": "business_event_outbox"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "event_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "event_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "schema_version",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "payload_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "publish_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "attempt_count",
+          "nullable": false,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "next_attempt_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "published_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "event_id"
+          ],
+          "name": "uk_ai_outbox_event",
+          "unique": true
+        },
+        {
+          "columns": [
+            "publish_status",
+            "next_attempt_at",
+            "id"
+          ],
+          "name": "idx_ai_outbox_publish",
+          "unique": false
+        }
+      ],
+      "name": "ai_event_outbox"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "original_event_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "compensation_event_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "compensation_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reason",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "replacement_payload",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "approved_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "compensation_event_id"
+          ],
+          "name": "uk_compensation_event",
+          "unique": true
+        },
+        {
+          "columns": [
+            "original_event_id",
+            "created_at"
+          ],
+          "name": "idx_compensation_original",
+          "unique": false
+        }
+      ],
+      "name": "event_compensation"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "event_id",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "producer",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "event_name",
+          "nullable": true,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "schema_version",
+          "nullable": true,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "rejection_code",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "field_errors",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "payload_fingerprint",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "rejected_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "rejection_code",
+            "rejected_at",
+            "id"
+          ],
+          "name": "idx_rejection_time",
+          "unique": false
+        }
+      ],
+      "name": "event_ingest_rejection"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "actor_user_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "actor_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "operation_name",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "object_type",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "object_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "object_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "result_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "failure_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "reason_summary",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "trace_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "command_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "metadata_json",
+          "nullable": true,
+          "type": "JSON"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "object_type",
+            "object_id",
+            "occurred_at",
+            "id"
+          ],
+          "name": "idx_audit_object",
+          "unique": false
+        },
+        {
+          "columns": [
+            "actor_user_id",
+            "occurred_at",
+            "id"
+          ],
+          "name": "idx_audit_actor",
+          "unique": false
+        },
+        {
+          "columns": [
+            "trace_id"
+          ],
+          "name": "idx_audit_trace",
+          "unique": false
+        }
+      ],
+      "name": "operation_audit_log"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "endpoint_key",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "idempotency_key",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "request_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "response_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "response_ref",
+          "nullable": true,
+          "type": "VARCHAR(512)"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "user_id",
+            "endpoint_key",
+            "idempotency_key"
+          ],
+          "name": "uk_idempotency",
+          "unique": true
+        },
+        {
+          "columns": [
+            "expires_at",
+            "id"
+          ],
+          "name": "idx_idempotency_expiry",
+          "unique": false
+        }
+      ],
+      "name": "idempotency_record"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "policy_code",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "data_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "table_name",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "expiry_field",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "retention_days",
+          "nullable": true,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "purge_method",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "legal_hold_enabled",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "approval_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "policy_code",
+            "table_name"
+          ],
+          "name": "uk_retention_policy",
+          "unique": true
+        }
+      ],
+      "name": "retention_policy"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "metric_id",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "metric_version",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "category",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "grain",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "formula_text",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "source_lineage_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "filter_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "owner_role",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "effective_from",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "effective_to",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "metric_id",
+            "metric_version"
+          ],
+          "name": "uk_metric_definition",
+          "unique": true
+        }
+      ],
+      "name": "metric_definition"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "metric_definition_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "window_start",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "window_end",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "dimension_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": "SHA2(CAST(dimension_json AS CHAR), 256)",
+          "name": "dimension_hash",
+          "nullable": true,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "numerator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "denominator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "metric_value",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "sample_size",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "quality_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "filter_snapshot_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "calculated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "metric_definition_id",
+            "window_start",
+            "window_end",
+            "dimension_hash"
+          ],
+          "name": "uk_metric_snapshot",
+          "unique": true
+        }
+      ],
+      "name": "metric_snapshot"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "rule_set_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "window_start",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "window_end",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "records_scanned",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "started_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "finished_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "window_start",
+            "window_end",
+            "status"
+          ],
+          "name": "idx_dq_run_time",
+          "unique": false
+        }
+      ],
+      "name": "data_quality_run"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "data_quality_run_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "rule_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "severity",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "affected_event_name",
+          "nullable": true,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "affected_metric_id",
+          "nullable": true,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "affected_count",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sample_refs_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "resolved_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "affected_metric_id",
+            "status",
+            "severity",
+            "id"
+          ],
+          "name": "idx_dq_issue_metric",
+          "unique": false
+        }
+      ],
+      "name": "data_quality_issue"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "optimization_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "source_issue_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "problem_statement",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "hypothesis",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "change_objects_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "baseline_start",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "baseline_end",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "observation_start",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "observation_end",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "minimum_sample",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "minimum_improvement",
+          "nullable": true,
+          "type": "DECIMAL(10,6)"
+        },
+        {
+          "generated": null,
+          "name": "conclusion",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "quality_status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "owner_user_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "review_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "optimization_id"
+          ],
+          "name": "uk_optimization_id",
+          "unique": true
+        }
+      ],
+      "name": "optimization_evaluation"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "optimization_evaluation_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "metric_id",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "metric_version",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "metric_role",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "before_numerator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "before_denominator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "before_value",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "after_numerator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "after_denominator",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "after_value",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "absolute_change",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "relative_change",
+          "nullable": true,
+          "type": "DECIMAL(20,6)"
+        },
+        {
+          "generated": null,
+          "name": "sample_size_before",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "sample_size_after",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "guardrail_breached",
+          "nullable": false,
+          "type": "BOOLEAN"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "optimization_evaluation_id",
+            "metric_id",
+            "metric_version",
+            "metric_role"
+          ],
+          "name": "uk_optimization_metric",
+          "unique": true
+        }
+      ],
+      "name": "optimization_metric_result"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_issue_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_ai_call_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "summary",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "evidence_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "reuse_value",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "confidence_score",
+          "nullable": true,
+          "type": "DECIMAL(5,4)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "reviewed_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "reviewed_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "status",
+            "created_at",
+            "id"
+          ],
+          "name": "idx_candidate_status",
+          "unique": false
+        }
+      ],
+      "name": "experience_candidate"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "category",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "category",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_experience_category",
+          "unique": false
+        }
+      ],
+      "name": "experience"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "experience_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_candidate_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "problem",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "analysis",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "solution",
+          "nullable": false,
+          "type": "MEDIUMTEXT"
+        },
+        {
+          "generated": null,
+          "name": "applicable_scope",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "exclusion_scope",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "evidence_strength",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN experience_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "experience_id",
+            "version_no"
+          ],
+          "name": "uk_experience_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_experience_current",
+          "unique": true
+        }
+      ],
+      "name": "experience_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "experience_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "project_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "relation_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "experience_id",
+            "project_id",
+            "relation_type"
+          ],
+          "name": "uk_experience_project",
+          "unique": true
+        }
+      ],
+      "name": "experience_project_relation"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "name",
+          "nullable": false,
+          "type": "VARCHAR(160)"
+        },
+        {
+          "generated": null,
+          "name": "category",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "description",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "name",
+            "category"
+          ],
+          "name": "uk_scenario_name",
+          "unique": true
+        }
+      ],
+      "name": "scenario"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "scenario_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "title",
+          "nullable": false,
+          "type": "VARCHAR(200)"
+        },
+        {
+          "generated": null,
+          "name": "source_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "current_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "scenario_id",
+            "status",
+            "updated_at",
+            "id"
+          ],
+          "name": "idx_checklist_scenario",
+          "unique": false
+        }
+      ],
+      "name": "checklist"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "checklist_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "source_experience_version_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "version_no",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "stage",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "module",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "check_content",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "check_rule",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "applicable_scope_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "tags_json",
+          "nullable": true,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "is_current",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": "CASE WHEN is_current = 1 THEN checklist_id END",
+          "name": "current_owner_key",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "checklist_id",
+            "version_no"
+          ],
+          "name": "uk_checklist_version",
+          "unique": true
+        },
+        {
+          "columns": [
+            "current_owner_key"
+          ],
+          "name": "uk_checklist_current",
+          "unique": true
+        }
+      ],
+      "name": "checklist_version"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_class",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "expires_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ai_task_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "ai_call_id",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "asset_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "asset_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "asset_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retrieved",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "candidate_rank",
+          "nullable": true,
+          "type": "INT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "relevance_score",
+          "nullable": true,
+          "type": "DECIMAL(10,6)"
+        },
+        {
+          "generated": null,
+          "name": "injected",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "cited",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "adopted",
+          "nullable": true,
+          "type": "BOOLEAN"
+        },
+        {
+          "generated": null,
+          "name": "exclusion_reason",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "used_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "ai_task_id",
+            "asset_type",
+            "injected",
+            "id"
+          ],
+          "name": "idx_knowledge_task",
+          "unique": false
+        },
+        {
+          "columns": [
+            "asset_type",
+            "asset_version_id",
+            "used_at",
+            "id"
+          ],
+          "name": "idx_knowledge_asset",
+          "unique": false
+        }
+      ],
+      "name": "knowledge_usage"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "asset_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "asset_version_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "qdrant_collection",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "qdrant_point_id",
+          "nullable": false,
+          "type": "VARCHAR(128)"
+        },
+        {
+          "generated": null,
+          "name": "index_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "source_hash",
+          "nullable": false,
+          "type": "CHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "indexed_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "last_error_code",
+          "nullable": true,
+          "type": "VARCHAR(64)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "asset_type",
+            "asset_version_id",
+            "index_version"
+          ],
+          "name": "uk_knowledge_index",
+          "unique": true
+        },
+        {
+          "columns": [
+            "qdrant_collection",
+            "qdrant_point_id"
+          ],
+          "name": "uk_qdrant_point",
+          "unique": true
+        }
+      ],
+      "name": "knowledge_index_record"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "updated_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "row_version",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "archived_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "archived_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "experiment_key",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "hypothesis",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "generated": null,
+          "name": "target_cohort_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "primary_metric_id",
+          "nullable": false,
+          "type": "VARCHAR(16)"
+        },
+        {
+          "generated": null,
+          "name": "driver_metric_ids_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "guardrail_metric_ids_json",
+          "nullable": false,
+          "type": "JSON"
+        },
+        {
+          "generated": null,
+          "name": "assignment_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "starts_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "ends_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "experiment_key"
+          ],
+          "name": "uk_experiment_key",
+          "unique": true
+        }
+      ],
+      "name": "experiment_definition"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "experiment_definition_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "subject_type",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "subject_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "variant",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "hash_version",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "assigned_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "experiment_definition_id",
+            "subject_type",
+            "subject_id"
+          ],
+          "name": "uk_experiment_subject",
+          "unique": true
+        }
+      ],
+      "name": "experiment_assignment"
+    },
+    {
+      "fields": [
+        {
+          "generated": null,
+          "name": "id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "created_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "created_by",
+          "nullable": true,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "retention_policy_id",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "target_table",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "cutoff_at",
+          "nullable": false,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "scanned_count",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "deleted_count",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "held_count",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "approved_by",
+          "nullable": false,
+          "type": "BIGINT UNSIGNED"
+        },
+        {
+          "generated": null,
+          "name": "status",
+          "nullable": false,
+          "type": "VARCHAR(32)"
+        },
+        {
+          "generated": null,
+          "name": "trace_id",
+          "nullable": false,
+          "type": "VARCHAR(64)"
+        },
+        {
+          "generated": null,
+          "name": "started_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        },
+        {
+          "generated": null,
+          "name": "finished_at",
+          "nullable": true,
+          "type": "DATETIME(6)"
+        }
+      ],
+      "indexes": [],
+      "name": "data_purge_run"
+    }
+  ]
+}

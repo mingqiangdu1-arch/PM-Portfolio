@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-platform:candidate:requirement-business-event:0.2.0",
+  "title": "Requirement Clarification Business Event Candidate 0.2.0",
+  "$comment": "Business API emits these success events only after the corresponding transaction fact commits. Producer envelopes exclude the consumer storage field ingested_at.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "event_name", "occurred_at", "producer", "module", "result_status", "source_type", "privacy_class", "user_id", "project_id", "project_version_id", "object_type", "object_id", "object_version_id", "trace_id", "command_id", "payload_json"],
+  "properties": {
+    "schema_version": {"const": "0.2.0"},
+    "event_id": {"type": "string", "format": "uuid"},
+    "event_name": {"enum": ["requirement.clarification.assessed", "requirement.clarification.mode_selected", "requirement.clarification.round_completed", "requirement.clarification.finished"]},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "producer": {"const": "Business API"},
+    "module": {"const": "product_design"},
+    "result_status": {"const": "success"},
+    "source_type": {"const": "server"},
+    "privacy_class": {"enum": ["internal_id", "pseudonymous", "confidential", "restricted"]},
+    "user_id": {"$ref": "#/$defs/id"},
+    "project_id": {"$ref": "#/$defs/id"},
+    "project_version_id": {"$ref": "#/$defs/id"},
+    "object_type": {"const": "requirement"},
+    "object_id": {"$ref": "#/$defs/id"},
+    "object_version_id": {"$ref": "#/$defs/id"},
+    "trace_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "command_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "payload_json": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"event_name": {"const": "requirement.clarification.assessed"}}, "required": ["event_name"]},
+      "then": {"properties": {"payload_json": {"type": "object", "additionalProperties": false, "required": ["assessment_version", "complexity_band", "recommended_mode", "missing_dimensions"], "properties": {"assessment_version": {"type": "string", "minLength": 1, "maxLength": 64}, "complexity_band": {"$ref": "#/$defs/complexity"}, "recommended_mode": {"$ref": "#/$defs/mode"}, "missing_dimensions": {"$ref": "#/$defs/dimension_keys"}}}}}
+    },
+    {
+      "if": {"properties": {"event_name": {"const": "requirement.clarification.mode_selected"}}, "required": ["event_name"]},
+      "then": {"properties": {"payload_json": {"type": "object", "additionalProperties": false, "required": ["selected_mode", "recommended_mode", "is_override", "reason_code"], "properties": {"selected_mode": {"$ref": "#/$defs/mode"}, "recommended_mode": {"$ref": "#/$defs/mode"}, "is_override": {"type": "boolean"}, "reason_code": {"type": ["string", "null"], "maxLength": 64}}}}}
+    },
+    {
+      "if": {"properties": {"event_name": {"const": "requirement.clarification.round_completed"}}, "required": ["event_name"]},
+      "then": {"properties": {"payload_json": {"type": "object", "additionalProperties": false, "required": ["round_no", "question_count", "answered_count", "remaining_rounds"], "properties": {"round_no": {"type": "integer", "minimum": 1, "maximum": 5}, "question_count": {"type": "integer", "minimum": 1, "maximum": 3}, "answered_count": {"type": "integer", "minimum": 0, "maximum": 3}, "remaining_rounds": {"type": "integer", "minimum": 0, "maximum": 4}}}}}
+    },
+    {
+      "if": {"properties": {"event_name": {"const": "requirement.clarification.finished"}}, "required": ["event_name"]},
+      "then": {"properties": {"payload_json": {"type": "object", "additionalProperties": false, "required": ["finish_reason", "round_count", "unresolved_count", "baseline_hash"], "properties": {"finish_reason": {"$ref": "#/$defs/finish_reason"}, "round_count": {"type": "integer", "minimum": 0, "maximum": 5}, "unresolved_count": {"type": "integer", "minimum": 0}, "baseline_hash": {"$ref": "#/$defs/sha256"}}}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mode": {"enum": ["auto", "standard", "deep", "skip"]},
+    "complexity": {"enum": ["low", "medium", "high"]},
+    "finish_reason": {"enum": ["round_limit", "user_finished", "no_new_high_value_question", "mode_skipped", "ai_unavailable_manual"]},
+    "dimension_key": {"enum": ["goal", "users_and_roles", "usage_scenarios", "functional_scope", "business_rules", "exception_cases", "permission_requirements", "acceptance_criteria"]},
+    "dimension_keys": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/dimension_key"}}
+  }
+}

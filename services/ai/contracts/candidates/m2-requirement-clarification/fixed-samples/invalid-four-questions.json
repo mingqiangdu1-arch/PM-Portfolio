@@ -1,0 +1,29 @@
+{
+  "fixture_status": "invalid",
+  "schema": "requirement-clarify-result-content.schema.json",
+  "valid_pointer": "/results/1",
+  "mutations": [
+    {
+      "path": "/questions/-",
+      "value": {
+        "question_id": "q-4",
+        "dimension": "business_rules",
+        "question_text": "第四个问题不允许进入本轮。",
+        "reason": "验证每轮最多三问",
+        "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]
+      }
+    },
+    {
+      "path": "/questions/-",
+      "value": {
+        "question_id": "q-5",
+        "dimension": "permission_requirements",
+        "question_text": "第五个问题同样不允许。",
+        "reason": "确保超过三问必定失败",
+        "source_refs": [{"source_type": "requirement_version", "source_id": "17", "source_version_id": "19", "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "label": "Requirement Version 19"}]
+      }
+    }
+  ],
+  "expected_validator": "maxItems",
+  "expected_path": "/questions"
+}

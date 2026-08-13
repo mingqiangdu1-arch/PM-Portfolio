@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-platform:candidate:context-snapshot:0.2.0",
+  "title": "AI Context Snapshot Candidate 0.2.0",
+  "$comment": "Candidate records the actual context used for one Task; it adds no persistence or migration requirement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "snapshot_id", "task_public_id", "target_snapshot_hash", "sources", "injections", "exclusions", "context_fingerprint", "token_count"],
+  "properties": {
+    "schema_version": {"const": "0.2.0"},
+    "snapshot_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "task_public_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "target_snapshot_hash": {"$ref": "#/$defs/sha256"},
+    "sources": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["source_id", "source_version_id", "source_type", "content_fingerprint", "was_injected", "exclusion_reason", "token_count"], "properties": {"source_id": {"type": "string", "minLength": 1, "maxLength": 128}, "source_version_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 64}, "source_type": {"type": "string", "minLength": 1, "maxLength": 64}, "content_fingerprint": {"$ref": "#/$defs/sha256"}, "was_injected": {"type": "boolean"}, "exclusion_reason": {"type": ["string", "null"], "maxLength": 500}, "token_count": {"type": "integer", "minimum": 0}}, "allOf": [{"if": {"properties": {"was_injected": {"const": true}}, "required": ["was_injected"]}, "then": {"properties": {"exclusion_reason": {"type": "null"}}}}, {"if": {"properties": {"was_injected": {"const": false}}, "required": ["was_injected"]}, "then": {"properties": {"exclusion_reason": {"type": "string", "minLength": 1, "maxLength": 500}}}}]}},
+    "injections": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["source_id", "injection_order", "token_count", "content_fingerprint"], "properties": {"source_id": {"type": "string", "minLength": 1, "maxLength": 128}, "injection_order": {"type": "integer", "minimum": 1}, "token_count": {"type": "integer", "minimum": 0}, "content_fingerprint": {"$ref": "#/$defs/sha256"}}}},
+    "exclusions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["source_id", "reason"], "properties": {"source_id": {"type": "string", "minLength": 1, "maxLength": 128}, "reason": {"type": "string", "minLength": 1, "maxLength": 500}}}},
+    "context_fingerprint": {"$ref": "#/$defs/sha256"},
+    "token_count": {"type": "integer", "minimum": 0}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

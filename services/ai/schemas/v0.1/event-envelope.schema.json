@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-product-platform.local/schemas/v0.1/event-envelope.schema.json",
+  "title": "Public Event Envelope Candidate 0.1.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_id", "event_name", "occurred_at", "module",
+    "result_status", "source_type", "privacy_class", "payload_json"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.3"},
+    "event_id": {"type": "string", "format": "uuid"},
+    "event_name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "module": {"type": "string", "minLength": 1, "maxLength": 32},
+    "result_status": {"enum": ["success", "failed", "partial", "cancelled", "blocked", "expired"]},
+    "source_type": {"enum": ["server", "ai_service", "web", "worker", "import", "system"]},
+    "privacy_class": {"enum": ["internal_id", "pseudonymous", "confidential", "restricted"]},
+    "user_id": {"$ref": "#/$defs/nullable_id"},
+    "session_id": {"type": ["string", "null"], "maxLength": 64},
+    "project_id": {"$ref": "#/$defs/nullable_id"},
+    "project_version_id": {"$ref": "#/$defs/nullable_id"},
+    "object_type": {"type": ["string", "null"], "maxLength": 64},
+    "object_id": {"$ref": "#/$defs/nullable_id"},
+    "object_version_id": {"$ref": "#/$defs/nullable_id"},
+    "ai_task_id": {"$ref": "#/$defs/nullable_id"},
+    "ai_call_id": {"$ref": "#/$defs/nullable_id"},
+    "ai_result_id": {"$ref": "#/$defs/nullable_id"},
+    "failure_code": {"type": ["string", "null"], "maxLength": 64},
+    "trace_id": {"type": ["string", "null"], "maxLength": 64},
+    "command_id": {"type": ["string", "null"], "maxLength": 64},
+    "correlation_id": {"type": ["string", "null"], "maxLength": 64},
+    "causation_id": {"type": ["string", "null"], "maxLength": 64},
+    "idempotency_key": {
+      "type": ["string", "null"],
+      "maxLength": 128,
+      "description": "Optional transport hint; event_id remains the unique event deduplication key."
+    },
+    "product_release": {"type": ["string", "null"], "maxLength": 64},
+    "client_version": {"type": ["string", "null"], "maxLength": 64},
+    "ai_capability_versions_json": {"type": ["object", "null"]},
+    "payload_json": {
+      "type": "object",
+      "description": "Minimal non-sensitive event payload; never include secrets or full AI context."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result_status": {"const": "failed"}}, "required": ["result_status"]},
+      "then": {
+        "required": ["failure_code"],
+        "properties": {"failure_code": {"type": "string", "minLength": 1, "maxLength": 64}}
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "nullable_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]}
+  }
+}

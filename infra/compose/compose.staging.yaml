@@ -1,0 +1,17 @@
+services:
+  api:
+    environment:
+      APP_ENV: staging
+      DOCS_ENABLED: "false"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+  mysql:
+    ports: []
+  redis:
+    ports: []
+  minio:
+    ports: []

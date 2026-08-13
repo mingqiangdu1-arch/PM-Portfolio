@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-platform:schema:ai-task:0.1.3",
+  "title": "AI Task candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "task_public_id", "user_id", "project_id",
+    "project_version_id", "module", "task_type", "target",
+    "target_snapshot_hash", "status", "trace_id", "command_id", "created_at"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.3"},
+    "task_public_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "retry_of_task_id": {"type": ["string", "null"], "pattern": "^[1-9][0-9]*$"},
+    "user_id": {"$ref": "#/$defs/id"},
+    "project_id": {"$ref": "#/$defs/id"},
+    "project_version_id": {"$ref": "#/$defs/id"},
+    "module": {"type": "string", "minLength": 1, "maxLength": 32},
+    "task_type": {"type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"},
+    "target": {"$ref": "#/$defs/object_ref"},
+    "target_snapshot_hash": {"$ref": "#/$defs/sha256"},
+    "status": {
+      "enum": ["prechecking", "blocked", "queued", "preparing", "generating", "checking", "ready", "partial_result", "quality_blocked", "cancel_requested", "cancelled", "failed", "expired", "stale_target"]
+    },
+    "queued_at": {"$ref": "#/$defs/nullable_time"},
+    "started_at": {"$ref": "#/$defs/nullable_time"},
+    "finished_at": {"$ref": "#/$defs/nullable_time"},
+    "failure_code": {"type": ["string", "null"], "maxLength": 64},
+    "trace_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "command_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "created_at": {"$ref": "#/$defs/time"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "time": {"type": "string", "format": "date-time"},
+    "nullable_time": {"anyOf": [{"$ref": "#/$defs/time"}, {"type": "null"}]},
+    "object_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_type", "object_id"],
+      "properties": {
+        "object_type": {"type": "string", "minLength": 1, "maxLength": 64},
+        "object_id": {"$ref": "#/$defs/id"},
+        "object_version_id": {"type": ["string", "null"], "pattern": "^[1-9][0-9]*$"}
+      }
+    }
+  }
+}

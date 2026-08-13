@@ -1,0 +1,24 @@
+{
+  "fixture_id": "FLOW-FIX-002",
+  "title": "带驳回恢复的评审流",
+  "source_version": "fixture-v1",
+  "nodes": [
+    {"id": "start", "type": "start", "label": "提交"},
+    {"id": "decision", "type": "decision", "label": "评审通过？"},
+    {"id": "revise", "type": "action", "label": "修订"},
+    {"id": "end", "type": "end", "label": "通过"}
+  ],
+  "edges": [
+    {"from": "start", "to": "decision"},
+    {"from": "decision", "to": "end", "condition": "是"},
+    {"from": "decision", "to": "revise", "condition": "否"},
+    {"from": "revise", "to": "decision"}
+  ],
+  "expected": {
+    "reachable_nodes": 4,
+    "decision_nodes": 1,
+    "terminal_nodes": 1,
+    "recovery_edge": {"from": "revise", "to": "decision"},
+    "logic_errors": []
+  }
+}

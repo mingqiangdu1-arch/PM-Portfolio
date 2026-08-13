@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-product-platform.local/schemas/v0.1/operation-audit.schema.json",
+  "title": "operation_audit_log Mapping Candidate 0.1.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "actor_user_id", "actor_type", "operation_name",
+    "object_type", "object_id", "result_status", "trace_id", "command_id",
+    "occurred_at", "metadata_json"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.3"},
+    "actor_user_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "actor_type": {"enum": ["user", "service", "worker", "system"]},
+    "operation_name": {"type": "string", "minLength": 1, "maxLength": 128},
+    "object_type": {"type": "string", "minLength": 1, "maxLength": 64},
+    "object_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "object_version_id": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "result_status": {"enum": ["success", "failed", "partial", "cancelled", "blocked", "expired"]},
+    "failure_code": {"type": ["string", "null"], "maxLength": 64},
+    "reason_summary": {"type": ["string", "null"], "maxLength": 2000},
+    "trace_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "command_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "metadata_json": {"type": ["object", "null"]}
+  },
+  "$defs": {"id": {"type": "string", "pattern": "^[1-9][0-9]*$"}}
+}

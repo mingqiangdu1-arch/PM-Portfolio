@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-product-platform.local/schemas/v0.1/event-compensation.schema.json",
+  "title": "Approved Immutable Event Compensation Candidate 0.1.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "original_event_id", "compensation_event_id",
+    "compensation_type", "reason", "replacement_payload", "approved_by"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.3"},
+    "original_event_id": {"type": "string", "format": "uuid"},
+    "compensation_event_id": {"type": "string", "format": "uuid"},
+    "compensation_type": {"enum": ["correct", "supersede", "redact"]},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "replacement_payload": {"type": ["object", "null"]},
+    "approved_by": {"type": "string", "pattern": "^[1-9][0-9]*$"}
+  }
+}

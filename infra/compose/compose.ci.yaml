@@ -1,0 +1,18 @@
+services:
+  api:
+    environment:
+      APP_ENV: ci
+      DOCS_ENABLED: "false"
+    restart: "no"
+  mysql:
+    tmpfs:
+      - /var/lib/mysql
+    restart: "no"
+  redis:
+    tmpfs:
+      - /data
+    restart: "no"
+  minio:
+    tmpfs:
+      - /data
+    restart: "no"

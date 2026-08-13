@@ -1,0 +1,22 @@
+{
+  "rubric_version": "0.1.0",
+  "gate_policy": "all_mandatory_checks_must_pass",
+  "maximum_score": 100,
+  "pass_score": 100,
+  "mandatory_checks": [
+    {"id": "fixed_samples", "points": 10, "pass_rule": "all three fixture expectations match"},
+    {"id": "text_review", "points": 15, "pass_rule": "human text Review accepted"},
+    {"id": "mermaid_review", "points": 15, "pass_rule": "human Mermaid Review accepted"},
+    {"id": "drawio_editable", "points": 15, "pass_rule": "editable draw.io XML opens and retains node identity"},
+    {"id": "derived_exports", "points": 10, "pass_rule": "PNG and SVG exports are present and attributable"},
+    {"id": "logic_validation", "points": 15, "pass_rule": "reachability, terminal, branch labels and recovery checks pass"},
+    {"id": "version_trace", "points": 10, "pass_rule": "source, task, call, skill, prompt, template, model and context versions trace"},
+    {"id": "failure_recovery", "points": 10, "pass_rule": "failed conversion remains a candidate and preserves the last accepted version"}
+  ],
+  "forbidden_shortcuts": [
+    "averaging mandatory checks",
+    "lowering Review or logic requirements",
+    "treating derived exports as editable source",
+    "overwriting an accepted artifact"
+  ]
+}

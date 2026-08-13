@@ -1,0 +1,20 @@
+{
+  "fixture_id": "FLOW-FIX-001",
+  "title": "线性需求评审流",
+  "source_version": "fixture-v1",
+  "nodes": [
+    {"id": "start", "type": "start", "label": "提交需求"},
+    {"id": "review", "type": "action", "label": "人工评审"},
+    {"id": "end", "type": "end", "label": "形成候选"}
+  ],
+  "edges": [
+    {"from": "start", "to": "review"},
+    {"from": "review", "to": "end"}
+  ],
+  "expected": {
+    "reachable_nodes": 3,
+    "decision_nodes": 0,
+    "terminal_nodes": 1,
+    "logic_errors": []
+  }
+}

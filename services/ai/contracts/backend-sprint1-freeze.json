@@ -1,0 +1,38 @@
+{
+  "review_status": "review_approved",
+  "runtime_integration_status": "passed",
+  "openapi": {
+    "version": "3.1.0",
+    "application_version": "0.1.0-dev",
+    "path_count": 29,
+    "sprint1_business_operation_count": 28,
+    "internal_health_operation_count": 1,
+    "sha256": "765085b584de8bf22b1a2724b0e4745fa3c8b2db7c16a7ead77c38d736917f1e"
+  },
+  "schema_overlay": {
+    "base_catalog": "schema_catalog.json",
+    "head_revision": "20260729_0004",
+    "sha256": "ab603c7d3288492d2ef27493ed9958ae3ad7944861fb6a5a7ace622cf9d6e1da"
+  },
+  "observed_current_backend_overlay": {
+    "declared_revision": "20260729_0004",
+    "actual_migration_head": "20260729_0004",
+    "sha256": "ab603c7d3288492d2ef27493ed9958ae3ad7944861fb6a5a7ace622cf9d6e1da",
+    "reviewed_field": "file_version.storage_version_id",
+    "status": "runtime_integration_passed"
+  },
+  "migrations": {
+    "20260729_0001": "d304df59e8073b1e2bf19ff4cb3ff2929aa8e5b4384d67ac5d7929be9e31e4b5",
+    "20260729_0002": "86806c00de5d160c4f5d7b20facc90196cd7e2892e807f22a8703566392598f7",
+    "20260729_0003": "03f94b41e82e19e0ebff8fecbd55643d38228388bf6f89399d7a6b1c8405560f",
+    "20260729_0004": "fc843e5ab0bdd2c3e4e5f5d6365ec522930ca2e397113c92899dd2c65a3c9c0a"
+  },
+  "internal_health": {
+    "inbound_ai_api": {"issuer": "business-api", "audience": "ai-api", "scope": "health"},
+    "outbound_business_api": {"path": "/internal/v1/health", "issuer": "ai-api", "audience": "business-api", "scope": "health"},
+    "observed_backend_candidate": {"path": "/internal/v1/health", "issuers": ["ai-api", "monitoring"], "ai_caller_subject": "ai-api", "audience": "business-api", "scope": "health"},
+    "backend_runtime_status": "contract_matched"
+  },
+  "persistence_adapter_enabled": false,
+  "flow_enabled": false
+}

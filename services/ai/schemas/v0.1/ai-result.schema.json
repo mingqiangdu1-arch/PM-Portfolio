@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-platform:schema:ai-result:0.1.3",
+  "title": "AI Result candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "ai_call_id", "result_no", "target_snapshot_hash",
+    "content_fingerprint", "format_status", "required_items_total",
+    "required_items_met", "traceability_status", "safety_status",
+    "major_error", "status"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.3"},
+    "ai_call_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "result_no": {"type": "integer", "minimum": 1, "maximum": 65535},
+    "target_snapshot_hash": {"$ref": "#/$defs/sha256"},
+    "content_ref": {"type": ["string", "null"], "maxLength": 768},
+    "content_summary": {"type": ["string", "null"], "maxLength": 8000},
+    "content_fingerprint": {"$ref": "#/$defs/sha256"},
+    "format_status": {"enum": ["passed", "failed"]},
+    "required_items_total": {"type": "integer", "minimum": 0},
+    "required_items_met": {"type": "integer", "minimum": 0},
+    "traceability_status": {"enum": ["passed", "failed", "not_applicable"]},
+    "safety_status": {"enum": ["passed", "failed"]},
+    "major_error": {"type": "boolean"},
+    "status": {"enum": ["ready", "partial_result", "quality_blocked", "failed", "expired", "stale_target"]}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}

@@ -1,0 +1,11 @@
+{
+  "fixture_status": "invalid",
+  "schema": "requirement-content.schema.json",
+  "valid_pointer": "/requirement_content",
+  "mutations": [
+    {"path": "/baseline/dimensions/exception_cases", "operation": "remove"},
+    {"path": "/baseline/dimensions/exceptions", "value_from": "/requirement_content/baseline/dimensions/exception_cases"}
+  ],
+  "expected_validator": "required",
+  "expected_path": "/baseline/dimensions"
+}

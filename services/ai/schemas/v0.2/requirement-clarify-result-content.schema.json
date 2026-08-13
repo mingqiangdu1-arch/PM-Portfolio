@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-platform:candidate:requirement-clarify-result-content:0.2.0",
+  "title": "Requirement Clarify Result Content Candidate 0.2.0",
+  "$comment": "Candidate-only R2 contract; ready is never a formal Requirement Version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "task_public_id", "task_type", "target_snapshot_hash", "mode", "round_no", "result_kind", "status", "dimensions", "assessment", "questions", "baseline", "convergence", "quality"],
+  "properties": {
+    "schema_version": {"const": "0.2.0"},
+    "task_public_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "task_type": {"const": "requirement.clarify"},
+    "target_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "mode": {"enum": ["auto", "standard", "deep", "skip"]},
+    "round_no": {"type": "integer", "minimum": 0, "maximum": 5},
+    "dimensions": {"$ref": "#/$defs/dimensions"},
+    "result_kind": {"enum": ["assessment", "questions", "baseline"]},
+    "assessment": {"anyOf": [{"$ref": "#/$defs/assessment"}, {"type": "null"}]},
+    "questions": {"type": "array", "maxItems": 3, "items": {"type": "object", "additionalProperties": false, "required": ["question_id", "dimension", "question_text", "reason", "source_refs"], "properties": {"question_id": {"type": "string", "pattern": "^q-[1-9][0-9]*$"}, "dimension": {"$ref": "#/$defs/dimension_key"}, "question_text": {"type": "string", "minLength": 1, "maxLength": 1000}, "reason": {"type": "string", "minLength": 1, "maxLength": 2000}, "source_refs": {"$ref": "#/$defs/ref_items"}}}},
+    "baseline": {"anyOf": [{"$ref": "#/$defs/requirement_content"}, {"type": "null"}]},
+    "convergence": {"type": "object", "additionalProperties": false, "required": ["should_finish", "finish_reason", "next_round_no"], "properties": {"should_finish": {"type": "boolean"}, "finish_reason": {"type": ["string", "null"], "enum": ["round_limit", "user_finished", "no_new_high_value_question", "mode_skipped", "ai_unavailable_manual", null]}, "next_round_no": {"type": ["integer", "null"], "minimum": 1, "maximum": 5}}},
+    "quality": {"$ref": "#/$defs/quality"},
+    "status": {"enum": ["ready", "partial_result", "quality_blocked", "failed", "expired", "stale_target"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"result_kind": {"const": "assessment"}}, "required": ["result_kind"]},
+      "then": {"required": ["assessment"], "properties": {"assessment": {"type": "object"}, "questions": {"maxItems": 0}, "baseline": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"result_kind": {"const": "questions"}}, "required": ["result_kind"]},
+      "then": {"properties": {"questions": {"minItems": 1, "maxItems": 3}, "assessment": {"type": "null"}, "baseline": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"result_kind": {"const": "baseline"}}, "required": ["result_kind"]},
+      "then": {"properties": {"questions": {"maxItems": 0}, "assessment": {"type": "null"}, "baseline": {"type": "object"}}}
+    },
+    {
+      "if": {"properties": {"convergence": {"properties": {"should_finish": {"const": true}}, "required": ["should_finish"]}}, "required": ["convergence"]},
+      "then": {"properties": {"convergence": {"properties": {"finish_reason": {"type": "string"}, "next_round_no": {"type": "null"}}}}}
+    },
+    {
+      "if": {"properties": {"convergence": {"properties": {"should_finish": {"const": false}}, "required": ["should_finish"]}}, "required": ["convergence"]},
+      "then": {"properties": {"convergence": {"properties": {"finish_reason": {"type": "null"}, "next_round_no": {"type": "integer", "minimum": 1, "maximum": 5}}}}}
+    }
+  ],
+  "$defs": {
+    "dimension_key": {
+      "enum": [
+        "goal",
+        "users_and_roles",
+        "usage_scenarios",
+        "functional_scope",
+        "business_rules",
+        "exception_cases",
+        "permission_requirements",
+        "acceptance_criteria"
+      ]
+    },
+    "dimension": {"type": "object", "additionalProperties": false, "required": ["status", "reasons", "missing_items", "source_refs"], "properties": {"status": {"enum": ["complete", "partial", "missing", "not_applicable"]}, "reasons": {"$ref": "#/$defs/text_items"}, "missing_items": {"$ref": "#/$defs/text_items"}, "source_refs": {"$ref": "#/$defs/ref_items"}}},
+    "dimensions": {"type": "object", "additionalProperties": false, "required": ["goal", "users_and_roles", "usage_scenarios", "functional_scope", "business_rules", "exception_cases", "permission_requirements", "acceptance_criteria"], "properties": {"goal": {"$ref": "#/$defs/dimension"}, "users_and_roles": {"$ref": "#/$defs/dimension"}, "usage_scenarios": {"$ref": "#/$defs/dimension"}, "functional_scope": {"$ref": "#/$defs/dimension"}, "business_rules": {"$ref": "#/$defs/dimension"}, "exception_cases": {"$ref": "#/$defs/dimension"}, "permission_requirements": {"$ref": "#/$defs/dimension"}, "acceptance_criteria": {"$ref": "#/$defs/dimension"}}},
+    "baseline_dimension": {"type": "object", "additionalProperties": false, "required": ["confirmed_facts", "source_refs", "deferred_items", "not_applicable_items"], "properties": {"confirmed_facts": {"$ref": "#/$defs/text_items"}, "source_refs": {"$ref": "#/$defs/ref_items"}, "deferred_items": {"$ref": "#/$defs/text_items"}, "not_applicable_items": {"$ref": "#/$defs/text_items"}}},
+    "baseline_dimensions": {"type": "object", "additionalProperties": false, "required": ["goal", "users_and_roles", "usage_scenarios", "functional_scope", "business_rules", "exception_cases", "permission_requirements", "acceptance_criteria"], "properties": {"goal": {"$ref": "#/$defs/baseline_dimension"}, "users_and_roles": {"$ref": "#/$defs/baseline_dimension"}, "usage_scenarios": {"$ref": "#/$defs/baseline_dimension"}, "functional_scope": {"$ref": "#/$defs/baseline_dimension"}, "business_rules": {"$ref": "#/$defs/baseline_dimension"}, "exception_cases": {"$ref": "#/$defs/baseline_dimension"}, "permission_requirements": {"$ref": "#/$defs/baseline_dimension"}, "acceptance_criteria": {"$ref": "#/$defs/baseline_dimension"}}},
+    "requirement_content": {"type": "object", "additionalProperties": false, "required": ["dimensions", "assumptions", "unresolved_items"], "properties": {"dimensions": {"$ref": "#/$defs/baseline_dimensions"}, "assumptions": {"$ref": "#/$defs/text_items"}, "unresolved_items": {"$ref": "#/$defs/text_items"}}},
+    "assessment": {"type": "object", "additionalProperties": false, "required": ["dimension_completeness", "complexity_band", "reasons", "recommended_mode", "missing_items", "source_refs"], "properties": {"dimension_completeness": {"$ref": "#/$defs/dimensions"}, "complexity_band": {"enum": ["low", "medium", "high"]}, "reasons": {"$ref": "#/$defs/text_items"}, "recommended_mode": {"enum": ["auto", "standard", "deep", "skip"]}, "missing_items": {"$ref": "#/$defs/text_items"}, "source_refs": {"$ref": "#/$defs/ref_items"}}},
+    "quality": {"type": "object", "additionalProperties": false, "required": ["format_status", "traceability_status", "safety_status", "major_error", "blocker_codes", "required_items_total", "required_items_met"], "properties": {"format_status": {"enum": ["passed", "failed"]}, "traceability_status": {"enum": ["passed", "failed", "not_applicable"]}, "safety_status": {"enum": ["passed", "failed"]}, "major_error": {"type": "boolean"}, "blocker_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}}, "required_items_total": {"type": "integer", "minimum": 0}, "required_items_met": {"type": "integer", "minimum": 0}}},
+    "text_items": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1, "maxLength": 2000}
+    },
+    "ref_items": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/source_ref"}
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source_id", "source_version_id", "content_hash", "label"],
+      "properties": {
+        "source_type": {"type": "string", "minLength": 1, "maxLength": 64},
+        "source_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "source_version_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    }
+  }
+}
