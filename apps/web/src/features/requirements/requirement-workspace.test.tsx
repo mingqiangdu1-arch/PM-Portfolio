@@ -57,7 +57,7 @@ function asFreshDraft(value: Awaited<ReturnType<FrontendApi["requirements"]["cre
   };
   return {
     ...value,
-    requirement: { ...value.requirement, status: "draft" as const, currentVersionId: currentVersion.id, effectiveVersionId: null },
+    requirement: { ...value.requirement, status: "draft" as const, currentVersionId: currentVersion.id, effectiveVersionId: null, version: 7 },
     currentVersion,
     effectiveVersion: null,
   };
@@ -119,7 +119,7 @@ async function persistedRequirement(isEffective: boolean) {
   };
   return {
     ...value,
-    requirement: { ...value.requirement, id: "persisted-requirement", title: "已恢复 Requirement", currentVersionId: version.id, effectiveVersionId: isEffective ? version.id : null },
+    requirement: { ...value.requirement, id: "persisted-requirement", title: "已恢复 Requirement", currentVersionId: version.id, effectiveVersionId: isEffective ? version.id : null, version: 7 },
     currentVersion: version,
     effectiveVersion: isEffective ? version : null,
   };
@@ -179,8 +179,64 @@ describe("RequirementWorkspace", () => {
     expect(get).toHaveBeenCalledWith("persisted-requirement");
     fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
     await screen.findByText("版本 V2 · confirmed · 当前 Baseline");
-    expect(confirm).toHaveBeenCalledWith("persisted-v2", { expectedVersion: 2 });
+    expect(confirm).toHaveBeenCalledWith("persisted-v2", { expectedVersion: 7 });
     expect(get).toHaveBeenLastCalledWith("persisted-requirement");
+  });
+
+  it("uses the aggregate version for manual revise then confirm, even when version labels diverge", async () => {
+    const source = await persistedRequirement(false);
+    if (!source.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
+    const draft = { ...source.currentVersion, createdFromAiResultId: null, versionNo: "V2" };
+    const value = { ...source, currentVersion: draft, requirement: { ...source.requirement, currentVersionId: draft.id } };
+    const list = vi.fn(async () => [value.requirement]);
+    const get = vi.fn(async () => value);
+    const revised = { ...draft, id: "manual-v3", versionNo: "V3", content: { ...draft.content, baseline: value.currentVersion!.content.baseline } };
+    const revise = vi.fn(async () => revised);
+    const confirmed = { ...revised, confirmationStatus: "confirmed" as const, isEffective: true };
+    const confirm = vi.fn(async () => ({ version: confirmed, gateResult: "passed" as const }));
+    const api = { ...mockApi, requirements: { ...mockApi.requirements, list, get, revise, confirm } };
+
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+
+    await screen.findByText("版本 V2 · draft");
+    fireEvent.change(screen.getByLabelText("目标"), { target: { value: "人工确认目标" } });
+    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
+    await screen.findByText("Baseline 已确认（passed）。");
+
+    expect(revise).toHaveBeenCalledWith("persisted-v2", expect.objectContaining({
+      expectedVersion: 7,
+      content: expect.objectContaining({
+        baseline: expect.objectContaining({
+          dimensions: expect.objectContaining({
+            goal: expect.objectContaining({ confirmedFacts: ["人工确认目标"] }),
+          }),
+        }),
+      }),
+    }));
+    expect(confirm).toHaveBeenCalledWith("manual-v3", { expectedVersion: 8 });
+    expect(screen.getByText("版本 V3 · confirmed · 当前 Baseline")).toBeInTheDocument();
+  });
+
+  it("surfaces a real stale aggregate version conflict without retrying or masking it", async () => {
+    const source = await persistedRequirement(false);
+    if (!source.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
+    const draft = { ...source.currentVersion, createdFromAiResultId: null, versionNo: "V2" };
+    const value = { ...source, currentVersion: draft, requirement: { ...source.requirement, currentVersionId: draft.id } };
+    let serverVersion = 7;
+    const revise = vi.fn(async (_versionId: string, input: Parameters<FrontendApi["requirements"]["revise"]>[1]) => {
+      if (input.expectedVersion !== serverVersion) throw new Error("Requirement has changed");
+      return { ...draft, id: "manual-v3", versionNo: "V3" };
+    });
+    const api = { ...mockApi, requirements: { ...mockApi.requirements, list: async () => [value.requirement], get: async () => value, revise } };
+
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+
+    await screen.findByText("版本 V2 · draft");
+    serverVersion = 8;
+    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
+    await screen.findByText("Requirement has changed");
+
+    expect(revise).toHaveBeenCalledWith("persisted-v2", expect.objectContaining({ expectedVersion: 7 }));
   });
 
   it("shows the persisted effective Baseline without requiring an in-memory AI result", async () => {
@@ -262,18 +318,20 @@ describe("RequirementWorkspace", () => {
     expect(screen.getByText("Provider truth: FORMAL_MOCK")).toBeInTheDocument();
     expect(screen.getByText("格式 passed · 可追溯性 passed · 安全 passed")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "采用 Baseline 并形成新版本" }));
-    await waitFor(() => expect(screen.getByText("Baseline 已采用，形成待确认版本 V2。")).toBeInTheDocument());
-    expect(formalizeBaseline.mock.calls[0]?.[1]).toEqual({ requirementId: "version-carrier-20", expectedVersion: 1, targetSnapshotHash: "2".repeat(64) });
-    expect(screen.getByText("版本 V2 · draft · 尚未设为当前 Baseline")).toBeInTheDocument();
-    expect(screen.queryByText("版本 V2 · confirmed · 当前 Baseline")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("Baseline 已采用，形成待确认版本 V10。")).toBeInTheDocument());
+    expect(setClarificationMode).toHaveBeenNthCalledWith(1, expect.any(String), expect.objectContaining({ expectedVersion: 7 }));
+    expect(setClarificationMode).toHaveBeenNthCalledWith(2, expect.any(String), expect.objectContaining({ expectedVersion: 8 }));
+    expect(formalizeBaseline.mock.calls[0]?.[1]).toEqual({ requirementId: "version-carrier-20", expectedVersion: 9, targetSnapshotHash: "2".repeat(64) });
+    expect(screen.getByText("版本 V10 · draft · 尚未设为当前 Baseline")).toBeInTheDocument();
+    expect(screen.queryByText("版本 V10 · confirmed · 当前 Baseline")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
     expect(get).toHaveBeenCalledWith("req-atlas-1");
     expect(get).not.toHaveBeenCalledWith("version-carrier-20");
 
     fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
     await waitFor(() => expect(screen.getByText("Baseline 已确认并设为当前 Baseline。")).toBeInTheDocument());
-    expect(confirm).toHaveBeenCalledWith("req-v2", { expectedVersion: 2 });
-    expect(screen.getByText("版本 V2 · confirmed · 当前 Baseline")).toBeInTheDocument();
+    expect(confirm).toHaveBeenCalledWith("req-v10", { expectedVersion: 10 });
+    expect(screen.getByText("版本 V10 · confirmed · 当前 Baseline")).toBeInTheDocument();
     expect(screen.getByLabelText("目标")).toBeInTheDocument();
   });
 
