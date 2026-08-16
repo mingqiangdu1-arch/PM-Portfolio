@@ -105,7 +105,7 @@ function createUnresolvedCandidateApi(formalizeFailure = false) {
   return { api, formalizeBaseline, confirm: steps.confirm };
 }
 
-async function persistedRequirement(isEffective: boolean) {
+async function persistedRequirement(isEffective: boolean, isAiSourced = true) {
   const value = await mockApi.requirements.get("persisted-source");
   if (!value.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
   const version = {
@@ -115,11 +115,11 @@ async function persistedRequirement(isEffective: boolean) {
     versionNo: "V2",
     confirmationStatus: isEffective ? "confirmed" as const : "draft" as const,
     isEffective,
-    createdFromAiResultId: "persisted-baseline-result",
+    createdFromAiResultId: isAiSourced ? "persisted-baseline-result" : null,
   };
   return {
     ...value,
-    requirement: { ...value.requirement, id: "persisted-requirement", title: "已恢复 Requirement", currentVersionId: version.id, effectiveVersionId: isEffective ? version.id : null, version: 7 },
+    requirement: { ...value.requirement, id: "persisted-requirement", title: "已恢复 Requirement", status: isEffective ? "effective" as const : "draft" as const, currentVersionId: version.id, effectiveVersionId: isEffective ? version.id : null, version: 7 },
     currentVersion: version,
     effectiveVersion: isEffective ? version : null,
   };
@@ -215,6 +215,9 @@ describe("RequirementWorkspace", () => {
     }));
     expect(confirm).toHaveBeenCalledWith("manual-v3", { expectedVersion: 8 });
     expect(screen.getByText("版本 V3 · confirmed · 当前 Baseline")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Requirement 已完成" })).toBeInTheDocument();
+    expect(screen.getByText(/来源：人工 Baseline 确认。/)).toBeInTheDocument();
+    expect(screen.getByText(/当前 Requirement \/ Baseline 阶段已完成；PRD 为后续阶段，当前在线 Demo 未启用。/)).toBeInTheDocument();
   });
 
   it("surfaces a real stale aggregate version conflict without retrying or masking it", async () => {
@@ -239,14 +242,37 @@ describe("RequirementWorkspace", () => {
     expect(revise).toHaveBeenCalledWith("persisted-v2", expect.objectContaining({ expectedVersion: 7 }));
   });
 
-  it("shows the persisted effective Baseline without requiring an in-memory AI result", async () => {
+  it("shows the persisted AI-sourced effective Baseline as a completed Requirement", async () => {
     const confirmed = await persistedRequirement(true);
     const api = { ...mockApi, requirements: { ...mockApi.requirements, list: async () => [confirmed.requirement], get: async () => confirmed } };
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByText("版本 V2 已设为当前 Baseline。");
+    await screen.findByRole("heading", { name: "Requirement 已完成" });
+    expect(screen.getByText(/版本 V2 已设为当前 Baseline。/)).toBeInTheDocument();
+    expect(screen.getByText(/来源：AI 候选采用。/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "确认并设为当前 Baseline" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the completed state after a fresh GET for an effective manual Baseline", async () => {
+    const confirmed = await persistedRequirement(true, false);
+    const api = { ...mockApi, requirements: { ...mockApi.requirements, list: async () => [confirmed.requirement], get: async () => confirmed } };
+
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+
+    await screen.findByRole("heading", { name: "Requirement 已完成" });
+    expect(screen.getByText(/版本 V2 已设为当前 Baseline。/)).toBeInTheDocument();
+    expect(screen.getByText(/来源：人工 Baseline 确认。/)).toBeInTheDocument();
+  });
+
+  it("does not show the completed state for a draft Requirement", async () => {
+    const draft = await persistedRequirement(false, false);
+    const api = { ...mockApi, requirements: { ...mockApi.requirements, list: async () => [draft.requirement], get: async () => draft } };
+
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+
+    await screen.findByText("版本 V2 · draft");
+    expect(screen.queryByRole("heading", { name: "Requirement 已完成" })).not.toBeInTheDocument();
   });
 
   it("requires an explicit selection when the viewed version has multiple Requirements", async () => {
@@ -461,5 +487,9 @@ describe("RequirementWorkspace", () => {
     expect(screen.getByText("AI 不可用时继续人工确认")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "人工确认 Baseline" })).toBeEnabled();
     expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("目标"), { target: { value: "人工完成目标" } });
+    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
+    await screen.findByRole("heading", { name: "Requirement 已完成" });
+    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。")).not.toBeInTheDocument();
   });
 });
