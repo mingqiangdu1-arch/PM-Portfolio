@@ -407,4 +407,22 @@ describe("realApi", () => {
     expect(client.completeFileUpload.mock.calls[0][2]["Idempotency-Key"]).toBe(client.completeFileUpload.mock.calls[1][2]["Idempotency-Key"]);
     expect(client.abortFileUpload).not.toHaveBeenCalled();
   });
+
+  it("creates a project idempotency key when randomUUID is unavailable", async () => {
+    const getRandomValues = vi.fn((bytes: Uint8Array) => {
+      bytes.fill(0);
+      return bytes;
+    });
+    vi.stubGlobal("crypto", {
+      getRandomValues,
+      subtle: { digest: vi.fn(async () => new Uint8Array(32).buffer) },
+    });
+    client.createProject.mockResolvedValue(success({ project: { id: "project-1" }, working_version_id: "version-1" }));
+
+    await expect(realApi.projects.create({ name: "Demo", goal: "Goal", startMode: "new" })).resolves.toEqual({ projectId: "project-1", workingVersionId: "version-1" });
+
+    const idempotencyKey = client.createProject.mock.calls[0][1]["Idempotency-Key"];
+    expect(idempotencyKey).toMatch(/^web-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(getRandomValues).toHaveBeenCalledOnce();
+  });
 });

@@ -91,6 +91,7 @@ import type {
   SubmitClarificationAnswersInput,
 } from "./ports";
 import { PortError } from "./ports";
+import { createClientId } from "../client-id";
 
 type GeneratedResponse = { data: unknown; status: number; headers: Headers };
 type Envelope<T> = { data: T; trace_id: string; message: string };
@@ -111,7 +112,7 @@ const requestOptions = (): RequestInit => ({
   headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
 });
 
-const commandKey = () => `web-${crypto.randomUUID()}`;
+const commandKey = () => `web-${createClientId()}`;
 const retryKey = (scope: string) => {
   const existing = retryKeys.get(scope);
   if (existing) return existing;
