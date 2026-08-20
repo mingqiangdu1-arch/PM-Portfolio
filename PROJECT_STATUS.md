@@ -1,10 +1,24 @@
 # PROJECT STATUS
 
-> 最后更新：2026-07-29
+> 最后更新：2026-08-20
 
 ## Current Phase
 
-技术方案设计（已完成并通过用户确认；Development / Sprint 0 尚未开始）
+P1 Governance Closeout
+
+P1 Traceable RC、Public Acceptance、Main Promotion 与 Release Tag 均已完成；当前仅进行治理状态同步。
+
+## Accepted Release Baseline
+
+- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
+- Release Tag: `portfolio-p1-v1-accepted-main`
+- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
+- Alembic: `20260729_0004`
+- Public Acceptance: PASS
+- UUID/HTTP compatibility: PASS
+- P1 Scope: CLOSED
+- RC-02: NOT ENTERED
+- `P1-MAIN-PROMOTION-07=PASS`; `P1-RELEASE-TAG-08=PASS`
 
 ## Completed
 
@@ -127,14 +141,36 @@
 - [x] 建立 24 项技术风险及概率、影响、触发、预防、降级、DRI 和关闭 Gate
 - [x] 明确 1 名前端、1 名后端、1 名 AI/数据工程师的目录主责、契约先行、迁移串行和并行联调规则
 - [x] 用户确认六份技术方案并将其升级为当前有效 V1.0 技术设计基线
+- [x] P1 Requirement / Baseline 核心纵向闭环完成
+- [x] P1 Traceable RC 完成
+- [x] Git SHA → Image → Container → Public Runtime traceability VERIFIED
+- [x] Public Acceptance PASS
+- [x] UUID/HTTP compatibility PASS
+- [x] Alembic PRE/POST = 20260729_0004 / MATCH
+- [x] Main Promotion PASS
+- [x] Accepted Main = 1be1aec9410211e33f84b99c6166c6768fb487cf
+- [x] Release Tag `portfolio-p1-v1-accepted-main` 已验证
 
 ## Current Task
 
-技术方案设计已完成并通过用户确认。六份 V1.0 文档已冻结前端、业务后端、AI 服务、数据/文件/缓存、权限、字段级接口、部署、日志监控、错误处理、测试、技术风险以及三人团队并行规则；代码、可执行 DDL/Alembic、OpenAPI、事件 JSON Schema、Compose 和部署脚本均未启动，等待用户明确启动 Development / Sprint 0。
+P1 Governance Closeout only：仅同步 Accepted Release 的治理事实。不修改 Runtime、Contract、Schema、Migration、Deployment 或 Production。
+
+## Next Phase
+
+MVP Contract Preflight — NOT ENTERED。
+
+MVP Contract Preflight 只是下一 Gate，不是已批准开发 Scope。RC-02 只有在 Preflight PASS 后才能进入 Freeze。
 
 ## Prohibited
 
-- 未明确启动 Development / Sprint 0 即开始编码、DDL、OpenAPI、事件 Schema 或部署实现
+- 不重新打开已关闭 P1 Scope
+- 不把 P1 exclusion 描述成已实现
+- 不修改 Accepted Runtime Release
+- 不修改 R3 Contract
+- 不修改 Alembic / Schema
+- 不重新部署生产环境
+- 不自动进入 MVP Contract Preflight
+- 不自动进入 RC-02
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑
 - 绕过当前有效开发规划自行修改技术栈、MVP 边界、Sprint、模块依赖或发布 Gate
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据
@@ -162,10 +198,12 @@
 - 技术设计冻结可替换的单服务器 Compose 拓扑和运维规则，但生产云厂商、服务器型号、容量与最终日志/指标保留值仍需依据 MVP 性能、增长和恢复测试另行评审。
 - CloudBase 仅作为 MVP 核心闭环完成后、集成测试阶段的部署 PoC 候选，不构成生产技术基线；PoC 结果不得替代生产安全、容量、RPO/RTO 和合规评审。
 
-## Next Phase
+## Historical Roadmap Snapshot — 2026-07-29
+
+以下为 2026-07-29 Development Planning 阶段形成的历史路线，不代表当前项目 Next Phase；当前 Gate 以上方 Current Phase / Next Phase 为准。
 
 Development / Sprint 0：项目与环境初始化、技术 ADR、将已确认 ER 落实为 MySQL DDL/Alembic、形成 OpenAPI 与事件 JSON Schema、建立 Design Token 管线、验证 DeepSeek 连通性和 Flow 可行性 Gate。仅在用户明确启动后执行。
 
 ## Stage Roadmap
 
-Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ AI Capability Design（已完成并确认）→ Technical Solution Design（已完成并确认）→ Development（待启动）→ Testing → Iteration
+Project Initialization → Product Design Consolidation（已完成）→ Interaction Design（已完成）→ State Machine（已完成）→ Wireframe（已完成）→ UI Design（已完成）→ High-fidelity Prototype（已完成并验收）→ Development Planning（已完成并确认）→ Data Tracking & Database Design（已完成并确认）→ AI Capability Design（已完成并确认）→ Technical Solution Design（已完成并确认）→ Development（历史待启动状态）→ Testing → Iteration

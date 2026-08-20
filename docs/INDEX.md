@@ -1,7 +1,21 @@
 # 项目文档索引
 
-> 最后更新：2026-07-29
+> 最后更新：2026-08-20
 > 说明：索引只记录文档位置与效力，不能替代领域主责文档
+
+## P1 Accepted Release
+
+- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
+- Release Tag: `portfolio-p1-v1-accepted-main`
+- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
+- Alembic: `20260729_0004`
+- Public Acceptance: PASS
+- UUID/HTTP compatibility: PASS
+- P1 Scope: CLOSED
+- RC-02: NOT ENTERED
+- `P1-MAIN-PROMOTION-07=PASS`; `P1-RELEASE-TAG-08=PASS`
+
+These are current implementation and release facts. They do not replace the domain authority of the existing product, interaction, visual, development-planning, data-design, AI-capability, or technical-design documents.
 
 ## 当前正式产品设计基线
 
@@ -76,7 +90,7 @@ Development Planning 已于 2026-07-29 通过用户确认。Sprint 0～5 为十�
 | `模块依赖关系.md` | 模块拓扑、接口责任、关键路径、功能旗标和故障降级 | 当前有效（V1.0） |
 | `验收标准.md` | Sprint、T01～T07、API、数据、性能、安全、无障碍和发布 Gate | 当前有效（V1.0） |
 
-Development 实施尚未开始。代码、DDL、OpenAPI、事件 Schema 和部署实现只在用户明确启动 Development / Sprint 0 后执行。
+This paragraph recorded the 2026-07-29 design-freeze stage state. Current implementation and release status is governed by the P1 Accepted Release section above; the historical design documents retain their domain authority.
 
 ## 数据埋点与数据库设计
 
@@ -92,7 +106,7 @@ Development 实施尚未开始。代码、DDL、OpenAPI、事件 Schema 和部�
 | `ER图.md` | 总体、业务主链、AI 追溯、文件版本、知识预留和事件指标六类 Mermaid ER 视图 | 当前有效（V1.0，2026-07-29 已确认） |
 | `指标计算逻辑.md` | 59 个指标的唯一计算登记、血缘、去重、迟到、N/A、质量门槛与刷新规则 | 当前有效（V1.0，2026-07-29 已确认） |
 
-`产品设计体系整理/数据指标体系.md` 的 VO-03～09 已同步为专项 `版本优化指标.md` 的唯一编号和公式口径。Development / Sprint 0 尚未启动。
+`产品设计体系整理/数据指标体系.md` 的 VO-03～09 已同步为专项 `版本优化指标.md` 的唯一编号和公式口径。“Development / Sprint 0 尚未启动”属于 2026-07-29 数据设计冻结时的阶段状态；当前实现与 Release 状态以本文顶部“P1 Accepted Release”章节为准，数据设计文档的领域效力保持不变。
 
 ## AI 能力体系设计
 

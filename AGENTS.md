@@ -65,6 +65,24 @@ For low-fidelity completion, `wireframing` is candidate-only and may be loaded t
 
 `page-state-machine-design` is available through `C:\Users\10238\.codex\skills\personal` and registered in `F:\AI-Agent-System\skills\INDEX.md`. Use it only for user-observable page or page-family states, events, guards, transitions, entry/exit actions, asynchronous feedback, permissions and recovery. Do not use it to redefine business entity lifecycles, backend orchestration, APIs, databases, visual styling or implementation code. Formal product design and confirmed Interaction Design remain authoritative.
 
+## Current Governance Baseline
+
+- P1 Traceable RC: COMPLETE
+- Public Acceptance: PASS
+- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
+- Release Tag: `portfolio-p1-v1-accepted-main`
+- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
+- Alembic: `20260729_0004`
+- UUID/HTTP compatibility: PASS
+- P1 Scope: CLOSED
+- RC-02: NOT ENTERED
+
+`P1-MAIN-PROMOTION-07=PASS` and `P1-RELEASE-TAG-08=PASS`. The accepted production release has verified `Git SHA -> Image -> Container -> Public Runtime` traceability, and the P1 public-acceptance chain `Login -> Foundation -> Project -> Requirement -> Baseline -> Edit -> Confirm -> Persistence -> Reload` passed.
+
+P1 exclusions remain excluded: File Upload, Version Derivation, Set Working Version, AI API / Worker runtime, Redis, MinIO / S3, Qdrant, subsequent P2 / P3 / P4 functions, and the complete AI MVP are not represented as implemented or accepted by this baseline.
+
+P1 has been developed, deployed, accepted, and recorded as an Accepted Release. The next stage is only `MVP Contract Preflight`; it must pass before an RC-02 Freeze can be formed. Before that Freeze, no new-scope development starts automatically.
+
 ## Stage boundary
 
-Interaction Design is complete and user-approved. Formal product design in `产品设计体系整理/` remains authoritative; the current effective Interaction Design baseline lives in `交互设计与页面状态机/交互设计/`. `page-state-machine-design` is installed and enabled, so the Page State Machine stage is ready to start only after explicit user authorization. The official Figma Plugin Skills required by the later visual stage are also registered and enabled, but visual design remains blocked until the Page State Machine baseline is completed and accepted. Do not create or modify Figma assets, start visual UI design, technical design, development, database changes, API changes, system-architecture changes, or business-code changes before their respective stage gates are satisfied.
+Interaction Design is complete and user-approved. Formal product design in `产品设计体系整理/` remains authoritative; the current effective Interaction Design baseline lives in `交互设计与页面状态机/交互设计/`. `page-state-machine-design` remains bounded to user-observable page behavior, and the design-stage rules above remain authoritative for their respective documents. Historical stage rules that say development had not started describe their original design-stage context; they do not override the current P1 Accepted Release or authorize any new scope.

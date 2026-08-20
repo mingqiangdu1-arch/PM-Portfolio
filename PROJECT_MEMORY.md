@@ -1,5 +1,20 @@
 # PROJECT MEMORY
 
+## P1 Accepted Release Baseline
+
+- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
+- Release Tag: `portfolio-p1-v1-accepted-main`
+- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
+- Alembic revision: `20260729_0004`
+- Public Acceptance: PASS
+- UUID/HTTP compatibility: PASS
+- P1 Scope: CLOSED
+- RC-02: NOT ENTERED
+
+`P1-MAIN-PROMOTION-07=PASS` and `P1-RELEASE-TAG-08=PASS`. The accepted production release verifies `Git SHA -> Image -> Container -> Public Runtime`; its accepted P1 thin vertical loop is `Requirement -> Baseline -> Confirm -> Persistence`.
+
+Earlier sections that state “Development 尚未开始”, “尚未进入开发”, or “代码/API/迁移尚未形成” are historical statements about their design-stage context. They must not be interpreted as current project state or current authorization. This P1 implementation is not the complete product-design blueprint: it does not turn the remaining design, AI, data, or later P2–P4 scope into implemented functionality.
+
 > 项目：AI 产品设计与验证平台（亦称 AI 产品工作流平台）  
 > 建立日期：2026-07-27  
 > 用途：后续产品、设计、架构、数据与开发工作的长期知识入口。当前产品口径以 `产品设计体系整理/` 九份 V1.0 文档为准；本文只保存摘要，不替代领域主责文档。
