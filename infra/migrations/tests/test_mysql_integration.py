@@ -10,6 +10,43 @@ from urllib.parse import urlsplit
 MYSQL_TEST_URL = os.getenv("MYSQL_TEST_DATABASE_URL")
 
 
+def _schema_signature(connection) -> set[tuple]:
+    from sqlalchemy import text
+
+    signature = {
+        ("COLUMN", *row)
+        for row in connection.execute(
+            text(
+                "SELECT table_name,column_name,column_type,is_nullable "
+                "FROM information_schema.columns WHERE table_schema=DATABASE()"
+            )
+        )
+    }
+    signature.update(
+        ("INDEX", *row)
+        for row in connection.execute(
+            text(
+                "SELECT table_name,index_name,seq_in_index,column_name,non_unique "
+                "FROM information_schema.statistics WHERE table_schema=DATABASE()"
+            )
+        )
+    )
+    signature.update(
+        ("FOREIGN_KEY", *row)
+        for row in connection.execute(
+            text(
+                "SELECT k.table_name,k.constraint_name,k.column_name,"
+                "k.referenced_table_name,k.referenced_column_name,r.update_rule,r.delete_rule "
+                "FROM information_schema.key_column_usage k "
+                "JOIN information_schema.referential_constraints r "
+                "ON r.constraint_schema=k.constraint_schema AND r.constraint_name=k.constraint_name "
+                "WHERE k.table_schema=DATABASE() AND k.referenced_table_name IS NOT NULL"
+            )
+        )
+    )
+    return signature
+
+
 @unittest.skipUnless(MYSQL_TEST_URL, "MYSQL_TEST_DATABASE_URL is not configured")
 class MySqlMigrationIntegrationTests(unittest.TestCase):
     def test_empty_existing_repeated_upgrade_and_protected_downgrade(self) -> None:
@@ -30,16 +67,45 @@ class MySqlMigrationIntegrationTests(unittest.TestCase):
         engine = create_engine(MYSQL_TEST_URL)
 
         command.downgrade(config, "base")
+        command.upgrade(config, "20260729_0004")
+        with engine.connect() as connection:
+            schema_at_0004 = _schema_signature(connection)
         command.upgrade(config, "head")
         command.upgrade(config, "head")
         with engine.connect() as connection:
+            schema_at_head = _schema_signature(connection)
+            self.assertFalse(schema_at_0004 - schema_at_head)
+            self.assertEqual(
+                schema_at_head - schema_at_0004,
+                {
+                    ("COLUMN", "prd", "source_requirement_version_id", "bigint unsigned", "NO"),
+                    (
+                        "INDEX",
+                        "prd",
+                        "idx_prd_source_requirement_version",
+                        1,
+                        "source_requirement_version_id",
+                        1,
+                    ),
+                    (
+                        "FOREIGN_KEY",
+                        "prd",
+                        "fk_prd_source_requirement_version_id",
+                        "source_requirement_version_id",
+                        "requirement_version",
+                        "id",
+                        "RESTRICT",
+                        "RESTRICT",
+                    ),
+                },
+            )
             server_version = connection.execute(text("SELECT VERSION()")).scalar_one()
             self.assertRegex(server_version, r"^8\.4(?:\.|$)")
             self.assertEqual(
                 connection.execute(
                     text("SELECT version_num FROM alembic_version")
                 ).scalar_one(),
-                "20260729_0004",
+                "20260821_0005",
             )
             storage_columns = connection.execute(
                 text(
@@ -56,6 +122,37 @@ class MySqlMigrationIntegrationTests(unittest.TestCase):
                 )
             ).scalar_one()
             self.assertEqual((storage_columns, storage_indexes), (1, 1))
+            prd_column = connection.execute(
+                text(
+                    "SELECT column_type,is_nullable FROM information_schema.columns "
+                    "WHERE table_schema=DATABASE() AND table_name='prd' "
+                    "AND column_name='source_requirement_version_id'"
+                )
+            ).one()
+            prd_index = connection.execute(
+                text(
+                    "SELECT GROUP_CONCAT(column_name ORDER BY seq_in_index),MIN(non_unique) "
+                    "FROM information_schema.statistics "
+                    "WHERE table_schema=DATABASE() AND table_name='prd' "
+                    "AND index_name='idx_prd_source_requirement_version'"
+                )
+            ).one()
+            prd_fk = connection.execute(
+                text(
+                    "SELECT k.referenced_table_name,k.referenced_column_name,r.update_rule,r.delete_rule "
+                    "FROM information_schema.key_column_usage k "
+                    "JOIN information_schema.referential_constraints r "
+                    "ON r.constraint_schema=k.constraint_schema AND r.constraint_name=k.constraint_name "
+                    "WHERE k.table_schema=DATABASE() AND k.table_name='prd' "
+                    "AND k.constraint_name='fk_prd_source_requirement_version_id' "
+                    "AND k.column_name='source_requirement_version_id'"
+                )
+            ).one()
+            self.assertEqual(tuple(prd_column), ("bigint unsigned", "NO"))
+            self.assertEqual(tuple(prd_index), ("source_requirement_version_id", 1))
+            self.assertEqual(
+                tuple(prd_fk), ("requirement_version", "id", "RESTRICT", "RESTRICT")
+            )
             family_index_columns = connection.execute(
                 text(
                     "SELECT GROUP_CONCAT(column_name ORDER BY seq_in_index) "
