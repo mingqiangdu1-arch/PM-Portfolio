@@ -30,13 +30,16 @@ import type {
   CreateAiTaskHeaders,
   CreateAiTaskRequest,
   CreateFileRelationHeaders,
+  CreatePrdVersionHeaders,
   CreateProjectHeaders,
   CreateProjectRequest,
   CreateProjectResponse,
+  CreateProjectVersionPrdHeaders,
   CreateRequirementHeaders,
   CreateRequirementRequest,
   CreateRequirementVersionHeaders,
   CreateRequirementVersionRequest,
+  DecideDesignReviewHeaders,
   DeriveProjectVersionHeaders,
   DeriveProjectVersionRequest,
   DownloadFileVersionRequest,
@@ -59,6 +62,18 @@ import type {
   ListRequirementsParams,
   LogoutHeaders,
   LogoutResponse,
+  Mvp2CreatePrdRequest,
+  Mvp2CreatePrdVersionRequest,
+  Mvp2DecideDesignReviewRequest,
+  Mvp2DesignReviewResponse,
+  Mvp2Error403Response,
+  Mvp2Error404Response,
+  Mvp2Error409Response,
+  Mvp2Error422Response,
+  Mvp2PrdListResponse,
+  Mvp2PrdResponse,
+  Mvp2PrdVersionResponse,
+  Mvp2SubmitDesignReviewRequest,
   ProjectCommandRequest,
   ProjectContextResponse,
   ProjectListResponse,
@@ -94,6 +109,7 @@ import type {
   StandardErrorResponse,
   StreamAiTaskEventsHeaders,
   SubmitClarificationAnswersRequest,
+  SubmitPrdDesignReviewHeaders,
   SubmitRequirementClarificationAnswersHeaders,
   UpdateProjectContextRequest,
   UpdateProjectRequest,
@@ -1082,6 +1098,148 @@ export const register = async (authRegisterRequest: AuthRegisterRequest, options
 
 
 
+export type getDesignReviewResponse200 = {
+  data: Mvp2DesignReviewResponse
+  status: 200
+}
+
+export type getDesignReviewResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type getDesignReviewResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type getDesignReviewResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type getDesignReviewResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type getDesignReviewResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type getDesignReviewResponseSuccess = (getDesignReviewResponse200) & {
+  headers: Headers;
+};
+export type getDesignReviewResponseError = (getDesignReviewResponse401 | getDesignReviewResponse403 | getDesignReviewResponse404 | getDesignReviewResponse409 | getDesignReviewResponse422) & {
+  headers: Headers;
+};
+
+export type getDesignReviewResponse = (getDesignReviewResponseSuccess | getDesignReviewResponseError)
+
+export const getGetDesignReviewUrl = (reviewId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/design-reviews/${reviewId}`
+}
+
+/**
+ * @summary Get a minimal Design Review
+ */
+export const getDesignReview = async (reviewId: string, options?: RequestInit): Promise<getDesignReviewResponse> => {
+
+  const res = await fetch(getGetDesignReviewUrl(reviewId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getDesignReviewResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getDesignReviewResponse
+}
+
+
+
+export type decideDesignReviewResponse200 = {
+  data: Mvp2DesignReviewResponse
+  status: 200
+}
+
+export type decideDesignReviewResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type decideDesignReviewResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type decideDesignReviewResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type decideDesignReviewResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type decideDesignReviewResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type decideDesignReviewResponseSuccess = (decideDesignReviewResponse200) & {
+  headers: Headers;
+};
+export type decideDesignReviewResponseError = (decideDesignReviewResponse401 | decideDesignReviewResponse403 | decideDesignReviewResponse404 | decideDesignReviewResponse409 | decideDesignReviewResponse422) & {
+  headers: Headers;
+};
+
+export type decideDesignReviewResponse = (decideDesignReviewResponseSuccess | decideDesignReviewResponseError)
+
+export const getDecideDesignReviewUrl = (reviewId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/design-reviews/${reviewId}:decide`
+}
+
+/**
+ * @summary Decide changes requested or pass and atomically confirm
+ */
+export const decideDesignReview = async (reviewId: string,
+    mvp2DecideDesignReviewRequest: Mvp2DecideDesignReviewRequest,
+    headers: DecideDesignReviewHeaders, options?: RequestInit): Promise<decideDesignReviewResponse> => {
+
+  const res = await fetch(getDecideDesignReviewUrl(reviewId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp2DecideDesignReviewRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: decideDesignReviewResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as decideDesignReviewResponse
+}
+
+
+
 export type createFileRelationResponse200 = {
   data: FileRelationResponse
   status: 200
@@ -1800,6 +1958,218 @@ export const getApiHealth = async ( options?: RequestInit): Promise<getApiHealth
 
 
 
+export type getPrdVersionResponse200 = {
+  data: Mvp2PrdVersionResponse
+  status: 200
+}
+
+export type getPrdVersionResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type getPrdVersionResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type getPrdVersionResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type getPrdVersionResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type getPrdVersionResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type getPrdVersionResponseSuccess = (getPrdVersionResponse200) & {
+  headers: Headers;
+};
+export type getPrdVersionResponseError = (getPrdVersionResponse401 | getPrdVersionResponse403 | getPrdVersionResponse404 | getPrdVersionResponse409 | getPrdVersionResponse422) & {
+  headers: Headers;
+};
+
+export type getPrdVersionResponse = (getPrdVersionResponseSuccess | getPrdVersionResponseError)
+
+export const getGetPrdVersionUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/prd-versions/${versionId}`
+}
+
+/**
+ * @summary Get an immutable PRD Version
+ */
+export const getPrdVersion = async (versionId: string, options?: RequestInit): Promise<getPrdVersionResponse> => {
+
+  const res = await fetch(getGetPrdVersionUrl(versionId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getPrdVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPrdVersionResponse
+}
+
+
+
+export type getPrdResponse200 = {
+  data: Mvp2PrdResponse
+  status: 200
+}
+
+export type getPrdResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type getPrdResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type getPrdResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type getPrdResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type getPrdResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type getPrdResponseSuccess = (getPrdResponse200) & {
+  headers: Headers;
+};
+export type getPrdResponseError = (getPrdResponse401 | getPrdResponse403 | getPrdResponse404 | getPrdResponse409 | getPrdResponse422) & {
+  headers: Headers;
+};
+
+export type getPrdResponse = (getPrdResponseSuccess | getPrdResponseError)
+
+export const getGetPrdUrl = (prdId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/prds/${prdId}`
+}
+
+/**
+ * @summary Get a PRD aggregate
+ */
+export const getPrd = async (prdId: string, options?: RequestInit): Promise<getPrdResponse> => {
+
+  const res = await fetch(getGetPrdUrl(prdId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getPrdResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getPrdResponse
+}
+
+
+
+export type createPrdVersionResponse201 = {
+  data: Mvp2PrdVersionResponse
+  status: 201
+}
+
+export type createPrdVersionResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type createPrdVersionResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type createPrdVersionResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type createPrdVersionResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type createPrdVersionResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type createPrdVersionResponseSuccess = (createPrdVersionResponse201) & {
+  headers: Headers;
+};
+export type createPrdVersionResponseError = (createPrdVersionResponse401 | createPrdVersionResponse403 | createPrdVersionResponse404 | createPrdVersionResponse409 | createPrdVersionResponse422) & {
+  headers: Headers;
+};
+
+export type createPrdVersionResponse = (createPrdVersionResponseSuccess | createPrdVersionResponseError)
+
+export const getCreatePrdVersionUrl = (prdId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/prds/${prdId}/versions`
+}
+
+/**
+ * @summary Explicitly save a new immutable PRD Version
+ */
+export const createPrdVersion = async (prdId: string,
+    mvp2CreatePrdVersionRequest: Mvp2CreatePrdVersionRequest,
+    headers: CreatePrdVersionHeaders, options?: RequestInit): Promise<createPrdVersionResponse> => {
+
+  const res = await fetch(getCreatePrdVersionUrl(prdId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp2CreatePrdVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createPrdVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createPrdVersionResponse
+}
+
+
+
 export type compareProjectVersionsResponse200 = {
   data: ProjectVersionCompareResponse
   status: 200
@@ -1962,6 +2332,220 @@ export const getProjectVersion = async (versionId: string, options?: RequestInit
 
   const data: getProjectVersionResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as getProjectVersionResponse
+}
+
+
+
+export type submitPrdDesignReviewResponse201 = {
+  data: Mvp2DesignReviewResponse
+  status: 201
+}
+
+export type submitPrdDesignReviewResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type submitPrdDesignReviewResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type submitPrdDesignReviewResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type submitPrdDesignReviewResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type submitPrdDesignReviewResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type submitPrdDesignReviewResponseSuccess = (submitPrdDesignReviewResponse201) & {
+  headers: Headers;
+};
+export type submitPrdDesignReviewResponseError = (submitPrdDesignReviewResponse401 | submitPrdDesignReviewResponse403 | submitPrdDesignReviewResponse404 | submitPrdDesignReviewResponse409 | submitPrdDesignReviewResponse422) & {
+  headers: Headers;
+};
+
+export type submitPrdDesignReviewResponse = (submitPrdDesignReviewResponseSuccess | submitPrdDesignReviewResponseError)
+
+export const getSubmitPrdDesignReviewUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/design-reviews`
+}
+
+/**
+ * @summary Submit an exact PRD Version for a new review round
+ */
+export const submitPrdDesignReview = async (versionId: string,
+    mvp2SubmitDesignReviewRequest: Mvp2SubmitDesignReviewRequest,
+    headers: SubmitPrdDesignReviewHeaders, options?: RequestInit): Promise<submitPrdDesignReviewResponse> => {
+
+  const res = await fetch(getSubmitPrdDesignReviewUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp2SubmitDesignReviewRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: submitPrdDesignReviewResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as submitPrdDesignReviewResponse
+}
+
+
+
+export type listProjectVersionPrdsResponse200 = {
+  data: Mvp2PrdListResponse
+  status: 200
+}
+
+export type listProjectVersionPrdsResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type listProjectVersionPrdsResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type listProjectVersionPrdsResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type listProjectVersionPrdsResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type listProjectVersionPrdsResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type listProjectVersionPrdsResponseSuccess = (listProjectVersionPrdsResponse200) & {
+  headers: Headers;
+};
+export type listProjectVersionPrdsResponseError = (listProjectVersionPrdsResponse401 | listProjectVersionPrdsResponse403 | listProjectVersionPrdsResponse404 | listProjectVersionPrdsResponse409 | listProjectVersionPrdsResponse422) & {
+  headers: Headers;
+};
+
+export type listProjectVersionPrdsResponse = (listProjectVersionPrdsResponseSuccess | listProjectVersionPrdsResponseError)
+
+export const getListProjectVersionPrdsUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/prds`
+}
+
+/**
+ * @summary Get the main PRD for a project version
+ */
+export const listProjectVersionPrds = async (versionId: string, options?: RequestInit): Promise<listProjectVersionPrdsResponse> => {
+
+  const res = await fetch(getListProjectVersionPrdsUrl(versionId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listProjectVersionPrdsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProjectVersionPrdsResponse
+}
+
+
+
+export type createProjectVersionPrdResponse201 = {
+  data: Mvp2PrdResponse
+  status: 201
+}
+
+export type createProjectVersionPrdResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type createProjectVersionPrdResponse403 = {
+  data: Mvp2Error403Response
+  status: 403
+}
+
+export type createProjectVersionPrdResponse404 = {
+  data: Mvp2Error404Response
+  status: 404
+}
+
+export type createProjectVersionPrdResponse409 = {
+  data: Mvp2Error409Response
+  status: 409
+}
+
+export type createProjectVersionPrdResponse422 = {
+  data: Mvp2Error422Response
+  status: 422
+}
+
+export type createProjectVersionPrdResponseSuccess = (createProjectVersionPrdResponse201) & {
+  headers: Headers;
+};
+export type createProjectVersionPrdResponseError = (createProjectVersionPrdResponse401 | createProjectVersionPrdResponse403 | createProjectVersionPrdResponse404 | createProjectVersionPrdResponse409 | createProjectVersionPrdResponse422) & {
+  headers: Headers;
+};
+
+export type createProjectVersionPrdResponse = (createProjectVersionPrdResponseSuccess | createProjectVersionPrdResponseError)
+
+export const getCreateProjectVersionPrdUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/prds`
+}
+
+/**
+ * @summary Create a PRD identity from a confirmed Requirement Version
+ */
+export const createProjectVersionPrd = async (versionId: string,
+    mvp2CreatePrdRequest: Mvp2CreatePrdRequest,
+    headers: CreateProjectVersionPrdHeaders, options?: RequestInit): Promise<createProjectVersionPrdResponse> => {
+
+  const res = await fetch(getCreateProjectVersionPrdUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp2CreatePrdRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createProjectVersionPrdResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createProjectVersionPrdResponse
 }
 
 

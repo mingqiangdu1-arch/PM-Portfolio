@@ -28,6 +28,14 @@ const client = vi.hoisted(() => ({
   submitRequirementClarificationAnswers: vi.fn(),
   reviseRequirementVersion: vi.fn(),
   getRequirement: vi.fn(),
+  listProjectVersionPrds: vi.fn(),
+  createProjectVersionPrd: vi.fn(),
+  getPrd: vi.fn(),
+  getPrdVersion: vi.fn(),
+  createPrdVersion: vi.fn(),
+  submitPrdDesignReview: vi.fn(),
+  getDesignReview: vi.fn(),
+  decideDesignReview: vi.fn(),
 }));
 
 vi.mock("./generated/client", () => client);
@@ -62,6 +70,34 @@ describe("realApi", () => {
     __resetRealAdapterForTests();
     vi.stubGlobal("XMLHttpRequest", SuccessfulUploadRequest);
     vi.stubGlobal("crypto", { randomUUID: vi.fn(() => "test-key"), subtle: { digest: vi.fn(async () => new Uint8Array(32).buffer) } });
+  });
+
+  it("maps all frozen PRD and Design Review operations through the generated client", async () => {
+    const prd = { id: "prd-1", project_version_id: "pv-1", source_requirement_version_id: "req-v2", name: "核心 PRD", status: "draft", row_version: 3, current_version_id: "prd-v1" };
+    const version = { id: "prd-v1", prd_id: "prd-1", version_no: "V1", content_hash: "a".repeat(64), content_json: { schema_version: "prd.mvp2.v1", background: "背景", goal: "目标", primary_user: "负责人", in_scope: ["范围内"], out_of_scope: ["范围外"], core_workflow: ["步骤"], key_rules: ["规则"], exceptions_and_boundaries: ["边界"], acceptance_criteria: ["验收"] }, source_version_id: null, is_effective: true };
+    const review = { id: "review-1", project_version_id: "pv-1", round_no: 1, row_version: 2, status: "open", summary: null, scope: { prd_id: "prd-1", prd_version_id: "prd-v1", content_hash: "a".repeat(64) } };
+    client.listProjectVersionPrds.mockResolvedValue(success({ items: [prd], has_more: false }));
+    client.createProjectVersionPrd.mockResolvedValue(success({ prd }));
+    client.getPrd.mockResolvedValue(success({ prd }));
+    client.getPrdVersion.mockResolvedValue(success({ prd_version: version }));
+    client.createPrdVersion.mockResolvedValue(success({ prd_version: version }));
+    client.submitPrdDesignReview.mockResolvedValue(success({ design_review: review }));
+    client.getDesignReview.mockResolvedValue(success({ design_review: review }));
+    client.decideDesignReview.mockResolvedValue(success({ design_review: { ...review, status: "passed", row_version: 3 } }));
+
+    await expect(realApi.prds.list("pv-1")).resolves.toMatchObject([{ id: "prd-1", rowVersion: 3 }]);
+    await expect(realApi.prds.create("pv-1", { name: "核心 PRD", sourceRequirementVersionId: "req-v2" })).resolves.toMatchObject({ sourceRequirementVersionId: "req-v2" });
+    await expect(realApi.prds.get("prd-1")).resolves.toMatchObject({ currentVersionId: "prd-v1" });
+    await expect(realApi.prds.getVersion("prd-v1")).resolves.toMatchObject({ content: { schemaVersion: "prd.mvp2.v1", primaryUser: "负责人" } });
+    await expect(realApi.prds.saveVersion("prd-1", { expectedVersion: 3, changeNote: "首次保存", content: { schemaVersion: "prd.mvp2.v1", background: "背景", goal: "目标", primaryUser: "负责人", inScope: ["范围内"], outOfScope: ["范围外"], coreWorkflow: ["步骤"], keyRules: ["规则"], exceptionsAndBoundaries: ["边界"], acceptanceCriteria: ["验收"] } })).resolves.toMatchObject({ versionNo: "V1" });
+    await expect(realApi.prds.submitReview("pv-1", { prdId: "prd-1", prdVersionId: "prd-v1", contentHash: "a".repeat(64), expectedVersion: 3 })).resolves.toMatchObject({ status: "open" });
+    await expect(realApi.prds.getReview("review-1")).resolves.toMatchObject({ roundNo: 1 });
+    await expect(realApi.prds.decideReview("review-1", { decision: "pass", expectedVersion: 2 })).resolves.toMatchObject({ status: "passed" });
+
+    expect(client.createProjectVersionPrd).toHaveBeenCalledWith("pv-1", { name: "核心 PRD", source_requirement_version_id: "req-v2" }, expect.objectContaining({ "Idempotency-Key": expect.stringMatching(/^web-/) }), expect.any(Object));
+    expect(client.createPrdVersion.mock.calls[0][1]).toMatchObject({ expected_version: 3, change_note: "首次保存", content_json: { schema_version: "prd.mvp2.v1", primary_user: "负责人" } });
+    expect(client.submitPrdDesignReview.mock.calls[0][1]).toEqual({ prd_id: "prd-1", prd_version_id: "prd-v1", content_hash: "a".repeat(64), expected_version: 3 });
+    expect(client.decideDesignReview.mock.calls[0][1]).toEqual({ decision: "pass", expected_version: 2 });
   });
 
   it("refreshes once after a 401 and retries the original protected request", async () => {

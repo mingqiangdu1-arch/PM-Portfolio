@@ -17,9 +17,9 @@ export interface IdentityPort { login(input: AuthCredentials): Promise<SessionVi
 export interface ProjectPort { list(scenario?: Scenario): Promise<ProjectSummaryView[]>; create(input: CreateProjectInput, scenario?: Scenario): Promise<{ projectId: string; workingVersionId: string }>; overview(projectId: string, viewedVersionId?: string): Promise<ProjectOverviewView>; versions(projectId: string): Promise<VersionView[]>; setWorking(projectId: string, versionId: string, expectedProjectVersion: number, scenario?: Scenario): Promise<ProjectOverviewView>; derive(projectId: string, input: DeriveVersionInput, scenario?: Scenario): Promise<VersionView> }
 export interface FilePort { list(projectId: string): Promise<FileItemView[]>; upload(projectId: string, file: File, scenario?: Scenario, onProgress?: (progress: number) => void): Promise<FileItemView>; retry(projectId: string, item: FileItemView): Promise<FileItemView>; relate(projectId: string, fileId: string, relation: string): Promise<FileItemView> }
 export interface HealthPort { get(): Promise<HealthView> }
-export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; ai: AiPort }
+export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort }
 export type FrontendErrorCategory = "UNAUTHENTICATED" | "FORBIDDEN" | "CONFLICT" | "RATE_LIMITED" | "STORAGE_UNAVAILABLE" | "CONTRACT_UNAVAILABLE" | "FAILED";
-import type { ErrorCode, Sprint2ErrorCode } from "./generated/models";
+import type { ErrorCode, Mvp2ErrorCode, Sprint2ErrorCode } from "./generated/models";
 import type {
   AiResultStatus,
   AiTaskStatus,
@@ -40,7 +40,7 @@ export class PortError extends Error {
     public readonly status?: number,
     public readonly traceId?: string,
     public readonly details: unknown[] = [],
-    public readonly apiCode?: ErrorCode | Sprint2ErrorCode,
+    public readonly apiCode?: ErrorCode | Sprint2ErrorCode | Mvp2ErrorCode,
   ) { super(traceId ? `${message} Trace: ${traceId}` : message); this.name = "PortError"; }
 }
 
@@ -189,6 +189,71 @@ export interface RequirementPort {
   submitClarificationAnswers(versionId: string, input: SubmitClarificationAnswersInput): Promise<{ version: RequirementVersionView; baselineCandidateRef: string | null }>;
   revise(versionId: string, input: ReviseRequirementVersionInput): Promise<RequirementVersionView>;
   confirm(versionId: string, input: ConfirmRequirementVersionInput): Promise<{ version: RequirementVersionView; gateResult: "passed" | "passed_with_risk" }>;
+}
+
+export type PrdStatusValue = "draft" | "in_review" | "changes_requested" | "confirmed";
+export type DesignReviewStatusValue = "open" | "changes_requested" | "passed";
+export type ReviewDecisionValue = "changes_requested" | "pass";
+
+export interface PrdContentView {
+  schemaVersion: "prd.mvp2.v1";
+  background: string;
+  goal: string;
+  primaryUser: string;
+  inScope: string[];
+  outOfScope: string[];
+  coreWorkflow: string[];
+  keyRules: string[];
+  exceptionsAndBoundaries: string[];
+  acceptanceCriteria: string[];
+}
+
+export interface PrdView {
+  id: string;
+  projectVersionId: string;
+  sourceRequirementVersionId: string;
+  name: string;
+  status: PrdStatusValue;
+  rowVersion: number;
+  currentVersionId: string | null;
+}
+
+export interface PrdVersionView {
+  id: string;
+  prdId: string;
+  versionNo: string;
+  contentHash: string;
+  content: PrdContentView;
+  sourceVersionId: string | null;
+  isEffective: boolean;
+}
+
+export interface DesignReviewView {
+  id: string;
+  projectVersionId: string;
+  roundNo: number;
+  rowVersion: number;
+  status: DesignReviewStatusValue;
+  summary: string | null;
+  prdId: string;
+  prdVersionId: string;
+  contentHash: string;
+}
+
+export interface CreatePrdInput { name: string; sourceRequirementVersionId: string }
+export interface SavePrdVersionInput { expectedVersion: number; changeNote: string; content: PrdContentView }
+export interface SubmitPrdReviewInput { prdId: string; prdVersionId: string; contentHash: string; expectedVersion: number }
+export interface DecidePrdReviewInput { decision: ReviewDecisionValue; expectedVersion: number; summary?: string }
+
+export interface PrdPort {
+  list(projectVersionId: string): Promise<PrdView[]>;
+  create(projectVersionId: string, input: CreatePrdInput): Promise<PrdView>;
+  get(prdId: string): Promise<PrdView>;
+  getVersion(versionId: string): Promise<PrdVersionView>;
+  saveVersion(prdId: string, input: SavePrdVersionInput): Promise<PrdVersionView>;
+  submitReview(projectVersionId: string, input: SubmitPrdReviewInput): Promise<DesignReviewView>;
+  getReview(reviewId: string): Promise<DesignReviewView>;
+  decideReview(reviewId: string, input: DecidePrdReviewInput): Promise<DesignReviewView>;
 }
 
 export interface AiTaskView {

@@ -26,6 +26,14 @@ import {
   submitRequirementClarificationAnswers,
   reviseRequirementVersion,
   getRequirement,
+  listProjectVersionPrds,
+  createProjectVersionPrd,
+  getPrd,
+  getPrdVersion,
+  createPrdVersion,
+  submitPrdDesignReview,
+  getDesignReview,
+  decideDesignReview,
 } from "./generated/client";
 import type {
   ApiResponseHealthData,
@@ -59,6 +67,13 @@ import type {
   RequirementContent,
   SourceRef,
   ReviseRequirementVersionRequest,
+  Mvp2CreatePrdVersionRequest,
+  Mvp2DesignReviewData,
+  Mvp2ErrorCode,
+  Mvp2PrdContent,
+  Mvp2PrdData,
+  Mvp2PrdListData,
+  Mvp2PrdVersionData,
 } from "./generated/models";
 import type {
   FileItemView,
@@ -89,6 +104,15 @@ import type {
   SetClarificationModeInput,
   SourceRefView,
   SubmitClarificationAnswersInput,
+  CreatePrdInput,
+  DecidePrdReviewInput,
+  DesignReviewView,
+  PrdContentView,
+  PrdPort,
+  PrdVersionView,
+  PrdView,
+  SavePrdVersionInput,
+  SubmitPrdReviewInput,
 } from "./ports";
 import { PortError } from "./ports";
 import { createClientId } from "../client-id";
@@ -125,7 +149,7 @@ function isEnvelope<T>(value: unknown): value is Envelope<T> {
   return Boolean(value && typeof value === "object" && "data" in value && "trace_id" in value);
 }
 
-function categoryFor(status: number, apiCode?: ErrorCode): FrontendErrorCategory {
+function categoryFor(status: number, apiCode?: ErrorCode | Mvp2ErrorCode): FrontendErrorCategory {
   if (apiCode === "VERSION_CONFLICT" || apiCode === "IDEMPOTENCY_CONFLICT" || status === 409) return "CONFLICT";
   if (apiCode === "RATE_LIMITED") return "RATE_LIMITED";
   if (apiCode === "STORAGE_UNAVAILABLE" || apiCode === "DEPENDENCY_UNAVAILABLE") return "STORAGE_UNAVAILABLE";
@@ -538,6 +562,64 @@ function mapResult(data: AiResult): AiResultView {
   };
 }
 
+const mapPrd = (data: Mvp2PrdData["prd"] | Mvp2PrdListData["items"][number]): PrdView => ({
+  id: data.id,
+  projectVersionId: data.project_version_id,
+  sourceRequirementVersionId: data.source_requirement_version_id,
+  name: data.name,
+  status: data.status,
+  rowVersion: data.row_version,
+  currentVersionId: data.current_version_id,
+});
+
+const mapPrdContent = (content: Mvp2PrdContent): PrdContentView => ({
+  schemaVersion: content.schema_version,
+  background: content.background,
+  goal: content.goal,
+  primaryUser: content.primary_user,
+  inScope: content.in_scope,
+  outOfScope: content.out_of_scope,
+  coreWorkflow: content.core_workflow,
+  keyRules: content.key_rules,
+  exceptionsAndBoundaries: content.exceptions_and_boundaries,
+  acceptanceCriteria: content.acceptance_criteria,
+});
+
+const serializePrdContent = (content: PrdContentView): Mvp2PrdContent => ({
+  schema_version: content.schemaVersion,
+  background: content.background,
+  goal: content.goal,
+  primary_user: content.primaryUser,
+  in_scope: content.inScope,
+  out_of_scope: content.outOfScope,
+  core_workflow: content.coreWorkflow,
+  key_rules: content.keyRules,
+  exceptions_and_boundaries: content.exceptionsAndBoundaries,
+  acceptance_criteria: content.acceptanceCriteria,
+});
+
+const mapPrdVersion = (data: Mvp2PrdVersionData["prd_version"]): PrdVersionView => ({
+  id: data.id,
+  prdId: data.prd_id,
+  versionNo: data.version_no,
+  contentHash: data.content_hash,
+  content: mapPrdContent(data.content_json),
+  sourceVersionId: data.source_version_id,
+  isEffective: data.is_effective,
+});
+
+const mapDesignReview = (data: Mvp2DesignReviewData["design_review"]): DesignReviewView => ({
+  id: data.id,
+  projectVersionId: data.project_version_id,
+  roundNo: data.round_no,
+  rowVersion: data.row_version,
+  status: data.status,
+  summary: data.summary,
+  prdId: data.scope.prd_id,
+  prdVersionId: data.scope.prd_version_id,
+  contentHash: data.scope.content_hash,
+});
+
 async function projectOverview(projectId: string, viewedVersionId?: string): Promise<ProjectOverviewView> {
   const project = await protectedRequest<ProjectSummary>(() => getProject(projectId, requestOptions()));
   const selectedId = viewedVersionId ?? project.data.working_version_id;
@@ -782,6 +864,64 @@ export const realApi: FrontendApi = {
       return { version: mapRequirementVersion(result.data.effective_version), gateResult: result.data.gate_result };
     },
   } satisfies RequirementPort,
+  prds: {
+    async list(projectVersionId: string) {
+      const result = await protectedRequest<Mvp2PrdListData>(() => listProjectVersionPrds(projectVersionId, requestOptions()));
+      return result.data.items.map(mapPrd);
+    },
+    async create(projectVersionId: string, input: CreatePrdInput) {
+      const scope = `create-prd:${projectVersionId}:${input.sourceRequirementVersionId}:${input.name}`;
+      const result = await protectedRequest<Mvp2PrdData>(() => createProjectVersionPrd(projectVersionId, {
+        name: input.name,
+        source_requirement_version_id: input.sourceRequirementVersionId,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapPrd(result.data.prd);
+    },
+    async get(prdId: string) {
+      const result = await protectedRequest<Mvp2PrdData>(() => getPrd(prdId, requestOptions()));
+      return mapPrd(result.data.prd);
+    },
+    async getVersion(versionId: string) {
+      const result = await protectedRequest<Mvp2PrdVersionData>(() => getPrdVersion(versionId, requestOptions()));
+      return mapPrdVersion(result.data.prd_version);
+    },
+    async saveVersion(prdId: string, input: SavePrdVersionInput) {
+      const scope = `save-prd-version:${prdId}:${input.expectedVersion}:${JSON.stringify(input)}`;
+      const body: Mvp2CreatePrdVersionRequest = {
+        expected_version: input.expectedVersion,
+        change_note: input.changeNote,
+        content_json: serializePrdContent(input.content),
+      };
+      const result = await protectedRequest<Mvp2PrdVersionData>(() => createPrdVersion(prdId, body, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapPrdVersion(result.data.prd_version);
+    },
+    async submitReview(projectVersionId: string, input: SubmitPrdReviewInput) {
+      const scope = `submit-prd-review:${projectVersionId}:${input.prdId}:${input.prdVersionId}:${input.expectedVersion}`;
+      const result = await protectedRequest<Mvp2DesignReviewData>(() => submitPrdDesignReview(projectVersionId, {
+        prd_id: input.prdId,
+        prd_version_id: input.prdVersionId,
+        content_hash: input.contentHash,
+        expected_version: input.expectedVersion,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapDesignReview(result.data.design_review);
+    },
+    async getReview(reviewId: string) {
+      const result = await protectedRequest<Mvp2DesignReviewData>(() => getDesignReview(reviewId, requestOptions()));
+      return mapDesignReview(result.data.design_review);
+    },
+    async decideReview(reviewId: string, input: DecidePrdReviewInput) {
+      const scope = `decide-prd-review:${reviewId}:${input.expectedVersion}:${input.decision}:${input.summary ?? ""}`;
+      const body = input.decision === "changes_requested"
+        ? { decision: "changes_requested" as const, expected_version: input.expectedVersion, summary: input.summary ?? "" }
+        : { decision: "pass" as const, expected_version: input.expectedVersion };
+      const result = await protectedRequest<Mvp2DesignReviewData>(() => decideDesignReview(reviewId, body, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapDesignReview(result.data.design_review);
+    },
+  } satisfies PrdPort,
   ai: {
     async createTask(input: CreateAiTaskInput) {
       const result = await protectedRequest<AiTaskSummary>(() => createAiTask({
