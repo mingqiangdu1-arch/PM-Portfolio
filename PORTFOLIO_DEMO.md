@@ -1,20 +1,14 @@
-# Portfolio P1 delivery
+# Portfolio delivery status
 
-## REAL Production Accepted Release
+## MVP2 accepted integration baseline
 
-- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
-- Release Tag: `portfolio-p1-v1-accepted-main`
-- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
-- Public Acceptance: PASS
-- UUID/HTTP compatibility: PASS
-- Alembic: `20260729_0004`
-- P1 Scope: CLOSED
-- RC-02: NOT ENTERED
-- `P1-MAIN-PROMOTION-07=PASS`; `P1-RELEASE-TAG-08=PASS`
+- Frozen contract: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`, OpenAPI SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations), migration head `20260821_0005`; AI is OUT.
+- Accepted source commits: `2499d7a`, `28e904e`, `00511ae`, and source-binding fix `201a53e`.
+- Authorized PRD happy path: PASS. It covers confirmed Requirement source visibility, PRD creation, immutable versions, review changes-requested and resubmission, confirmation, and confirmed-editor read-only behavior.
+- Post-push closeout: PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; Main has not changed. The later speculative `GET design-reviews` 405 is out of scope, not an implementation failure.
+- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`. No Release, Tag, Deployment, or Production authority is granted.
 
-The accepted production P1 chain is `Login -> Foundation -> Project -> Requirement -> Baseline -> Edit -> Confirm -> Persistence -> Reload`. REAL Production Accepted Release is the current P1 runtime fact.
-
-The following capabilities are not part of the current P1 Accepted Release and must not be described by this Portfolio Demo as production-accepted: File Upload, Version Derivation, Set Working Version, AI Runtime, AI Worker, Redis, MinIO / S3, Qdrant, P2, P3, P4, and AI MVP.
+The P1 production release is historical only: its runtime `1be1aec`, tag `portfolio-p1-v1-accepted-main`, and migration `20260729_0004` must not be represented as current MVP2 deployment status.
 
 ## Live MVP fallback
 

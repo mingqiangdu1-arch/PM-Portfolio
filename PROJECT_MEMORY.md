@@ -1,19 +1,13 @@
 # PROJECT MEMORY
 
-## P1 Accepted Release Baseline
+## MVP2 Current Governance Memory
 
-- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
-- Release Tag: `portfolio-p1-v1-accepted-main`
-- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
-- Alembic revision: `20260729_0004`
-- Public Acceptance: PASS
-- UUID/HTTP compatibility: PASS
-- P1 Scope: CLOSED
-- RC-02: NOT ENTERED
+- Freeze is unchanged: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`, contract `mvp2.prd-review.rc02.v1`, OpenAPI SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations), migration head `20260821_0005`; AI is OUT.
+- Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, and source-binding fix `201a53e` are accepted. The fix preserves the persisted effective Requirement Version ID in confirmed/effective lists and leaves draft/non-effective null.
+- Integration acceptance is PASS: the authorized PRD happy path passed in disposable MySQL/API and real browser evidence. A later speculative `GET design-reviews` 405 is out of the frozen eight generated operations and is not an implementation failure.
+- Post-push closeout is PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; Main is unchanged. Current Gate is `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`, with no Release, Tag, Deployment, or Production authority.
 
-`P1-MAIN-PROMOTION-07=PASS` and `P1-RELEASE-TAG-08=PASS`. The accepted production release verifies `Git SHA -> Image -> Container -> Public Runtime`; its accepted P1 thin vertical loop is `Requirement -> Baseline -> Confirm -> Persistence`.
-
-Earlier sections that state “Development 尚未开始”, “尚未进入开发”, or “代码/API/迁移尚未形成” are historical statements about their design-stage context. They must not be interpreted as current project state or current authorization. This P1 implementation is not the complete product-design blueprint: it does not turn the remaining design, AI, data, or later P2–P4 scope into implemented functionality.
+P1 facts are historical only: `1be1aec`, `portfolio-p1-v1-accepted-main`, and migration `20260729_0004` describe the earlier accepted P1 release and do not describe current MVP2 state or authorization. Earlier design-stage statements that development had not started are historical context, not current status.
 
 > 项目：AI 产品设计与验证平台（亦称 AI 产品工作流平台）  
 > 建立日期：2026-07-27  

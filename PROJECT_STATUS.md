@@ -1,24 +1,24 @@
 # PROJECT STATUS
 
-> 最后更新：2026-08-20
+> 最后更新：2026-08-23
 
 ## Current Phase
 
-P1 Governance Closeout
+MVP2 Main Promotion Reconciliation Decision
 
-P1 Traceable RC、Public Acceptance、Main Promotion 与 Release Tag 均已完成；当前仅进行治理状态同步。
+MVP2 code and integration acceptance are complete on the accepted source branch; Main promotion is not yet authorized because `origin/main` at `14bc14e` and the accepted source at `201a53e` diverged from `1be1aec`.
 
-## Accepted Release Baseline
+## MVP2 Accepted Baseline
 
-- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
-- Release Tag: `portfolio-p1-v1-accepted-main`
-- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
-- Alembic: `20260729_0004`
-- Public Acceptance: PASS
-- UUID/HTTP compatibility: PASS
-- P1 Scope: CLOSED
-- RC-02: NOT ENTERED
-- `P1-MAIN-PROMOTION-07=PASS`; `P1-RELEASE-TAG-08=PASS`
+- Freeze: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1` / `mvp2.prd-review.rc02.v1`.
+- Contract: `packages/contracts/openapi/openapi.json`, SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e`, 50 paths / 56 operations.
+- Migration freeze/head: `20260821_0005`; only `prd.source_requirement_version_id`, `idx_prd_source_requirement_version`, and its FK are authorized. AI is OUT.
+- Accepted commits: Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, source-binding fix `201a53e`.
+- Integration / PRD happy path: PASS. The later `GET design-reviews` 405 is classified `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
+- Post-push closeout: PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; canonical content clean and true-untracked count zero.
+- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`; Release, Tag, Deployment, and Production authority are not granted.
+
+The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and `20260729_0004`) are historical only.
 
 ## Completed
 
@@ -153,24 +153,18 @@ P1 Traceable RC、Public Acceptance、Main Promotion 与 Release Tag 均已完�
 
 ## Current Task
 
-P1 Governance Closeout only：仅同步 Accepted Release 的治理事实。不修改 Runtime、Contract、Schema、Migration、Deployment 或 Production。
+完成 `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`：在不改变已接受源分支、Main、远端或 Production 的前提下，构造并审查受控候选。不得重新执行已经通过的 Package、Runtime、Browser 或 Integration 验证。
 
 ## Next Phase
 
-MVP Contract Preflight — NOT ENTERED。
-
-MVP Contract Preflight 只是下一 Gate，不是已批准开发 Scope。RC-02 只有在 Preflight PASS 后才能进入 Freeze。
+仅在 reconciliation 候选被接受后，才能单独决定是否签发一次性 Main Promotion authority；不推定 Release、Tag、Deployment 或 Production action。
 
 ## Prohibited
 
-- 不重新打开已关闭 P1 Scope
-- 不把 P1 exclusion 描述成已实现
-- 不修改 Accepted Runtime Release
-- 不修改 R3 Contract
-- 不修改 Alembic / Schema
-- 不重新部署生产环境
-- 不自动进入 MVP Contract Preflight
-- 不自动进入 RC-02
+- 不重新打开冻结的 RC-02、Product Semantics、State Machine 或 AI Boundary
+- 不修改 OpenAPI、Alembic / Schema、已接受源分支或 `origin/main`
+- 不把历史 P1 事实描述为当前 MVP2 状态
+- 不执行 Release、Tag、Deployment、Production 或 Production migration
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑
 - 绕过当前有效开发规划自行修改技术栈、MVP 边界、Sprint、模块依赖或发布 Gate
 - 绕过当前有效基线，直接使用历史 DOCX 草稿作为实现依据

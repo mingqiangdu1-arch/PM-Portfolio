@@ -350,6 +350,9 @@ class RequirementImplementationTests(unittest.TestCase):
             )
         self.db.tables["requirement"][0]["updated_at"] = datetime(2026, 8, 1)
         self.db.tables["requirement"][1]["status"] = "effective"
+        self.db.tables["requirement_version"][1].update(
+            confirmation_status="confirmed", is_effective=1
+        )
         self.db.tables["project_version"].append({"id": 8, "project_id": 3, "row_version": 1})
         self.db.tables["requirement"].append(
             {
@@ -373,8 +376,11 @@ class RequirementImplementationTests(unittest.TestCase):
 
         self.assertEqual([item["id"] for item in result["items"]], [second["requirement"]["id"], first["requirement"]["id"]])
         self.assertEqual(set(result["items"][0]), {"id", "project_version_id", "title", "source_type", "priority", "status", "current_version_id", "effective_version_id", "updated_at", "version"})
+        self.assertEqual(result["items"][0]["effective_version_id"], second["current_version"]["id"])
+        self.assertIsNone(result["items"][1]["effective_version_id"])
         self.assertEqual((result["next_cursor"], result["has_more"]), (None, False))
         self.assertEqual([item["id"] for item in filtered["items"]], [second["requirement"]["id"]])
+        self.assertEqual(filtered["items"][0]["effective_version_id"], second["current_version"]["id"])
         list_calls = [(sql, params) for sql, params in self.db.calls if sql.startswith("SELECT * FROM requirement WHERE project_version_id=:version_id")]
         self.assertEqual(len(list_calls), 2)
         self.assertIn("ORDER BY updated_at DESC, id DESC", list_calls[0][0])

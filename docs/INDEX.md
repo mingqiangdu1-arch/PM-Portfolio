@@ -1,21 +1,17 @@
 # 项目文档索引
 
-> 最后更新：2026-08-20
+> 最后更新：2026-08-23
 > 说明：索引只记录文档位置与效力，不能替代领域主责文档
 
-## P1 Accepted Release
+## MVP2 Accepted Baseline and Current Gate
 
-- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
-- Release Tag: `portfolio-p1-v1-accepted-main`
-- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
-- Alembic: `20260729_0004`
-- Public Acceptance: PASS
-- UUID/HTTP compatibility: PASS
-- P1 Scope: CLOSED
-- RC-02: NOT ENTERED
-- `P1-MAIN-PROMOTION-07=PASS`; `P1-RELEASE-TAG-08=PASS`
+- Freeze: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`; OpenAPI `packages/contracts/openapi/openapi.json` SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations); migration head `20260821_0005`; AI is OUT.
+- Accepted source sequence: `2499d7a` Backend Package 1, `28e904e` Backend Package 2, `00511ae` Frontend Package, and `201a53e` source-binding fix.
+- `MVP2_INTEGRATION_REVIEW=ACCEPT`, PRD happy path PASS, and post-push closeout PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`.
+- The later `GET design-reviews` 405 is `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
+- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`; no Release, Tag, Deployment, or Production authority.
 
-These are current implementation and release facts. They do not replace the domain authority of the existing product, interaction, visual, development-planning, data-design, AI-capability, or technical-design documents.
+P1's `1be1aec` runtime, `portfolio-p1-v1-accepted-main` tag, and `20260729_0004` migration are historical only. The baseline above does not replace the domain authority of the existing product, interaction, visual, development-planning, data-design, AI-capability, or technical-design documents.
 
 ## 当前正式产品设计基线
 

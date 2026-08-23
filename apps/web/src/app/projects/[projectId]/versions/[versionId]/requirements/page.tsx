@@ -3,5 +3,5 @@ import { RequirementWorkspace } from "@/features/requirements/requirement-worksp
 
 export default async function RequirementsPage({ params }: { params: Promise<{ projectId: string; versionId: string }> }) {
   const { projectId, versionId } = await params;
-  return <AppShell projectId={projectId}><RequirementWorkspace projectVersionId={versionId} /></AppShell>;
+  return <AppShell projectId={projectId}><RequirementWorkspace projectVersionId={versionId} projectId={projectId} /></AppShell>;
 }

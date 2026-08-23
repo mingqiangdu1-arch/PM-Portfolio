@@ -82,11 +82,12 @@ class RevisionGraphTests(unittest.TestCase):
             revisions[values["revision"]] = values["down_revision"]
         parents = {parent for parent in revisions.values() if parent is not None}
         heads = set(revisions) - parents
-        self.assertEqual(heads, {"20260729_0004"})
+        self.assertEqual(heads, {"20260821_0005"})
         self.assertIsNone(revisions["20260729_0001"])
         self.assertEqual(revisions["20260729_0002"], "20260729_0001")
         self.assertEqual(revisions["20260729_0003"], "20260729_0002")
         self.assertEqual(revisions["20260729_0004"], "20260729_0003")
+        self.assertEqual(revisions["20260821_0005"], "20260729_0004")
 
     def test_revision_declares_foreign_keys_and_key_checks(self) -> None:
         source = (VERSIONS_ROOT / "20260729_0001_foundation_schema.py").read_text(
@@ -170,3 +171,70 @@ class RevisionGraphTests(unittest.TestCase):
         self.assertIn("storage_version_id", source)
         self.assertIn("idx_file_storage_version", source)
         self.assertIn("Refusing lossy downgrade", source)
+
+    def test_prd_source_revision_is_the_only_frozen_additive_delta(self) -> None:
+        source = (VERSIONS_ROOT / "20260821_0005_prd_source_requirement_version.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(source.count("op.add_column("), 1)
+        self.assertEqual(source.count("op.create_index("), 1)
+        self.assertEqual(source.count("op.create_foreign_key("), 1)
+        self.assertIn('"source_requirement_version_id"', source)
+        self.assertIn('mysql.BIGINT(unsigned=True)', source)
+        self.assertIn('nullable=False', source)
+        self.assertIn('"idx_prd_source_requirement_version"', source)
+        self.assertIn('"fk_prd_source_requirement_version_id"', source)
+        self.assertIn('"requirement_version"', source)
+        self.assertIn('ondelete="RESTRICT"', source)
+        self.assertIn('onupdate="RESTRICT"', source)
+        self.assertNotIn("UPDATE `prd`", source)
+        self.assertIn("Refusing lossy downgrade", source)
+
+    def test_prd_source_revision_imports_and_downgrade_is_fail_closed(self) -> None:
+        path = VERSIONS_ROOT / "20260821_0005_prd_source_requirement_version.py"
+        spec = importlib.util.spec_from_file_location("prd_source_revision", path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class Result:
+            def __init__(self, count: int) -> None:
+                self.count = count
+
+            def scalar_one(self) -> int:
+                return self.count
+
+        class Bind:
+            def __init__(self, count: int) -> None:
+                self.count = count
+
+            def execute(self, _statement):
+                return Result(self.count)
+
+        class Operations:
+            def __init__(self, count: int) -> None:
+                self.bind = Bind(count)
+                self.calls: list[tuple] = []
+
+            def get_bind(self):
+                return self.bind
+
+            def drop_constraint(self, *args, **kwargs) -> None:
+                self.calls.append(("constraint", args, kwargs))
+
+            def drop_index(self, *args, **kwargs) -> None:
+                self.calls.append(("index", args, kwargs))
+
+            def drop_column(self, *args, **kwargs) -> None:
+                self.calls.append(("column", args, kwargs))
+
+        populated = Operations(1)
+        module.op = populated
+        with self.assertRaisesRegex(RuntimeError, "PRD data exists"):
+            module.downgrade()
+        self.assertEqual(populated.calls, [])
+
+        empty = Operations(0)
+        module.op = empty
+        module.downgrade()
+        self.assertEqual([call[0] for call in empty.calls], ["constraint", "index", "column"])

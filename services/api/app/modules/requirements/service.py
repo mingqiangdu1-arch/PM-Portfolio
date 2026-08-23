@@ -525,7 +525,26 @@ class RequirementService:
                 _sql(statement + " ORDER BY updated_at DESC, id DESC"),
                 params,
             ).mappings().all()
-            return {"items": [_summary(dict(row)) for row in rows], "next_cursor": None, "has_more": False}
+            items = []
+            for row in rows:
+                requirement = dict(row)
+                effective = _mapping(
+                    connection.execute(
+                        _sql(
+                            "SELECT * FROM requirement_version WHERE requirement_id=:requirement_id "
+                            "AND confirmation_status='confirmed' AND is_effective=1 ORDER BY id DESC LIMIT 1"
+                        ),
+                        {"requirement_id": requirement["id"]},
+                    )
+                )
+                summary = _summary(requirement)
+                summary["effective_version_id"] = (
+                    str(effective["id"])
+                    if requirement["status"] == "effective" and effective is not None
+                    else None
+                )
+                items.append(summary)
+            return {"items": items, "next_cursor": None, "has_more": False}
 
     def get_requirement(self, *, requirement_id: int, user_id: int) -> dict[str, Any]:
         with readonly() as connection:

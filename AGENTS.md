@@ -67,21 +67,13 @@ For low-fidelity completion, `wireframing` is candidate-only and may be loaded t
 
 ## Current Governance Baseline
 
-- P1 Traceable RC: COMPLETE
-- Public Acceptance: PASS
-- Accepted Runtime Commit: `1be1aec9410211e33f84b99c6166c6768fb487cf`
-- Release Tag: `portfolio-p1-v1-accepted-main`
-- R3 Contract SHA256: `a892a6a43d87f7baed2ea4d182d73da25fd470036895c8e22712064b7487aaaf`
-- Alembic: `20260729_0004`
-- UUID/HTTP compatibility: PASS
-- P1 Scope: CLOSED
-- RC-02: NOT ENTERED
+- `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1` is unchanged: `mvp2.prd-review.rc02.v1`, `packages/contracts/openapi/openapi.json`, SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e`, 50 paths / 56 operations, migration head `20260821_0005`; AI is OUT.
+- Accepted source baseline: Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, and source-binding fix `201a53e` (the effective requirement version ID is serialized for confirmed/effective lists; draft/non-effective remains null).
+- `MVP2_INTEGRATION_REVIEW=ACCEPT` and `INTEGRATION_VERIFICATION=PASS`: the authorized PRD happy path passed. The later `GET design-reviews` 405 is `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
+- `MVP2-POST-PUSH-CLOSEOUT=PASS` for `origin/codex/backend-mvp2-package1-local` at `201a53e`; its canonical real-content diff is clean and it has no true untracked files.
+- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`. Main promotion remains blocked pending reconciliation; no Release, Tag, Deployment, or Production authority is granted.
 
-`P1-MAIN-PROMOTION-07=PASS` and `P1-RELEASE-TAG-08=PASS`. The accepted production release has verified `Git SHA -> Image -> Container -> Public Runtime` traceability, and the P1 public-acceptance chain `Login -> Foundation -> Project -> Requirement -> Baseline -> Edit -> Confirm -> Persistence -> Reload` passed.
-
-P1 exclusions remain excluded: File Upload, Version Derivation, Set Working Version, AI API / Worker runtime, Redis, MinIO / S3, Qdrant, subsequent P2 / P3 / P4 functions, and the complete AI MVP are not represented as implemented or accepted by this baseline.
-
-P1 has been developed, deployed, accepted, and recorded as an Accepted Release. The next stage is only `MVP Contract Preflight`; it must pass before an RC-02 Freeze can be formed. Before that Freeze, no new-scope development starts automatically.
+P1 is historical only: its accepted runtime commit `1be1aec`, tag `portfolio-p1-v1-accepted-main`, and `20260729_0004` migration record do not describe current MVP2 state or authorize new production work.
 
 ## Stage boundary
 

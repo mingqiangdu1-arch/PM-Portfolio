@@ -83,6 +83,104 @@
       }
     },
     "responses": {
+      "Mvp2Error403": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp2ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "FORBIDDEN"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP2 frozen error response"
+      },
+      "Mvp2Error404": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp2ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "NOT_FOUND"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP2 frozen error response"
+      },
+      "Mvp2Error409": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp2ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "INVALID_STATE",
+                        "VERSION_CONFLICT",
+                        "IDEMPOTENCY_CONFLICT"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP2 frozen error response"
+      },
+      "Mvp2Error422": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp2ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "VALIDATION_ERROR"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP2 frozen error response"
+      },
       "Sprint2Error401": {
         "content": {
           "application/json": {
@@ -2719,6 +2817,790 @@
           "major"
         ],
         "type": "string"
+      },
+      "Mvp2CreatePrdRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "source_requirement_version_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_requirement_version_id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "Mvp2CreatePrdVersionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "change_note": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "content_json": {
+            "$ref": "#/components/schemas/Mvp2PrdContent"
+          },
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version",
+          "content_json",
+          "change_note"
+        ],
+        "type": "object"
+      },
+      "Mvp2DecideDesignReviewRequest": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "decision": {
+                "const": "changes_requested",
+                "type": "string"
+              },
+              "expected_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "summary": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "expected_version",
+              "decision",
+              "summary"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "decision": {
+                "const": "pass",
+                "type": "string"
+              },
+              "expected_version": {
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "expected_version",
+              "decision"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Mvp2DesignReview": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "project_version_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "round_no": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "scope": {
+            "additionalProperties": false,
+            "properties": {
+              "content_hash": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "prd_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "prd_version_id": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "prd_id",
+              "prd_version_id",
+              "content_hash"
+            ],
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "changes_requested",
+              "passed"
+            ],
+            "type": "string"
+          },
+          "summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "project_version_id",
+          "round_no",
+          "status",
+          "summary",
+          "row_version",
+          "scope"
+        ],
+        "type": "object"
+      },
+      "Mvp2DesignReviewData": {
+        "additionalProperties": false,
+        "properties": {
+          "design_review": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "project_version_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "round_no": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "row_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "scope": {
+                "additionalProperties": false,
+                "properties": {
+                  "content_hash": {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "prd_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "prd_version_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prd_id",
+                  "prd_version_id",
+                  "content_hash"
+                ],
+                "type": "object"
+              },
+              "status": {
+                "enum": [
+                  "open",
+                  "changes_requested",
+                  "passed"
+                ],
+                "type": "string"
+              },
+              "summary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "project_version_id",
+              "round_no",
+              "status",
+              "summary",
+              "row_version",
+              "scope"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "design_review"
+        ],
+        "type": "object"
+      },
+      "Mvp2DesignReviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp2DesignReviewData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp2DesignReviewStatus": {
+        "enum": [
+          "open",
+          "changes_requested",
+          "passed"
+        ],
+        "type": "string"
+      },
+      "Mvp2ErrorCode": {
+        "enum": [
+          "INVALID_STATE",
+          "VERSION_CONFLICT",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "VALIDATION_ERROR",
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "type": "string"
+      },
+      "Mvp2ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Mvp2ErrorCode"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "type": "array"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "trace_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp2Prd": {
+        "additionalProperties": false,
+        "properties": {
+          "current_version_id": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "project_version_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source_requirement_version_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "in_review",
+              "changes_requested",
+              "confirmed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_version_id",
+          "source_requirement_version_id",
+          "name",
+          "status",
+          "current_version_id",
+          "row_version"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdContent": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptance_criteria": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "background": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "core_workflow": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "exceptions_and_boundaries": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "goal": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "in_scope": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "key_rules": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "out_of_scope": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "primary_user": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "prd.mvp2.v1",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "background",
+          "goal",
+          "primary_user",
+          "in_scope",
+          "out_of_scope",
+          "core_workflow",
+          "key_rules",
+          "exceptions_and_boundaries",
+          "acceptance_criteria"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdData": {
+        "additionalProperties": false,
+        "properties": {
+          "prd": {
+            "additionalProperties": false,
+            "properties": {
+              "current_version_id": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "name": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "project_version_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "row_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_requirement_version_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "draft",
+                  "in_review",
+                  "changes_requested",
+                  "confirmed"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "project_version_id",
+              "source_requirement_version_id",
+              "name",
+              "status",
+              "current_version_id",
+              "row_version"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "prd"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdListData": {
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "const": false
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "current_version_id": {
+                  "minLength": 1,
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "name": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "project_version_id": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "row_version": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "source_requirement_version_id": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "draft",
+                    "in_review",
+                    "changes_requested",
+                    "confirmed"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "project_version_id",
+                "source_requirement_version_id",
+                "name",
+                "status",
+                "current_version_id",
+                "row_version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp2PrdListData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp2PrdData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdStatus": {
+        "enum": [
+          "draft",
+          "in_review",
+          "changes_requested",
+          "confirmed"
+        ],
+        "type": "string"
+      },
+      "Mvp2PrdVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "content_json": {
+            "$ref": "#/components/schemas/Mvp2PrdContent"
+          },
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "is_effective": {
+            "type": "boolean"
+          },
+          "prd_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "source_version_id": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "version_no": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prd_id",
+          "source_version_id",
+          "version_no",
+          "content_json",
+          "content_hash",
+          "is_effective"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdVersionData": {
+        "additionalProperties": false,
+        "properties": {
+          "prd_version": {
+            "additionalProperties": false,
+            "properties": {
+              "content_hash": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "content_json": {
+                "$ref": "#/components/schemas/Mvp2PrdContent"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "is_effective": {
+                "type": "boolean"
+              },
+              "prd_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "source_version_id": {
+                "minLength": 1,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "version_no": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "prd_id",
+              "source_version_id",
+              "version_no",
+              "content_json",
+              "content_hash",
+              "is_effective"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "prd_version"
+        ],
+        "type": "object"
+      },
+      "Mvp2PrdVersionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp2PrdVersionData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp2ReviewDecision": {
+        "enum": [
+          "changes_requested",
+          "pass"
+        ],
+        "type": "string"
+      },
+      "Mvp2SubmitDesignReviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "prd_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "prd_version_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "prd_id",
+          "prd_version_id",
+          "content_hash",
+          "expected_version"
+        ],
+        "type": "object"
       },
       "ObjectRef": {
         "additionalProperties": false,
@@ -6114,6 +6996,142 @@
         }
       }
     },
+    "/api/v1/design-reviews/{review_id}": {
+      "get": {
+        "operationId": "getDesignReview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2DesignReviewResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a minimal Design Review",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        }
+      }
+    },
+    "/api/v1/design-reviews/{review_id}:decide": {
+      "post": {
+        "operationId": "decideDesignReview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp2DecideDesignReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2DesignReviewResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Decide changes requested or pass and atomically confirm",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
     "/api/v1/file-versions/{version_id}/relations": {
       "post": {
         "operationId": "createFileRelation",
@@ -6733,6 +7751,205 @@
         ]
       }
     },
+    "/api/v1/prd-versions/{version_id}": {
+      "get": {
+        "operationId": "getPrdVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2PrdVersionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get an immutable PRD Version",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        }
+      }
+    },
+    "/api/v1/prds/{prd_id}": {
+      "get": {
+        "operationId": "getPrd",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prd_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2PrdResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a PRD aggregate",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        }
+      }
+    },
+    "/api/v1/prds/{prd_id}/versions": {
+      "post": {
+        "operationId": "createPrdVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prd_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp2CreatePrdVersionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2PrdVersionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Explicitly save a new immutable PRD Version",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
     "/api/v1/project-versions/{left_id}:compare": {
       "get": {
         "description": "Read-only comparison; never changes view context or the working version.",
@@ -6856,6 +8073,213 @@
         ],
         "x-contract-phase": "sprint-1-candidate",
         "x-implementation-status": "implemented-candidate"
+      }
+    },
+    "/api/v1/project-versions/{version_id}/design-reviews": {
+      "post": {
+        "operationId": "submitPrdDesignReview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp2SubmitDesignReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2DesignReviewResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit an exact PRD Version for a new review round",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
+    "/api/v1/project-versions/{version_id}/prds": {
+      "get": {
+        "operationId": "listProjectVersionPrds",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2PrdListResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the main PRD for a project version",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        }
+      },
+      "post": {
+        "operationId": "createProjectVersionPrd",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp2CreatePrdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp2PrdResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/Mvp2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Mvp2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Mvp2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Mvp2Error422"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a PRD identity from a confirmed Requirement Version",
+        "tags": [
+          "MVP2 PRD Review"
+        ],
+        "x-contract-version": "mvp2.prd-review.rc02.v1",
+        "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
       }
     },
     "/api/v1/project-versions/{version_id}/requirements": {
@@ -8975,6 +10399,21 @@
   },
   "x-id-format": "string",
   "x-internal-api-prefix": "/internal/v1",
+  "x-mvp2-prd-review": {
+    "ai_boundary": "OUT",
+    "contract_version": "mvp2.prd-review.rc02.v1",
+    "error_http_mapping": {
+      "FORBIDDEN": 403,
+      "IDEMPOTENCY_CONFLICT": 409,
+      "INVALID_STATE": 409,
+      "NOT_FOUND": 404,
+      "VALIDATION_ERROR": 422,
+      "VERSION_CONFLICT": 409
+    },
+    "freeze_id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
+    "mode": "R3_ADDITIVE_ONLY",
+    "schema_version": "prd.mvp2.v1"
+  },
   "x-optimistic-lock-field": "expected_version",
   "x-raw-input-policy": {
     "immutable_across_versions": true,
