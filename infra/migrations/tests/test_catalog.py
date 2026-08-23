@@ -82,12 +82,35 @@ class RevisionGraphTests(unittest.TestCase):
             revisions[values["revision"]] = values["down_revision"]
         parents = {parent for parent in revisions.values() if parent is not None}
         heads = set(revisions) - parents
-        self.assertEqual(heads, {"20260821_0005"})
+        self.assertEqual(heads, {"20260823_0006"})
         self.assertIsNone(revisions["20260729_0001"])
         self.assertEqual(revisions["20260729_0002"], "20260729_0001")
         self.assertEqual(revisions["20260729_0003"], "20260729_0002")
         self.assertEqual(revisions["20260729_0004"], "20260729_0003")
         self.assertEqual(revisions["20260821_0005"], "20260729_0004")
+        self.assertEqual(revisions["20260823_0006"], "20260821_0005")
+
+    def test_mvp3_foundation_revision_is_additive_and_fail_closed(self) -> None:
+        source = (VERSIONS_ROOT / "20260823_0006_implementation_plan_confirmation_foundation.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('revision: str = "20260823_0006"', source)
+        self.assertIn('down_revision: str | None = "20260821_0005"', source)
+        self.assertEqual(source.count("op.add_column("), 6)
+        self.assertNotIn("op.create_table(", source)
+        self.assertNotIn("op.drop_table(", source)
+        self.assertNotIn("UPDATE `", source)
+        for table in ("implementation_plan", "implementation_plan_version", "confirmation_round"):
+            self.assertIn(table, source)
+        for expected in (
+            "SELECT DATABASE(), CURRENT_USER(), VERSION()",
+            "expected 0/0/0",
+            "draft_plan_key",
+            "uk_plan_one_draft_round",
+            "fk_implementation_plan_current_version_id",
+            "fk_implementation_plan_version_source_version_id",
+        ):
+            self.assertIn(expected, source)
 
     def test_revision_declares_foreign_keys_and_key_checks(self) -> None:
         source = (VERSIONS_ROOT / "20260729_0001_foundation_schema.py").read_text(

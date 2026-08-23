@@ -181,6 +181,138 @@
         },
         "description": "MVP2 frozen error response"
       },
+      "Mvp3Error403": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "FORBIDDEN"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP3 frozen error response (403)",
+        "x-error-codes": [
+          "FORBIDDEN"
+        ],
+        "x-http-status": 403
+      },
+      "Mvp3Error404": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "NOT_FOUND"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP3 frozen error response (404)",
+        "x-error-codes": [
+          "NOT_FOUND"
+        ],
+        "x-http-status": 404
+      },
+      "Mvp3Error409": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "VERSION_CONFLICT",
+                        "SOURCE_PRD_NOT_CONFIRMED",
+                        "SOURCE_REVIEW_NOT_PASSED",
+                        "SOURCE_BINDING_MISMATCH",
+                        "IDEMPOTENCY_CONFLICT",
+                        "PLAN_VERSION_NOT_CURRENT",
+                        "PLAN_VERSION_BINDING_MISMATCH",
+                        "CONFIRMATION_ALREADY_EXISTS",
+                        "INVALID_STATE",
+                        "CONFIRMATION_NOT_DRAFT",
+                        "READINESS_INCOMPLETE"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP3 frozen error response (409)",
+        "x-error-codes": [
+          "VERSION_CONFLICT",
+          "SOURCE_PRD_NOT_CONFIRMED",
+          "SOURCE_REVIEW_NOT_PASSED",
+          "SOURCE_BINDING_MISMATCH",
+          "IDEMPOTENCY_CONFLICT",
+          "PLAN_VERSION_NOT_CURRENT",
+          "PLAN_VERSION_BINDING_MISMATCH",
+          "CONFIRMATION_ALREADY_EXISTS",
+          "INVALID_STATE",
+          "CONFIRMATION_NOT_DRAFT",
+          "READINESS_INCOMPLETE"
+        ],
+        "x-http-status": 409
+      },
+      "Mvp3Error422": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "VALIDATION_ERROR"
+                      ],
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "description": "MVP3 frozen error response (422)",
+        "x-error-codes": [
+          "VALIDATION_ERROR"
+        ],
+        "x-http-status": 422
+      },
       "Sprint2Error401": {
         "content": {
           "application/json": {
@@ -3602,6 +3734,1489 @@
         ],
         "type": "object"
       },
+      "Mvp3ConfirmConfirmationRoundRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "type": "object"
+      },
+      "Mvp3ConfirmationRound": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm_status": {
+            "enum": [
+              "confirmed",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirmed_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirmed_by": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "implementation_plan_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "implementation_summary": {
+            "$ref": "#/components/schemas/Mvp3ImplementationSummary"
+          },
+          "is_effective": {
+            "type": "boolean"
+          },
+          "plan_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "readiness_json": {
+            "$ref": "#/components/schemas/Mvp3Readiness"
+          },
+          "round_no": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source_round_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "confirmed",
+              "superseded"
+            ],
+            "type": "string"
+          },
+          "superseded_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "implementation_plan_id",
+          "plan_version_id",
+          "round_no",
+          "status",
+          "implementation_summary",
+          "readiness_json",
+          "row_version",
+          "is_effective"
+        ],
+        "type": "object"
+      },
+      "Mvp3ConfirmationRoundData": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_round": {
+            "additionalProperties": false,
+            "properties": {
+              "confirm_status": {
+                "enum": [
+                  "confirmed",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "confirmed_at": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "confirmed_by": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "implementation_plan_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "implementation_summary": {
+                "$ref": "#/components/schemas/Mvp3ImplementationSummary"
+              },
+              "is_effective": {
+                "type": "boolean"
+              },
+              "plan_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "readiness_json": {
+                "$ref": "#/components/schemas/Mvp3Readiness"
+              },
+              "round_no": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "row_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_round_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "draft",
+                  "confirmed",
+                  "superseded"
+                ],
+                "type": "string"
+              },
+              "superseded_at": {
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "implementation_plan_id",
+              "plan_version_id",
+              "round_no",
+              "status",
+              "implementation_summary",
+              "readiness_json",
+              "row_version",
+              "is_effective"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "confirmation_round"
+        ],
+        "type": "object"
+      },
+      "Mvp3ConfirmationRoundListData": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "confirm_status": {
+                  "enum": [
+                    "confirmed",
+                    null
+                  ],
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "confirmed_at": {
+                  "format": "date-time",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "confirmed_by": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "implementation_plan_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "implementation_summary": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationSummary"
+                },
+                "is_effective": {
+                  "type": "boolean"
+                },
+                "plan_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "readiness_json": {
+                  "$ref": "#/components/schemas/Mvp3Readiness"
+                },
+                "round_no": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "row_version": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "source_round_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "enum": [
+                    "draft",
+                    "confirmed",
+                    "superseded"
+                  ],
+                  "type": "string"
+                },
+                "superseded_at": {
+                  "format": "date-time",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "implementation_plan_id",
+                "plan_version_id",
+                "round_no",
+                "status",
+                "implementation_summary",
+                "readiness_json",
+                "row_version",
+                "is_effective"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "Mvp3ConfirmationRoundListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp3ConfirmationRoundListData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3ConfirmationRoundResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp3ConfirmationRoundData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3CreateConfirmationRoundRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "implementation_summary": {
+            "$ref": "#/components/schemas/Mvp3ImplementationSummary"
+          },
+          "plan_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "readiness_json": {
+            "$ref": "#/components/schemas/Mvp3Readiness"
+          }
+        },
+        "required": [
+          "plan_version_id",
+          "implementation_summary",
+          "readiness_json"
+        ],
+        "type": "object"
+      },
+      "Mvp3CreateImplementationPlanRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "source_design_review_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "source_prd_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_prd_version_id",
+          "source_design_review_id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "Mvp3CreateImplementationPlanVersionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "change_note": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "content_json": {
+            "$ref": "#/components/schemas/Mvp3PlanContent"
+          },
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version",
+          "content_json",
+          "change_note"
+        ],
+        "type": "object"
+      },
+      "Mvp3ErrorCode": {
+        "enum": [
+          "NOT_FOUND",
+          "FORBIDDEN",
+          "VALIDATION_ERROR",
+          "VERSION_CONFLICT",
+          "SOURCE_PRD_NOT_CONFIRMED",
+          "SOURCE_REVIEW_NOT_PASSED",
+          "SOURCE_BINDING_MISMATCH",
+          "IDEMPOTENCY_CONFLICT",
+          "PLAN_VERSION_NOT_CURRENT",
+          "PLAN_VERSION_BINDING_MISMATCH",
+          "CONFIRMATION_ALREADY_EXISTS",
+          "INVALID_STATE",
+          "CONFIRMATION_NOT_DRAFT",
+          "READINESS_INCOMPLETE"
+        ],
+        "type": "string"
+      },
+      "Mvp3ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Mvp3ErrorCode"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "type": "array"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlan": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_state": {
+            "enum": [
+              "not_ready",
+              "needs_confirmation",
+              "confirmed",
+              "needs_reconfirmation"
+            ],
+            "type": "string"
+          },
+          "current_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effective_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "project_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source_design_review_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "source_prd_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active"
+            ],
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "change_note": {
+                  "maxLength": 2000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "content_hash": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "content_json": {
+                  "$ref": "#/components/schemas/Mvp3PlanContent"
+                },
+                "created_at": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "created_by": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "implementation_plan_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "is_effective": {
+                  "type": "boolean"
+                },
+                "review_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "source_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "version_no": {
+                  "maxLength": 32,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "implementation_plan_id",
+                "version_no",
+                "review_id",
+                "content_json",
+                "content_hash",
+                "change_note",
+                "is_effective",
+                "created_at"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "project_version_id",
+          "source_prd_version_id",
+          "source_design_review_id",
+          "name",
+          "status",
+          "row_version",
+          "confirmation_state",
+          "versions"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanData": {
+        "additionalProperties": false,
+        "properties": {
+          "implementation_plan": {
+            "additionalProperties": false,
+            "properties": {
+              "confirmation_state": {
+                "enum": [
+                  "not_ready",
+                  "needs_confirmation",
+                  "confirmed",
+                  "needs_reconfirmation"
+                ],
+                "type": "string"
+              },
+              "current_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "effective_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "name": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "project_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "row_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "source_design_review_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "source_prd_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "draft",
+                  "active"
+                ],
+                "type": "string"
+              },
+              "versions": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "change_note": {
+                      "maxLength": 2000,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "content_hash": {
+                      "pattern": "^[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "content_json": {
+                      "$ref": "#/components/schemas/Mvp3PlanContent"
+                    },
+                    "created_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "created_by": {
+                      "pattern": "^[1-9][0-9]*$",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "id": {
+                      "pattern": "^[1-9][0-9]*$",
+                      "type": "string"
+                    },
+                    "implementation_plan_id": {
+                      "pattern": "^[1-9][0-9]*$",
+                      "type": "string"
+                    },
+                    "is_effective": {
+                      "type": "boolean"
+                    },
+                    "review_id": {
+                      "pattern": "^[1-9][0-9]*$",
+                      "type": "string"
+                    },
+                    "source_version_id": {
+                      "pattern": "^[1-9][0-9]*$",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "version_no": {
+                      "maxLength": 32,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "implementation_plan_id",
+                    "version_no",
+                    "review_id",
+                    "content_json",
+                    "content_hash",
+                    "change_note",
+                    "is_effective",
+                    "created_at"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "project_version_id",
+              "source_prd_version_id",
+              "source_design_review_id",
+              "name",
+              "status",
+              "row_version",
+              "confirmation_state",
+              "versions"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "implementation_plan"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanListData": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "confirmation_state": {
+                  "enum": [
+                    "not_ready",
+                    "needs_confirmation",
+                    "confirmed",
+                    "needs_reconfirmation"
+                  ],
+                  "type": "string"
+                },
+                "current_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "effective_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "name": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "project_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "row_version": {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "source_design_review_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "source_prd_version_id": {
+                  "pattern": "^[1-9][0-9]*$",
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "draft",
+                    "active"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "project_version_id",
+                "source_prd_version_id",
+                "source_design_review_id",
+                "name",
+                "status",
+                "row_version",
+                "confirmation_state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp3ImplementationPlanListData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp3ImplementationPlanData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "change_note": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "content_json": {
+            "$ref": "#/components/schemas/Mvp3PlanContent"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_by": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "implementation_plan_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "is_effective": {
+            "type": "boolean"
+          },
+          "review_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "source_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "version_no": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "implementation_plan_id",
+          "version_no",
+          "review_id",
+          "content_json",
+          "content_hash",
+          "change_note",
+          "is_effective",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanVersionData": {
+        "additionalProperties": false,
+        "properties": {
+          "implementation_plan_version": {
+            "additionalProperties": false,
+            "properties": {
+              "change_note": {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "content_hash": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "content_json": {
+                "$ref": "#/components/schemas/Mvp3PlanContent"
+              },
+              "created_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_by": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "implementation_plan_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "is_effective": {
+                "type": "boolean"
+              },
+              "review_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": "string"
+              },
+              "source_version_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "version_no": {
+                "maxLength": 32,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "implementation_plan_id",
+              "version_no",
+              "review_id",
+              "content_json",
+              "content_hash",
+              "change_note",
+              "is_effective",
+              "created_at"
+            ],
+            "type": "object"
+          },
+          "plan_row_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "implementation_plan_version",
+          "plan_row_version"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanVersionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp3ImplementationPlanVersionData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationPlanWithoutVersions": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation_state": {
+            "enum": [
+              "not_ready",
+              "needs_confirmation",
+              "confirmed",
+              "needs_reconfirmation"
+            ],
+            "type": "string"
+          },
+          "current_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "effective_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "project_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "source_design_review_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "source_prd_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "active"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_version_id",
+          "source_prd_version_id",
+          "source_design_review_id",
+          "name",
+          "status",
+          "row_version",
+          "confirmation_state"
+        ],
+        "type": "object"
+      },
+      "Mvp3ImplementationSummary": {
+        "maxLength": 8000,
+        "minLength": 20,
+        "type": "string",
+        "x-length-unit": "Unicode code points",
+        "x-normalization": [
+          "CRLF/CR->LF",
+          "NFC",
+          "trim Unicode whitespace"
+        ],
+        "x-null-policy": "prohibited",
+        "x-semantics": "human implementation-scope description only; not test/release/deployment/production evidence"
+      },
+      "Mvp3PlanContent": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptance_scope": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "type": "array"
+          },
+          "business_rules": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          },
+          "dependencies": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          },
+          "exceptions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          },
+          "features": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "type": "array"
+          },
+          "interactions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "implementation_plan.mvp3.v1",
+            "type": "string"
+          },
+          "state_requirements": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "maxLength": 4000,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "key": {
+                  "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "description"
+              ],
+              "type": "object"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "features",
+          "business_rules",
+          "state_requirements",
+          "exceptions",
+          "interactions",
+          "dependencies",
+          "acceptance_scope"
+        ],
+        "type": "object",
+        "x-canonicalization": "semantic normalization -> RFC8785 JCS; arrays preserved; UTF-8 no BOM",
+        "x-duplicate-rules": [
+          "key unique across all sections",
+          "description unique after normalization within section"
+        ],
+        "x-max-utf8-bytes": 262144,
+        "x-normalization": [
+          "CRLF/CR->LF",
+          "NFC",
+          "trim Unicode whitespace",
+          "preserve internal whitespace"
+        ],
+        "x-null-policy": "prohibited everywhere"
+      },
+      "Mvp3PlanItem": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "key": {
+            "pattern": "^[a-z][a-z0-9_.-]{0,63}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "description"
+        ],
+        "type": "object"
+      },
+      "Mvp3Readiness": {
+        "additionalProperties": false,
+        "properties": {
+          "configuration_status": {
+            "enum": [
+              "ready",
+              "not_ready",
+              "not_applicable"
+            ],
+            "type": "string"
+          },
+          "data_change_status": {
+            "enum": [
+              "ready",
+              "not_ready",
+              "not_applicable"
+            ],
+            "type": "string"
+          },
+          "implementation_status": {
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "type": "string"
+          },
+          "known_blockers": {
+            "items": {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 0,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "schema_version": {
+            "const": "implementation_confirmation.readiness.mvp3.v1",
+            "type": "string"
+          },
+          "scope_status": {
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "scope_status",
+          "implementation_status",
+          "configuration_status",
+          "data_change_status",
+          "known_blockers"
+        ],
+        "type": "object",
+        "x-complete-predicate": "scope=ready AND implementation=ready AND configuration IN ready/not_applicable AND data_change IN ready/not_applicable AND known_blockers empty",
+        "x-normalization": [
+          "CRLF/CR->LF",
+          "NFC",
+          "trim Unicode whitespace"
+        ],
+        "x-null-policy": "prohibited everywhere",
+        "x-semantics": "human readiness attestation only; not Test Passed/Release Ready/Deployment Ready/Production Ready"
+      },
+      "Mvp3SetEffectiveImplementationPlanVersionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "type": "object"
+      },
+      "Mvp3UpdateConfirmationRoundDraftRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "implementation_summary": {
+            "$ref": "#/components/schemas/Mvp3ImplementationSummary"
+          },
+          "plan_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "readiness_json": {
+            "$ref": "#/components/schemas/Mvp3Readiness"
+          }
+        },
+        "required": [
+          "expected_version",
+          "plan_version_id",
+          "implementation_summary",
+          "readiness_json"
+        ],
+        "type": "object"
+      },
       "ObjectRef": {
         "additionalProperties": false,
         "properties": {
@@ -6996,6 +8611,491 @@
         }
       }
     },
+    "/api/v1/confirmation-rounds/{id}": {
+      "get": {
+        "operationId": "getConfirmationRound",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ConfirmationRoundResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": false,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        }
+      },
+      "patch": {
+        "operationId": "updateConfirmationRoundDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3UpdateConfirmationRoundDraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ConfirmationRoundResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VERSION_CONFLICT",
+                            "CONFIRMATION_NOT_DRAFT",
+                            "PLAN_VERSION_NOT_CURRENT",
+                            "PLAN_VERSION_BINDING_MISMATCH"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "VERSION_CONFLICT",
+              "CONFIRMATION_NOT_DRAFT",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": true,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": false,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer"
+          ]
+        }
+      }
+    },
+    "/api/v1/confirmation-rounds/{id}:confirm": {
+      "post": {
+        "operationId": "confirmConfirmationRound",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3ConfirmConfirmationRoundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ConfirmationRoundResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VERSION_CONFLICT",
+                            "CONFIRMATION_NOT_DRAFT",
+                            "PLAN_VERSION_NOT_CURRENT",
+                            "PLAN_VERSION_BINDING_MISMATCH",
+                            "SOURCE_PRD_NOT_CONFIRMED",
+                            "SOURCE_REVIEW_NOT_PASSED",
+                            "READINESS_INCOMPLETE",
+                            "INVALID_STATE",
+                            "IDEMPOTENCY_CONFLICT"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "VERSION_CONFLICT",
+              "CONFIRMATION_NOT_DRAFT",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "SOURCE_PRD_NOT_CONFIRMED",
+              "SOURCE_REVIEW_NOT_PASSED",
+              "READINESS_INCOMPLETE",
+              "INVALID_STATE",
+              "IDEMPOTENCY_CONFLICT"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": true,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": true,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
     "/api/v1/design-reviews/{review_id}": {
       "get": {
         "operationId": "getDesignReview",
@@ -7751,6 +9851,789 @@
         ]
       }
     },
+    "/api/v1/implementation-plans/{id}": {
+      "get": {
+        "operationId": "getImplementationPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationPlanResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": false,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        }
+      }
+    },
+    "/api/v1/implementation-plans/{id}/confirmation-rounds": {
+      "get": {
+        "operationId": "listImplementationPlanConfirmationRounds",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ConfirmationRoundListResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": false,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        }
+      },
+      "post": {
+        "operationId": "createImplementationPlanConfirmationRound",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3CreateConfirmationRoundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ConfirmationRoundResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "PLAN_VERSION_NOT_CURRENT",
+                            "PLAN_VERSION_BINDING_MISMATCH",
+                            "SOURCE_PRD_NOT_CONFIRMED",
+                            "SOURCE_REVIEW_NOT_PASSED",
+                            "CONFIRMATION_ALREADY_EXISTS",
+                            "INVALID_STATE",
+                            "IDEMPOTENCY_CONFLICT"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "SOURCE_PRD_NOT_CONFIRMED",
+              "SOURCE_REVIEW_NOT_PASSED",
+              "CONFIRMATION_ALREADY_EXISTS",
+              "INVALID_STATE",
+              "IDEMPOTENCY_CONFLICT"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": true,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer"
+          ]
+        }
+      }
+    },
+    "/api/v1/implementation-plans/{id}/versions": {
+      "post": {
+        "operationId": "createImplementationPlanVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3CreateImplementationPlanVersionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationPlanVersionResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VERSION_CONFLICT",
+                            "SOURCE_BINDING_MISMATCH",
+                            "IDEMPOTENCY_CONFLICT"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "VERSION_CONFLICT",
+              "SOURCE_BINDING_MISMATCH",
+              "IDEMPOTENCY_CONFLICT"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": true,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": true,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
+    "/api/v1/plan-versions/{id}:set-effective": {
+      "post": {
+        "operationId": "setEffectiveImplementationPlanVersion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3SetEffectiveImplementationPlanVersionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationPlanResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VERSION_CONFLICT",
+                            "PLAN_VERSION_NOT_CURRENT",
+                            "PLAN_VERSION_BINDING_MISMATCH",
+                            "SOURCE_PRD_NOT_CONFIRMED",
+                            "SOURCE_REVIEW_NOT_PASSED",
+                            "INVALID_STATE",
+                            "IDEMPOTENCY_CONFLICT"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "VERSION_CONFLICT",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "SOURCE_PRD_NOT_CONFIRMED",
+              "SOURCE_REVIEW_NOT_PASSED",
+              "INVALID_STATE",
+              "IDEMPOTENCY_CONFLICT"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": true,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": true,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
     "/api/v1/prd-versions/{version_id}": {
       "get": {
         "operationId": "getPrdVersion",
@@ -8141,6 +11024,299 @@
         "x-contract-version": "mvp2.prd-review.rc02.v1",
         "x-freeze-id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
         "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
+    "/api/v1/project-versions/{version_id}/implementation-plans": {
+      "get": {
+        "operationId": "listProjectVersionImplementationPlans",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationPlanListResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": false,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "implementer",
+            "other_active_member"
+          ]
+        }
+      },
+      "post": {
+        "operationId": "createProjectVersionImplementationPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp3CreateImplementationPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp3ImplementationPlanResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "FORBIDDEN"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (403)",
+            "x-error-codes": [
+              "FORBIDDEN"
+            ],
+            "x-http-status": 403
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "NOT_FOUND"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (404)",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ],
+            "x-http-status": 404
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "SOURCE_PRD_NOT_CONFIRMED",
+                            "SOURCE_REVIEW_NOT_PASSED",
+                            "SOURCE_BINDING_MISMATCH",
+                            "IDEMPOTENCY_CONFLICT"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (409)",
+            "x-error-codes": [
+              "SOURCE_PRD_NOT_CONFIRMED",
+              "SOURCE_REVIEW_NOT_PASSED",
+              "SOURCE_BINDING_MISMATCH",
+              "IDEMPOTENCY_CONFLICT"
+            ],
+            "x-http-status": 409
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Mvp3ErrorResponse"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "VALIDATION_ERROR"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "MVP3 frozen error response (422)",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ],
+            "x-http-status": 422
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "MVP3 Implementation Plan"
+        ],
+        "x-contract-version": "MVP3-v1",
+        "x-expected-version": false,
+        "x-freeze-id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+        "x-idempotency": true,
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        },
+        "x-permissions": {
           "admin_bypass": false,
           "allowed_project_roles": [
             "owner"
@@ -10413,6 +13589,13 @@
     "freeze_id": "RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1",
     "mode": "R3_ADDITIVE_ONLY",
     "schema_version": "prd.mvp2.v1"
+  },
+  "x-mvp3": {
+    "ai_boundary": "OUT",
+    "contract_version": "MVP3-v1",
+    "freeze_id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
+    "operations_added": 10,
+    "paths_added": 7
   },
   "x-optimistic-lock-field": "expected_version",
   "x-raw-input-policy": {

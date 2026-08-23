@@ -97,6 +97,23 @@ class MySqlMigrationIntegrationTests(unittest.TestCase):
                         "RESTRICT",
                         "RESTRICT",
                     ),
+                    ("COLUMN", "implementation_plan", "source_prd_version_id", "bigint unsigned", "NO"),
+                    ("COLUMN", "implementation_plan", "source_design_review_id", "bigint unsigned", "NO"),
+                    ("COLUMN", "confirmation_round", "source_round_id", "bigint unsigned", "YES"),
+                    ("COLUMN", "confirmation_round", "implementation_summary", "text", "NO"),
+                    ("COLUMN", "confirmation_round", "readiness_json", "json", "NO"),
+                    ("COLUMN", "confirmation_round", "draft_plan_key", "bigint unsigned", "YES"),
+                    ("INDEX", "implementation_plan", "idx_implementation_plan_source_prd_version", 1, "source_prd_version_id", 1),
+                    ("INDEX", "implementation_plan", "idx_implementation_plan_source_design_review", 1, "source_design_review_id", 1),
+                    ("INDEX", "implementation_plan_version", "fk_implementation_plan_version_source_version_id", 1, "source_version_id", 1),
+                    ("INDEX", "implementation_plan", "fk_implementation_plan_current_version_id", 1, "current_version_id", 1),
+                    ("INDEX", "confirmation_round", "idx_confirmation_round_source_round", 1, "source_round_id", 1),
+                    ("INDEX", "confirmation_round", "uk_plan_one_draft_round", 1, "draft_plan_key", 0),
+                    ("FOREIGN_KEY", "implementation_plan", "fk_implementation_plan_source_prd_version_id", "source_prd_version_id", "prd_version", "id", "RESTRICT", "RESTRICT"),
+                    ("FOREIGN_KEY", "implementation_plan", "fk_implementation_plan_source_design_review_id", "source_design_review_id", "design_review", "id", "RESTRICT", "RESTRICT"),
+                    ("FOREIGN_KEY", "implementation_plan", "fk_implementation_plan_current_version_id", "current_version_id", "implementation_plan_version", "id", "RESTRICT", "RESTRICT"),
+                    ("FOREIGN_KEY", "implementation_plan_version", "fk_implementation_plan_version_source_version_id", "source_version_id", "implementation_plan_version", "id", "RESTRICT", "RESTRICT"),
+                    ("FOREIGN_KEY", "confirmation_round", "fk_confirmation_round_source_round_id", "source_round_id", "confirmation_round", "id", "RESTRICT", "RESTRICT"),
                 },
             )
             server_version = connection.execute(text("SELECT VERSION()")).scalar_one()
@@ -105,7 +122,7 @@ class MySqlMigrationIntegrationTests(unittest.TestCase):
                 connection.execute(
                     text("SELECT version_num FROM alembic_version")
                 ).scalar_one(),
-                "20260821_0005",
+                "20260823_0006",
             )
             storage_columns = connection.execute(
                 text(
@@ -182,6 +199,90 @@ class MySqlMigrationIntegrationTests(unittest.TestCase):
                 "token_family_id,revoked_at,expires_at,id",
             )
             self.assertEqual((unique_successor, successor_fk), (1, 1))
+
+            generated = connection.execute(
+                text(
+                    "SELECT extra,generation_expression FROM information_schema.columns "
+                    "WHERE table_schema=DATABASE() AND table_name='confirmation_round' "
+                    "AND column_name='draft_plan_key'"
+                )
+            ).one()
+            self.assertEqual(generated[0], "STORED GENERATED")
+            self.assertEqual(
+                generated[1].replace("\\'", "'"),
+                "(case when (`status` = _utf8mb4'draft') then `implementation_plan_id` end)",
+            )
+
+    def test_guard_fail_is_before_ddl_and_preserves_schema_and_data(self) -> None:
+        assert MYSQL_TEST_URL
+        database_name = urlsplit(MYSQL_TEST_URL).path.rsplit("/", 1)[-1]
+        self.assertTrue(database_name.endswith("_test"))
+        from alembic import command
+        from alembic.config import Config
+        from sqlalchemy import create_engine, text
+
+        root = Path(__file__).resolve().parents[1]
+        config = Config(str(root / "alembic.ini"))
+        config.set_main_option("script_location", str(root))
+        config.set_main_option("sqlalchemy.url", MYSQL_TEST_URL)
+        engine = create_engine(MYSQL_TEST_URL)
+        command.downgrade(config, "base")
+        command.upgrade(config, "20260821_0005")
+        with engine.begin() as connection:
+            identity_before = tuple(
+                connection.execute(text("SELECT DATABASE(),CURRENT_USER(),VERSION()")).one()
+            )
+            self.assertTrue(all(identity_before))
+            connection.execute(
+                text(
+                    "INSERT INTO user_account "
+                    "(id,created_at,updated_at,row_version,email,password_hash,display_name,system_role,status) "
+                    "VALUES (1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1,'mvp3-guard@example.test','fixture',"
+                    "'MVP3 Guard','user','active')"
+                )
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO project "
+                    "(id,created_at,updated_at,row_version,owner_user_id,name,status) "
+                    "VALUES (1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1,1,'MVP3 Guard','active')"
+                )
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO project_version "
+                    "(id,created_at,updated_at,row_version,project_id,version_no,creation_reason,"
+                    "lifecycle_status,workflow_node,is_working) VALUES "
+                    "(1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1,1,'V1','guard fixture','draft','requirement',0)"
+                )
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO implementation_plan "
+                    "(created_at,updated_at,row_version,project_version_id,name,status) "
+                    "VALUES (UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1,1,'guard-fixture','draft')"
+                )
+            )
+            before_signature = _schema_signature(connection)
+            before_count = connection.execute(
+                text("SELECT COUNT(*) FROM implementation_plan")
+            ).scalar_one()
+        with self.assertRaisesRegex(RuntimeError, "expected 0/0/0"):
+            command.upgrade(config, "head")
+        with engine.connect() as connection:
+            self.assertEqual(_schema_signature(connection), before_signature)
+            self.assertEqual(
+                connection.execute(text("SELECT COUNT(*) FROM implementation_plan")).scalar_one(),
+                before_count,
+            )
+            self.assertEqual(
+                connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one(),
+                "20260821_0005",
+            )
+        with engine.begin() as connection:
+            connection.execute(text("DELETE FROM implementation_plan"))
+        command.downgrade(config, "base")
+        engine.dispose()
 
         command.downgrade(config, "base")
         command.upgrade(config, "20260729_0001")
