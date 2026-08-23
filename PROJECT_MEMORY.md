@@ -5,7 +5,11 @@
 - Freeze is unchanged: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`, contract `mvp2.prd-review.rc02.v1`, OpenAPI SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations), migration head `20260821_0005`; AI is OUT.
 - Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, and source-binding fix `201a53e` are accepted. The fix preserves the persisted effective Requirement Version ID in confirmed/effective lists and leaves draft/non-effective null.
 - Integration acceptance is PASS: the authorized PRD happy path passed in disposable MySQL/API and real browser evidence. A later speculative `GET design-reviews` 405 is out of the frozen eight generated operations and is not an implementation failure.
-- Post-push closeout is PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; Main is unchanged. Current Gate is `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`, with no Release, Tag, Deployment, or Production authority.
+- Post-push closeout is PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; its canonical real-content diff is clean and true-untracked count is zero.
+- `MVP2_STATUS=COMPLETED_IN_MAIN`; `MVP2_MAIN_PROMOTION=PASS`.
+- `BACKEND_PACKAGE_1=ACCEPTED`; `BACKEND_PACKAGE_2=ACCEPTED`; `FRONTEND_PACKAGE=ACCEPTED`; `SOURCE_BINDING_FIX=ACCEPTED`; `MVP2_INTEGRATION_REVIEW=ACCEPT`; `PRD_HAPPY_PATH=PASS`.
+- Accepted reconciliation merge is `32e8d7e1395ddb90395f146d06ac29a99ebbd011`, with parents `14bc14ea8af1cdd85d82556271dfe0a0957cc5af` and `201a53ec40d3eb7c6e62025355c0a7806ff524de`; this merge is in Main ancestry. The governance closeout is a later child and does not claim `32e8d7e` remains the future remote tip.
+- Current Gate is `MVP2-COMPLETE`; next gate is `AWAITING_NEW_USER_AUTHORITY`. No further MVP2 action is authorized by this closeout. `RELEASE_AUTHORITY=NOT_GRANTED`, `TAG_AUTHORITY=NOT_GRANTED`, `DEPLOYMENT_AUTHORITY=NOT_GRANTED`, `PRODUCTION_CHANGED=NO`.
 
 P1 facts are historical only: `1be1aec`, `portfolio-p1-v1-accepted-main`, and migration `20260729_0004` describe the earlier accepted P1 release and do not describe current MVP2 state or authorization. Earlier design-stage statements that development had not started are historical context, not current status.
 

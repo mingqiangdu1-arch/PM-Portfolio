@@ -4,9 +4,9 @@
 
 ## Current Phase
 
-MVP2 Main Promotion Reconciliation Decision
+MVP2 Complete
 
-MVP2 code and integration acceptance are complete on the accepted source branch; Main promotion is not yet authorized because `origin/main` at `14bc14e` and the accepted source at `201a53e` diverged from `1be1aec`.
+MVP2 code, integration acceptance, reconciliation, and Main promotion are complete. The accepted reconciliation merge `32e8d7e1395ddb90395f146d06ac29a99ebbd011` is in Main ancestry, preserving parents `14bc14ea8af1cdd85d82556271dfe0a0957cc5af` and `201a53ec40d3eb7c6e62025355c0a7806ff524de`. This governance closeout is a later child; the merge is not claimed as the future remote tip.
 
 ## MVP2 Accepted Baseline
 
@@ -16,7 +16,10 @@ MVP2 code and integration acceptance are complete on the accepted source branch;
 - Accepted commits: Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, source-binding fix `201a53e`.
 - Integration / PRD happy path: PASS. The later `GET design-reviews` 405 is classified `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
 - Post-push closeout: PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`; canonical content clean and true-untracked count zero.
-- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`; Release, Tag, Deployment, and Production authority are not granted.
+- `MVP2_STATUS=COMPLETED_IN_MAIN`; `MVP2_MAIN_PROMOTION=PASS`.
+- `BACKEND_PACKAGE_1=ACCEPTED`; `BACKEND_PACKAGE_2=ACCEPTED`; `FRONTEND_PACKAGE=ACCEPTED`; `SOURCE_BINDING_FIX=ACCEPTED`; `MVP2_INTEGRATION_REVIEW=ACCEPT`; `PRD_HAPPY_PATH=PASS`.
+- `MVP2_CURRENT_GATE=MVP2-COMPLETE`; `MVP2_NEXT_GATE=AWAITING_NEW_USER_AUTHORITY`. No further MVP2 action is authorized by this closeout.
+- `RELEASE_AUTHORITY=NOT_GRANTED`; `TAG_AUTHORITY=NOT_GRANTED`; `DEPLOYMENT_AUTHORITY=NOT_GRANTED`; `PRODUCTION_CHANGED=NO`.
 
 The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and `20260729_0004`) are historical only.
 
@@ -153,11 +156,11 @@ The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and 
 
 ## Current Task
 
-完成 `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`：在不改变已接受源分支、Main、远端或 Production 的前提下，构造并审查受控候选。不得重新执行已经通过的 Package、Runtime、Browser 或 Integration 验证。
+`MVP2-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT` 已完成：已记录 MVP2 在 Main 中完成、接受的 reconciliation merge、冻结契约与迁移事实、集成验收结果及剩余权限边界。不得将本 closeout 推断为 Release、Tag、Deployment 或 Production 授权。
 
 ## Next Phase
 
-仅在 reconciliation 候选被接受后，才能单独决定是否签发一次性 Main Promotion authority；不推定 Release、Tag、Deployment 或 Production action。
+`MVP2-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何开发、Release、Tag、Deployment 或 Production action 均需新的明确用户授权。
 
 ## Prohibited
 

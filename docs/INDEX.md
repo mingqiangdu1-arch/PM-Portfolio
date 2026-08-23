@@ -3,13 +3,17 @@
 > 最后更新：2026-08-23
 > 说明：索引只记录文档位置与效力，不能替代领域主责文档
 
-## MVP2 Accepted Baseline and Current Gate
+## MVP2 Accepted Baseline and Completion Closeout
 
 - Freeze: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`; OpenAPI `packages/contracts/openapi/openapi.json` SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations); migration head `20260821_0005`; AI is OUT.
 - Accepted source sequence: `2499d7a` Backend Package 1, `28e904e` Backend Package 2, `00511ae` Frontend Package, and `201a53e` source-binding fix.
 - `MVP2_INTEGRATION_REVIEW=ACCEPT`, PRD happy path PASS, and post-push closeout PASS on `origin/codex/backend-mvp2-package1-local` at `201a53e`.
 - The later `GET design-reviews` 405 is `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
-- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`; no Release, Tag, Deployment, or Production authority.
+- `MVP2_STATUS=COMPLETED_IN_MAIN`; `MVP2_MAIN_PROMOTION=PASS`.
+- `BACKEND_PACKAGE_1=ACCEPTED`; `BACKEND_PACKAGE_2=ACCEPTED`; `FRONTEND_PACKAGE=ACCEPTED`; `SOURCE_BINDING_FIX=ACCEPTED`; `MVP2_INTEGRATION_REVIEW=ACCEPT`; `PRD_HAPPY_PATH=PASS`.
+- Accepted reconciliation merge: `32e8d7e1395ddb90395f146d06ac29a99ebbd011`, preserving parents `14bc14ea8af1cdd85d82556271dfe0a0957cc5af` and `201a53ec40d3eb7c6e62025355c0a7806ff524de`; this merge is in Main ancestry. The governance closeout is a later child and does not claim `32e8d7e` remains the future remote tip.
+- Current Gate: `MVP2-COMPLETE`; next gate: `AWAITING_NEW_USER_AUTHORITY`. No further MVP2 action is authorized by this closeout.
+- `RELEASE_AUTHORITY=NOT_GRANTED`; `TAG_AUTHORITY=NOT_GRANTED`; `DEPLOYMENT_AUTHORITY=NOT_GRANTED`; `PRODUCTION_CHANGED=NO`.
 
 P1's `1be1aec` runtime, `portfolio-p1-v1-accepted-main` tag, and `20260729_0004` migration are historical only. The baseline above does not replace the domain authority of the existing product, interaction, visual, development-planning, data-design, AI-capability, or technical-design documents.
 
@@ -86,7 +90,7 @@ Development Planning 已于 2026-07-29 通过用户确认。Sprint 0～5 为十�
 | `模块依赖关系.md` | 模块拓扑、接口责任、关键路径、功能旗标和故障降级 | 当前有效（V1.0） |
 | `验收标准.md` | Sprint、T01～T07、API、数据、性能、安全、无障碍和发布 Gate | 当前有效（V1.0） |
 
-This paragraph recorded the 2026-07-29 design-freeze stage state. Current implementation and release status is governed by the P1 Accepted Release section above; the historical design documents retain their domain authority.
+This paragraph recorded the 2026-07-29 design-freeze stage state. Current implementation and MVP2 completion status is governed by the MVP2 completion closeout section above; the historical design documents retain their domain authority.
 
 ## 数据埋点与数据库设计
 
@@ -102,7 +106,7 @@ This paragraph recorded the 2026-07-29 design-freeze stage state. Current implem
 | `ER图.md` | 总体、业务主链、AI 追溯、文件版本、知识预留和事件指标六类 Mermaid ER 视图 | 当前有效（V1.0，2026-07-29 已确认） |
 | `指标计算逻辑.md` | 59 个指标的唯一计算登记、血缘、去重、迟到、N/A、质量门槛与刷新规则 | 当前有效（V1.0，2026-07-29 已确认） |
 
-`产品设计体系整理/数据指标体系.md` 的 VO-03～09 已同步为专项 `版本优化指标.md` 的唯一编号和公式口径。“Development / Sprint 0 尚未启动”属于 2026-07-29 数据设计冻结时的阶段状态；当前实现与 Release 状态以本文顶部“P1 Accepted Release”章节为准，数据设计文档的领域效力保持不变。
+`产品设计体系整理/数据指标体系.md` 的 VO-03～09 已同步为专项 `版本优化指标.md` 的唯一编号和公式口径。“Development / Sprint 0 尚未启动”属于 2026-07-29 数据设计冻结时的阶段状态；当前 MVP2 实现与完成状态以本文顶部“MVP2 Accepted Baseline and Completion Closeout”章节为准，数据设计文档的领域效力保持不变。
 
 ## AI 能力体系设计
 

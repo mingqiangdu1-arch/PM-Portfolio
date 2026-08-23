@@ -65,16 +65,21 @@ For low-fidelity completion, `wireframing` is candidate-only and may be loaded t
 
 `page-state-machine-design` is available through `C:\Users\10238\.codex\skills\personal` and registered in `F:\AI-Agent-System\skills\INDEX.md`. Use it only for user-observable page or page-family states, events, guards, transitions, entry/exit actions, asynchronous feedback, permissions and recovery. Do not use it to redefine business entity lifecycles, backend orchestration, APIs, databases, visual styling or implementation code. Formal product design and confirmed Interaction Design remain authoritative.
 
-## Current Governance Baseline
+## Current Governance Closeout
 
 - `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1` is unchanged: `mvp2.prd-review.rc02.v1`, `packages/contracts/openapi/openapi.json`, SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e`, 50 paths / 56 operations, migration head `20260821_0005`; AI is OUT.
 - Accepted source baseline: Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, and source-binding fix `201a53e` (the effective requirement version ID is serialized for confirmed/effective lists; draft/non-effective remains null).
 - `MVP2_INTEGRATION_REVIEW=ACCEPT` and `INTEGRATION_VERIFICATION=PASS`: the authorized PRD happy path passed. The later `GET design-reviews` 405 is `VERIFICATION_PROCEDURE_OUT_OF_SCOPE_NOT_IMPLEMENTATION_FAILURE`.
 - `MVP2-POST-PUSH-CLOSEOUT=PASS` for `origin/codex/backend-mvp2-package1-local` at `201a53e`; its canonical real-content diff is clean and it has no true untracked files.
-- Current Gate: `MVP2-MAIN-PROMOTION-RECONCILIATION-DECISION`. Main promotion remains blocked pending reconciliation; no Release, Tag, Deployment, or Production authority is granted.
+- `MVP2_STATUS=COMPLETED_IN_MAIN`.
+- `MVP2_MAIN_PROMOTION=PASS`.
+- `BACKEND_PACKAGE_1=ACCEPTED`; `BACKEND_PACKAGE_2=ACCEPTED`; `FRONTEND_PACKAGE=ACCEPTED`; `SOURCE_BINDING_FIX=ACCEPTED`; `MVP2_INTEGRATION_REVIEW=ACCEPT`; `PRD_HAPPY_PATH=PASS`.
+- Accepted reconciliation merge: `32e8d7e1395ddb90395f146d06ac29a99ebbd011`, with parents `14bc14ea8af1cdd85d82556271dfe0a0957cc5af` and `201a53ec40d3eb7c6e62025355c0a7806ff524de`; this merge is in Main ancestry. The final governance closeout is a later child and this record does not claim `32e8d7e` remains the future remote tip.
+- `MVP2_CURRENT_GATE=MVP2-COMPLETE`; `MVP2_NEXT_GATE=AWAITING_NEW_USER_AUTHORITY`. No further MVP2 action is authorized by this closeout.
+- `RELEASE_AUTHORITY=NOT_GRANTED`; `TAG_AUTHORITY=NOT_GRANTED`; `DEPLOYMENT_AUTHORITY=NOT_GRANTED`; `PRODUCTION_CHANGED=NO`.
 
 P1 is historical only: its accepted runtime commit `1be1aec`, tag `portfolio-p1-v1-accepted-main`, and `20260729_0004` migration record do not describe current MVP2 state or authorize new production work.
 
 ## Stage boundary
 
-Interaction Design is complete and user-approved. Formal product design in `产品设计体系整理/` remains authoritative; the current effective Interaction Design baseline lives in `交互设计与页面状态机/交互设计/`. `page-state-machine-design` remains bounded to user-observable page behavior, and the design-stage rules above remain authoritative for their respective documents. Historical stage rules that say development had not started describe their original design-stage context; they do not override the current P1 Accepted Release or authorize any new scope.
+Interaction Design is complete and user-approved. Formal product design in `产品设计体系整理/` remains authoritative; the current effective Interaction Design baseline lives in `交互设计与页面状态机/交互设计/`. `page-state-machine-design` remains bounded to user-observable page behavior, and the design-stage rules above remain authoritative for their respective documents. Historical stage rules that say development had not started describe their original design-stage context; they do not override the current MVP2 Main closeout or authorize any new scope.
