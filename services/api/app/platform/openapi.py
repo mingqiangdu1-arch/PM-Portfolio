@@ -5,6 +5,7 @@ from fastapi.openapi.utils import get_openapi
 
 from app.platform.mvp2_contract import install_mvp2_contract
 from app.platform.mvp3_contract import install_mvp3_contract
+from app.platform.mvp4_contract import install_mvp4_contract
 from app.platform.sprint1_contract import install_sprint1_contract
 from app.platform.sprint2_contract import install_sprint2_contract
 
@@ -159,6 +160,7 @@ def configure_openapi(app: FastAPI) -> None:
                     )
         install_mvp2_contract(schema)
         install_mvp3_contract(schema)
+        install_mvp4_contract(schema)
         schema["x-api-prefix"] = "/api/v1"
         schema["x-internal-api-prefix"] = "/internal/v1"
         schema["x-optimistic-lock-field"] = "expected_version"

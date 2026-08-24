@@ -2230,6 +2230,13 @@
           "CSRF_INVALID",
           "SERVICE_TOKEN_INVALID",
           "VERSION_CONFLICT",
+          "CONFIRMATION_NOT_CONFIRMED",
+          "CONFIRMATION_NOT_EFFECTIVE",
+          "PLAN_VERSION_NOT_CURRENT",
+          "PLAN_VERSION_BINDING_MISMATCH",
+          "TEST_RECORD_SUBMITTED",
+          "TEST_RECORD_INCOMPLETE",
+          "INVALID_STATE",
           "HISTORICAL_READ_ONLY",
           "FEATURE_DISABLED",
           "IDEMPOTENCY_KEY_REQUIRED",
@@ -5214,6 +5221,319 @@
           "plan_version_id",
           "implementation_summary",
           "readiness_json"
+        ],
+        "type": "object"
+      },
+      "Mvp4CreateTestRecordRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_result": {
+            "type": "string"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Mvp4TestEnvironment"
+          },
+          "expected_result": {
+            "type": "string"
+          },
+          "result_status": {
+            "$ref": "#/components/schemas/Mvp4ResultStatus"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "scope",
+          "environment",
+          "steps",
+          "expected_result",
+          "actual_result",
+          "result_status"
+        ],
+        "type": "object"
+      },
+      "Mvp4ResultStatus": {
+        "enum": [
+          "success",
+          "failed",
+          "partial"
+        ],
+        "type": "string"
+      },
+      "Mvp4SubmitTestRecordRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestEnvironment": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "preconditions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "preconditions"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_result": {
+            "type": "string"
+          },
+          "confirmation_round_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Mvp4TestEnvironment"
+          },
+          "expected_result": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "result_status": {
+            "$ref": "#/components/schemas/Mvp4ResultStatus"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "submitted"
+            ],
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "submitted_at": {
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "test_type": {
+            "const": "manual",
+            "type": "string"
+          },
+          "tester_id": {
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "confirmation_round_id",
+          "title",
+          "test_type",
+          "scope",
+          "environment",
+          "steps",
+          "expected_result",
+          "actual_result",
+          "result_status",
+          "tester_id",
+          "status",
+          "submitted_at",
+          "row_version",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestRecordData": {
+        "additionalProperties": false,
+        "properties": {
+          "test_record": {
+            "$ref": "#/components/schemas/Mvp4TestRecord"
+          }
+        },
+        "required": [
+          "test_record"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestRecordListData": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Mvp4TestRecord"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestRecordListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp4TestRecordListData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp4TestRecordResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp4TestRecordData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp4UpdateTestRecordRequest": {
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "scope"
+            ]
+          },
+          {
+            "required": [
+              "environment"
+            ]
+          },
+          {
+            "required": [
+              "steps"
+            ]
+          },
+          {
+            "required": [
+              "expected_result"
+            ]
+          },
+          {
+            "required": [
+              "actual_result"
+            ]
+          },
+          {
+            "required": [
+              "result_status"
+            ]
+          }
+        ],
+        "properties": {
+          "actual_result": {
+            "type": "string"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Mvp4TestEnvironment"
+          },
+          "expected_result": {
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "result_status": {
+            "$ref": "#/components/schemas/Mvp4ResultStatus"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "expected_version"
         ],
         "type": "object"
       },
@@ -9094,6 +9414,185 @@
             "owner"
           ]
         }
+      }
+    },
+    "/api/v1/confirmation-rounds/{round_id}/test-records": {
+      "get": {
+        "operationId": "listConfirmationRoundTestRecords",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "round_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordListResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "AUTH_REQUIRED"
+            ]
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "FORBIDDEN",
+              "PERMISSION_CHANGED"
+            ]
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ]
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List Test Records for a Confirmation Round",
+        "tags": [
+          "MVP4 Test Records"
+        ],
+        "x-contract-version": "MVP4-v1",
+        "x-freeze-id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+        "x-list-semantics": {
+          "ordering": "submitted_at DESC NULLS LAST, id DESC",
+          "pagination": false,
+          "relationship": "confirmation_round 1:N test_record"
+        },
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        },
+        "x-source-freshness": "not-required-for-read"
+      },
+      "post": {
+        "operationId": "createConfirmationRoundTestRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "round_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp4CreateTestRecordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordResponse"
+                }
+              }
+            },
+            "description": "Test Record created"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "AUTH_REQUIRED"
+            ]
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "FORBIDDEN",
+              "PERMISSION_CHANGED"
+            ]
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ]
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "CONFIRMATION_NOT_CONFIRMED",
+              "CONFIRMATION_NOT_EFFECTIVE",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "IDEMPOTENCY_CONFLICT",
+              "INVALID_STATE"
+            ]
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ]
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a draft Test Record for a Confirmation Round",
+        "tags": [
+          "MVP4 Test Records"
+        ],
+        "x-audit-event": "test.record.created",
+        "x-contract-version": "MVP4-v1",
+        "x-freeze-id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+        "x-idempotency": {
+          "required": true,
+          "same_key_different_body": "IDEMPOTENCY_CONFLICT",
+          "scope": "authenticated-user+endpoint-round_id+key+canonical-body"
+        },
+        "x-outbox-event": "test.record.created",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
+          ]
+        },
+        "x-source-guard": [
+          "round.status=confirmed",
+          "round.confirm_status=confirmed",
+          "round.is_effective=true",
+          "round.plan_version_id=implementation_plan.current_version_id",
+          "bound implementation_plan_version.is_effective=true",
+          "implementation_plan.status=active"
+        ]
       }
     },
     "/api/v1/design-reviews/{review_id}": {
@@ -13396,6 +13895,289 @@
         "x-implementation-status": "implemented-candidate"
       }
     },
+    "/api/v1/test-records/{id}": {
+      "get": {
+        "operationId": "getTestRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "AUTH_REQUIRED"
+            ]
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "FORBIDDEN",
+              "PERMISSION_CHANGED"
+            ]
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ]
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a Test Record",
+        "tags": [
+          "MVP4 Test Records"
+        ],
+        "x-contract-version": "MVP4-v1",
+        "x-freeze-id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        },
+        "x-source-freshness": "not-required-for-read"
+      },
+      "patch": {
+        "operationId": "updateTestRecordDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp4UpdateTestRecordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordResponse"
+                }
+              }
+            },
+            "description": "Test Record draft updated"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "AUTH_REQUIRED"
+            ]
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "FORBIDDEN",
+              "PERMISSION_CHANGED"
+            ]
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ]
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "TEST_RECORD_SUBMITTED",
+              "VERSION_CONFLICT",
+              "CONFIRMATION_NOT_CONFIRMED",
+              "CONFIRMATION_NOT_EFFECTIVE",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "INVALID_STATE"
+            ]
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ]
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update a draft Test Record",
+        "tags": [
+          "MVP4 Test Records"
+        ],
+        "x-audit-event": "test.record.draft.updated",
+        "x-contract-version": "MVP4-v1",
+        "x-expected-version": {
+          "field": "expected_version",
+          "required": true,
+          "stale_error": "VERSION_CONFLICT"
+        },
+        "x-freeze-id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+        "x-outbox-event": "test.record.draft.updated",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
+          ]
+        },
+        "x-source-guard": [
+          "record.submitted_at=null",
+          "complete create source guard remains true"
+        ]
+      }
+    },
+    "/api/v1/test-records/{id}:submit": {
+      "post": {
+        "operationId": "submitTestRecord",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp4SubmitTestRecordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordResponse"
+                }
+              }
+            },
+            "description": "Test Record submitted"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "AUTH_REQUIRED"
+            ]
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "FORBIDDEN",
+              "PERMISSION_CHANGED"
+            ]
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "NOT_FOUND"
+            ]
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "TEST_RECORD_SUBMITTED",
+              "VERSION_CONFLICT",
+              "IDEMPOTENCY_CONFLICT",
+              "CONFIRMATION_NOT_CONFIRMED",
+              "CONFIRMATION_NOT_EFFECTIVE",
+              "PLAN_VERSION_NOT_CURRENT",
+              "PLAN_VERSION_BINDING_MISMATCH",
+              "TEST_RECORD_INCOMPLETE",
+              "INVALID_STATE"
+            ]
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError",
+            "x-error-codes": [
+              "VALIDATION_ERROR"
+            ]
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit a draft Test Record",
+        "tags": [
+          "MVP4 Test Records"
+        ],
+        "x-audit-event": "test.record.submitted",
+        "x-contract-version": "MVP4-v1",
+        "x-expected-version": {
+          "field": "expected_version",
+          "required": true,
+          "stale_error": "VERSION_CONFLICT"
+        },
+        "x-freeze-id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+        "x-idempotency": {
+          "replay": "same key+record id+expected_version replays original successful response",
+          "required": true,
+          "scope": "authenticated-user+endpoint-test_record_id+key+expected_version",
+          "submitted_with_new_key": "TEST_RECORD_SUBMITTED"
+        },
+        "x-outbox-event": "test.record.submitted",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
+          ]
+        },
+        "x-source-guard": [
+          "record.submitted_at=null",
+          "complete source guard revalidated in transaction/lock",
+          "required test facts complete"
+        ]
+      }
+    },
     "/health/live": {
       "get": {
         "operationId": "getLiveness",
@@ -13596,6 +14378,16 @@
     "freeze_id": "MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1",
     "operations_added": 10,
     "paths_added": 7
+  },
+  "x-mvp4": {
+    "ai_change_required": false,
+    "contract_version": "MVP4-v1",
+    "flow_end": "SUBMITTED_READ_ONLY",
+    "freeze_id": "MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1",
+    "new_migration_required": false,
+    "operations_added": 5,
+    "paths_added": 3,
+    "schema_change_required": false
   },
   "x-optimistic-lock-field": "expected_version",
   "x-raw-input-policy": {

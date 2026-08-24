@@ -6,7 +6,7 @@ export interface SessionView { user: UserView; expiresAt: string }
 export interface AuthCredentials { email: string; password: string }
 export interface RegistrationInput extends AuthCredentials { displayName: string }
 export type ProjectRole = "owner" | "reviewer" | "implementer" | "tester";
-export interface ProjectCapabilities { role: ProjectRole | null; canPlanWrite: boolean; canSetEffective: boolean; canConfirmationCreate: boolean; canConfirmationUpdate: boolean; canConfirm: boolean; readOnly: boolean }
+export interface ProjectCapabilities { role: ProjectRole | null; canPlanWrite: boolean; canSetEffective: boolean; canConfirmationCreate: boolean; canConfirmationUpdate: boolean; canConfirm: boolean; canTestRecordWrite: boolean; readOnly: boolean }
 export interface ProjectSummaryView { id: string; name: string; goal: string; workingVersionId: string; workingVersionNo: string; projectVersion: number; stage: string; updatedAt: string; roles?: ProjectRole[]; capabilities?: ProjectCapabilities }
 export interface ProjectOverviewView extends ProjectSummaryView { viewedVersionId: string; viewedVersionNo: string; isHistory: boolean; canEdit: boolean; blocker: string | null; roles?: ProjectRole[]; capabilities?: ProjectCapabilities }
 export interface VersionView { id: string; number: string; source: string | null; reason: string; createdAt: string; isWorking: boolean }
@@ -71,10 +71,31 @@ export interface ConfirmationRoundPort {
   updateDraft(roundId: string, input: UpdateConfirmationRoundDraftInput): Promise<ConfirmationRoundView>;
   confirm(roundId: string, expectedVersion: number): Promise<ConfirmationRoundView>;
 }
-export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort; implementationPlans: ImplementationPlanPort; confirmationRounds: ConfirmationRoundPort }
+export type TestRecordResultStatus = "success" | "failed" | "partial";
+export type TestRecordStatus = "draft" | "submitted";
+export interface TestEnvironmentView { name: string; preconditions: string[] }
+export interface TestRecordView {
+  id: string; confirmationRoundId: string; title: string; scope: string; environment: TestEnvironmentView;
+  steps: string[]; expectedResult: string; actualResult: string; resultStatus: TestRecordResultStatus;
+  testerId: string; status: TestRecordStatus; submittedAt: string | null; rowVersion: number;
+  testType: "manual"; createdAt: string; updatedAt: string;
+}
+export interface CreateTestRecordInput {
+  title: string; scope: string; environment: TestEnvironmentView; steps: string[];
+  expectedResult: string; actualResult: string; resultStatus: TestRecordResultStatus;
+}
+export interface UpdateTestRecordInput extends Partial<Omit<CreateTestRecordInput, "title">> { expectedVersion: number }
+export interface TestRecordPort {
+  list(roundId: string): Promise<TestRecordView[]>;
+  create(roundId: string, input: CreateTestRecordInput): Promise<TestRecordView>;
+  get(recordId: string): Promise<TestRecordView>;
+  update(recordId: string, input: UpdateTestRecordInput): Promise<TestRecordView>;
+  submit(recordId: string, expectedVersion: number): Promise<TestRecordView>;
+}
+export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort; implementationPlans: ImplementationPlanPort; confirmationRounds: ConfirmationRoundPort; testRecords: TestRecordPort }
 export const capabilitiesForRoles = (roles: ProjectRole[] = []): ProjectCapabilities => {
   const role = roles.includes("owner") ? "owner" : roles.includes("implementer") ? "implementer" : roles[0] ?? null;
-  return { role, canPlanWrite: role === "owner", canSetEffective: role === "owner", canConfirmationCreate: role === "owner" || role === "implementer", canConfirmationUpdate: role === "owner" || role === "implementer", canConfirm: role === "owner", readOnly: role !== "owner" && role !== "implementer" };
+  return { role, canPlanWrite: role === "owner", canSetEffective: role === "owner", canConfirmationCreate: role === "owner" || role === "implementer", canConfirmationUpdate: role === "owner" || role === "implementer", canConfirm: role === "owner", canTestRecordWrite: roles.includes("owner") || roles.includes("tester"), readOnly: role !== "owner" && role !== "implementer" };
 };
 export type FrontendErrorCategory = "UNAUTHENTICATED" | "FORBIDDEN" | "CONFLICT" | "RATE_LIMITED" | "STORAGE_UNAVAILABLE" | "CONTRACT_UNAVAILABLE" | "FAILED";
 import type { ErrorCode, Mvp2ErrorCode, Mvp3ErrorCode, Sprint2ErrorCode } from "./generated/models";

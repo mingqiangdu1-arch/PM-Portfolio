@@ -205,3 +205,86 @@ def confirm_round(
             trace_id=request.state.trace_id,
         ),
     )
+
+
+@router.get("/api/v1/confirmation-rounds/{round_id}/test-records")
+def list_test_records(
+    round_id: str, request: Request, authorization: Annotated[str | None, Header()] = None
+) -> dict[str, Any]:
+    return _ok(
+        request,
+        service.list_test_records(
+            round_id=_path_id(round_id, "round_id"), user_id=_user(authorization)
+        ),
+    )
+
+
+@router.post("/api/v1/confirmation-rounds/{round_id}/test-records", status_code=201)
+def create_test_record(
+    round_id: str,
+    request: Request,
+    body: Annotated[dict[str, Any], Body()],
+    authorization: Annotated[str | None, Header()] = None,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> dict[str, Any]:
+    return _ok(
+        request,
+        service.create_test_record(
+            round_id=_path_id(round_id, "round_id"),
+            user_id=_user(authorization),
+            payload=body,
+            key=_key(idempotency_key),
+            trace_id=request.state.trace_id,
+        ),
+    )
+
+
+@router.get("/api/v1/test-records/{id}")
+def get_test_record(
+    id: str, request: Request, authorization: Annotated[str | None, Header()] = None
+) -> dict[str, Any]:
+    return _ok(
+        request,
+        service.get_test_record(record_id=_path_id(id, "id"), user_id=_user(authorization)),
+    )
+
+
+@router.patch("/api/v1/test-records/{id}")
+def update_test_record(
+    id: str,
+    request: Request,
+    body: Annotated[dict[str, Any], Body()],
+    authorization: Annotated[str | None, Header()] = None,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> dict[str, Any]:
+    if idempotency_key is not None:
+        raise ApiError("VALIDATION_ERROR", "PATCH does not accept Idempotency-Key", 422)
+    return _ok(
+        request,
+        service.update_test_record(
+            record_id=_path_id(id, "id"),
+            user_id=_user(authorization),
+            payload=body,
+            trace_id=request.state.trace_id,
+        ),
+    )
+
+
+@router.post("/api/v1/test-records/{id}:submit")
+def submit_test_record(
+    id: str,
+    request: Request,
+    body: Annotated[dict[str, Any], Body()],
+    authorization: Annotated[str | None, Header()] = None,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> dict[str, Any]:
+    return _ok(
+        request,
+        service.submit_test_record(
+            record_id=_path_id(id, "id"),
+            user_id=_user(authorization),
+            payload=body,
+            key=_key(idempotency_key),
+            trace_id=request.state.trace_id,
+        ),
+    )

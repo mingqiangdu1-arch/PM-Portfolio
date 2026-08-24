@@ -44,6 +44,11 @@ import {
   getConfirmationRound,
   updateConfirmationRoundDraft,
   confirmConfirmationRound,
+  listConfirmationRoundTestRecords,
+  createConfirmationRoundTestRecord,
+  getTestRecord,
+  updateTestRecordDraft,
+  submitTestRecord,
 } from "./generated/client";
 import type {
   ApiResponseHealthData,
@@ -94,6 +99,9 @@ import type {
   Mvp3ConfirmationRound,
   Mvp3ConfirmationRoundDataConfirmationRound,
   Mvp3ConfirmationRoundListDataItemsItem,
+  Mvp4TestRecord,
+  Mvp4TestRecordListData,
+  Mvp4TestRecordData,
 } from "./generated/models";
 import type {
   FileItemView,
@@ -140,6 +148,9 @@ import type {
   ConfirmationRoundView,
   ImplementationPlanPort,
   ConfirmationRoundPort,
+  TestRecordPort,
+  TestRecordView,
+  TestEnvironmentView,
 } from "./ports";
 import { capabilitiesForRoles, PortError } from "./ports";
 import { createClientId } from "../client-id";
@@ -856,6 +867,27 @@ const mapRound = (data: RoundWire): ConfirmationRoundView => ({
   supersededAt: data.superseded_at ?? null,
 });
 
+const mapTestRecord = (data: Mvp4TestRecord): TestRecordView => ({
+  id: data.id,
+  confirmationRoundId: data.confirmation_round_id,
+  title: data.title,
+  scope: data.scope,
+  environment: data.environment,
+  steps: data.steps,
+  expectedResult: data.expected_result,
+  actualResult: data.actual_result,
+  resultStatus: data.result_status,
+  testerId: data.tester_id,
+  status: data.status,
+  submittedAt: data.submitted_at ?? null,
+  rowVersion: data.row_version,
+  testType: data.test_type,
+  createdAt: data.created_at,
+  updatedAt: data.updated_at,
+});
+
+const serializeEnvironment = (data: TestEnvironmentView) => ({ name: data.name, preconditions: data.preconditions });
+
 export const realApi: FrontendApi = {
   identity: {
     async login(input) {
@@ -1008,6 +1040,48 @@ export const realApi: FrontendApi = {
       return mapRound(result.data.confirmation_round);
     },
   } satisfies ConfirmationRoundPort,
+  testRecords: {
+    async list(roundId) {
+      const result = await protectedRequest<Mvp4TestRecordListData>(() => listConfirmationRoundTestRecords(roundId, requestOptions()));
+      return result.data.items.map(mapTestRecord);
+    },
+    async create(roundId, input) {
+      const scope = `create-test-record:${roundId}:${JSON.stringify(input)}`;
+      const result = await protectedRequest<Mvp4TestRecordData>(() => createConfirmationRoundTestRecord(roundId, {
+        title: input.title,
+        scope: input.scope,
+        environment: serializeEnvironment(input.environment),
+        steps: input.steps,
+        expected_result: input.expectedResult,
+        actual_result: input.actualResult,
+        result_status: input.resultStatus,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapTestRecord(result.data.test_record);
+    },
+    async get(recordId) {
+      const result = await protectedRequest<Mvp4TestRecordData>(() => getTestRecord(recordId, requestOptions()));
+      return mapTestRecord(result.data.test_record);
+    },
+    async update(recordId, input) {
+      const result = await protectedRequest<Mvp4TestRecordData>(() => updateTestRecordDraft(recordId, {
+        expected_version: input.expectedVersion,
+        ...(input.scope === undefined ? {} : { scope: input.scope }),
+        ...(input.environment === undefined ? {} : { environment: serializeEnvironment(input.environment) }),
+        ...(input.steps === undefined ? {} : { steps: input.steps }),
+        ...(input.expectedResult === undefined ? {} : { expected_result: input.expectedResult }),
+        ...(input.actualResult === undefined ? {} : { actual_result: input.actualResult }),
+        ...(input.resultStatus === undefined ? {} : { result_status: input.resultStatus }),
+      }, requestOptions()));
+      return mapTestRecord(result.data.test_record);
+    },
+    async submit(recordId, expectedVersion) {
+      const scope = `submit-test-record:${recordId}:${expectedVersion}`;
+      const result = await protectedRequest<Mvp4TestRecordData>(() => submitTestRecord(recordId, { expected_version: expectedVersion }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapTestRecord(result.data.test_record);
+    },
+  } satisfies TestRecordPort,
   requirements: {
     async list(projectVersionId: string) {
       const result = await protectedRequest<RequirementListData>(() => listRequirements(projectVersionId, undefined, requestOptions()));

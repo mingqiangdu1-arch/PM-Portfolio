@@ -227,12 +227,14 @@ def _project_version(connection: Any, version_id: int) -> dict[str, Any]:
     return row
 
 
-def _roles(connection: Any, project_id: int, user_id: int) -> list[str]:
+def _roles(connection: Any, project_id: int, user_id: int, *, lock: bool = False) -> list[str]:
+    suffix = " FOR UPDATE" if lock else ""
     rows = (
         connection.execute(
             _sql(
                 "SELECT role_code FROM project_member "
                 "WHERE project_id=:project_id AND user_id=:user_id AND status='active'"
+                f"{suffix}"
             ),
             {"project_id": project_id, "user_id": user_id},
         )
@@ -244,11 +246,22 @@ def _roles(connection: Any, project_id: int, user_id: int) -> list[str]:
     return [str(row["role_code"]) for row in rows]
 
 
-def _access(connection: Any, *, project_id: int, user_id: int, allowed: set[str]) -> list[str]:
-    roles = _roles(connection, project_id, user_id)
+def _access(
+    connection: Any, *, project_id: int, user_id: int, allowed: set[str], lock: bool = False
+) -> list[str]:
+    roles = _roles(connection, project_id, user_id, lock=lock)
     if not allowed.intersection(roles):
         raise ApiError("FORBIDDEN", "Project role does not allow this action", 403)
     return roles
+
+
+def _write_role(roles: list[str]) -> str:
+    """Return the deterministic role that authorized a Test Record write."""
+    if "owner" in roles:
+        return "owner"
+    if "tester" in roles:
+        return "tester"
+    raise ApiError("FORBIDDEN", "Project role does not allow this action", 403)
 
 
 def _read_access(connection: Any, *, project_id: int, user_id: int) -> list[str]:
@@ -410,6 +423,151 @@ def _round(row: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _test_text(value: Any, field: str) -> str:
+    if not isinstance(value, str):
+        raise ApiError("VALIDATION_ERROR", f"{field} must be a string", 422)
+    return unicodedata.normalize("NFC", value.replace("\r\n", "\n").replace("\r", "\n")).strip()
+
+
+def _test_environment(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != {"name", "preconditions"}:
+        raise ApiError("VALIDATION_ERROR", "environment fields are invalid", 422)
+    name = _test_text(value["name"], "environment.name")
+    preconditions = value["preconditions"]
+    if not isinstance(preconditions, list) or any(not isinstance(item, str) for item in preconditions):
+        raise ApiError("VALIDATION_ERROR", "environment.preconditions must be a string array", 422)
+    return {
+        "name": name,
+        "preconditions": [
+            unicodedata.normalize("NFC", item.replace("\r\n", "\n").replace("\r", "\n")).strip()
+            for item in preconditions
+        ],
+    }
+
+
+def _test_title(value: Any) -> str:
+    title = _normal(value, "title")
+    if len(title) > 200:
+        raise ApiError("VALIDATION_ERROR", "title must contain 1 to 200 characters", 422)
+    return title
+
+
+def _test_steps(value: Any) -> list[str]:
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise ApiError("VALIDATION_ERROR", "steps must be a string array", 422)
+    return [
+        unicodedata.normalize("NFC", item.replace("\r\n", "\n").replace("\r", "\n")).strip()
+        for item in value
+    ]
+
+
+def _test_result_status(value: Any) -> str:
+    if value not in {"success", "failed", "partial"}:
+        raise ApiError("VALIDATION_ERROR", "result_status is invalid", 422)
+    return value
+
+
+def _test_record(row: dict[str, Any]) -> dict[str, Any]:
+    submitted_at = row.get("submitted_at")
+    return {
+        "id": str(row["id"]),
+        "confirmation_round_id": str(row["confirmation_round_id"]),
+        "title": row["title"],
+        "test_type": "manual",
+        "scope": row["scope"],
+        "environment": _json(row["environment_json"]),
+        "steps": _json(row["steps_json"]),
+        "expected_result": row["expected_result"],
+        "actual_result": row["actual_result"],
+        "result_status": row["result_status"],
+        "tester_id": str(row["tester_id"]),
+        "status": "submitted" if submitted_at is not None else "draft",
+        "submitted_at": _iso(submitted_at),
+        "row_version": int(row["row_version"]),
+        "created_at": _iso(row["created_at"]),
+        "updated_at": _iso(row["updated_at"]),
+    }
+
+
+def _test_source_guard(
+    connection: Any, round_id: int, *, lock: bool = False, validate: bool = True
+) -> dict[str, Any]:
+    suffix = " FOR UPDATE" if lock else ""
+    row = _mapping(
+        connection.execute(
+            _sql(
+                "SELECT r.id AS round_id,r.status AS round_status,r.confirm_status,"
+                "r.is_effective AS round_effective,r.plan_version_id,"
+                "p.id AS plan_id,p.project_version_id,p.status AS plan_status,"
+                "p.current_version_id,pv.implementation_plan_id AS plan_version_plan_id,"
+                "pv.is_effective AS plan_version_effective,"
+                "v.project_id "
+                "FROM confirmation_round r "
+                "JOIN implementation_plan p ON p.id=r.implementation_plan_id "
+                "JOIN implementation_plan_version pv ON pv.id=r.plan_version_id "
+                "JOIN project_version v ON v.id=p.project_version_id "
+                "WHERE r.id=:round_id AND p.archived_at IS NULL AND v.archived_at IS NULL"
+                f"{suffix}"
+            ),
+            {"round_id": round_id},
+        )
+    )
+    if not row:
+        raise ApiError("NOT_FOUND", "Confirmation round was not found", 404)
+    if not validate:
+        return row
+    if row["round_status"] != "confirmed" or row["confirm_status"] != "confirmed":
+        raise ApiError("CONFIRMATION_NOT_CONFIRMED", "Confirmation round is not confirmed", 409)
+    if not bool(row["round_effective"]):
+        raise ApiError("CONFIRMATION_NOT_EFFECTIVE", "Confirmation round is not effective", 409)
+    if int(row["current_version_id"] or 0) != int(row["plan_version_id"]):
+        raise ApiError("PLAN_VERSION_NOT_CURRENT", "Confirmation round is not bound to the current plan version", 409)
+    if int(row["plan_version_plan_id"]) != int(row["plan_id"]):
+        raise ApiError("PLAN_VERSION_BINDING_MISMATCH", "Plan version belongs to another implementation plan", 409)
+    if not bool(row["plan_version_effective"]):
+        raise ApiError("PLAN_VERSION_BINDING_MISMATCH", "Plan version binding is not effective", 409)
+    if row["plan_status"] != "active":
+        raise ApiError("INVALID_STATE", "Implementation plan is not active", 409)
+    return row
+
+
+def _test_complete(row: dict[str, Any]) -> bool:
+    environment = _json(row["environment_json"])
+    steps = _json(row["steps_json"])
+    return bool(
+        str(row["scope"]).strip()
+        and isinstance(environment, dict)
+        and str(environment.get("name", "")).strip()
+        and isinstance(steps, list)
+        and steps
+        and all(isinstance(item, str) and item.strip() for item in steps)
+        and str(row["expected_result"]).strip()
+        and str(row["actual_result"]).strip()
+        and row["result_status"] in {"success", "failed", "partial"}
+    )
+
+
+def _test_record_identity(connection: Any, record_id: int, *, lock: bool = False) -> dict[str, Any]:
+    suffix = " FOR UPDATE" if lock else ""
+    row = _mapping(
+        connection.execute(
+            _sql(
+                "SELECT tr.*,r.implementation_plan_id,p.project_version_id,v.project_id "
+                "FROM test_record tr "
+                "JOIN confirmation_round r ON r.id=tr.confirmation_round_id "
+                "JOIN implementation_plan p ON p.id=r.implementation_plan_id "
+                "JOIN project_version v ON v.id=p.project_version_id "
+                "WHERE tr.id=:id AND p.archived_at IS NULL AND v.archived_at IS NULL"
+                f"{suffix}"
+            ),
+            {"id": record_id},
+        )
+    )
+    if not row:
+        raise ApiError("NOT_FOUND", "Test Record was not found", 404)
+    return row
+
+
 def _idem_hash(payload: dict[str, Any]) -> str:
     return _digest(payload)
 
@@ -470,6 +628,12 @@ def _idem_complete(
 
 
 def _snapshot_replay(connection: Any, response_ref: str) -> dict[str, Any]:
+    if response_ref.startswith("test_record:"):
+        record_id = response_ref[len("test_record:") :]
+        if not _ID.fullmatch(record_id):
+            raise ApiError("IDEMPOTENCY_CONFLICT", "Original command snapshot is unavailable", 409)
+        row = _test_record_identity(connection, int(record_id))
+        return {"test_record": _test_record(row)}
     if not response_ref.startswith("audit:"):
         raise ApiError("IDEMPOTENCY_CONFLICT", "Original command snapshot is unavailable", 409)
     audit_id = response_ref[6:]
@@ -500,7 +664,8 @@ def _persist_command(
     object_version_id: int | None,
     trace_id: str,
     command_id: str,
-    response_data: dict[str, Any],
+    response_data: dict[str, Any] | None,
+    audit_metadata: dict[str, Any] | None = None,
     aggregate_type: str,
     aggregate_version: int,
     event_name: str,
@@ -527,7 +692,9 @@ def _persist_command(
             "command_id": command_id,
             "occurred_at": now,
             "metadata": _canonical(
-                {"schema_version": "mvp3.command.snapshot.v1", "response_data": response_data}
+                audit_metadata
+                if audit_metadata is not None
+                else {"schema_version": "mvp3.command.snapshot.v1", "response_data": response_data}
             ),
         },
     )
@@ -1454,6 +1621,330 @@ class ConfirmationService:
         except (IntegrityError, OperationalError) as exc:
             raise _map_database_error(exc) from exc
 
+    def list_test_records(self, *, round_id: int, user_id: int) -> dict[str, Any]:
+        round_id = _id(round_id, "round_id")
+        with readonly() as connection:
+            context = _mapping(
+                connection.execute(
+                    _sql(
+                        "SELECT r.id,v.project_id FROM confirmation_round r "
+                        "JOIN implementation_plan p ON p.id=r.implementation_plan_id "
+                        "JOIN project_version v ON v.id=p.project_version_id "
+                        "WHERE r.id=:id AND p.archived_at IS NULL AND v.archived_at IS NULL"
+                    ),
+                    {"id": round_id},
+                )
+            )
+            if not context:
+                raise ApiError("NOT_FOUND", "Confirmation round was not found", 404)
+            _read_access(connection, project_id=int(context["project_id"]), user_id=user_id)
+            rows = (
+                connection.execute(
+                    _sql(
+                        "SELECT * FROM test_record WHERE confirmation_round_id=:round_id "
+                        "ORDER BY (submitted_at IS NULL),submitted_at DESC,id DESC"
+                    ),
+                    {"round_id": round_id},
+                )
+                .mappings()
+                .all()
+            )
+            return {"items": [_test_record(dict(row)) for row in rows]}
+
+    def create_test_record(
+        self, *, round_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str
+    ) -> dict[str, Any]:
+        payload = _exact(
+            payload,
+            {"title", "scope", "environment", "steps", "expected_result", "actual_result", "result_status"},
+            "CreateTestRecord",
+        )
+        round_id = _id(round_id, "round_id")
+        request = {
+            "title": _test_title(payload["title"]),
+            "scope": _test_text(payload["scope"], "scope"),
+            "environment": _test_environment(payload["environment"]),
+            "steps": _test_steps(payload["steps"]),
+            "expected_result": _test_text(payload["expected_result"], "expected_result"),
+            "actual_result": _test_text(payload["actual_result"], "actual_result"),
+            "result_status": _test_result_status(payload["result_status"]),
+        }
+        endpoint = f"createConfirmationRoundTestRecord:/api/v1/confirmation-rounds/{round_id}/test-records"
+        try:
+            with transaction() as connection:
+                # Resolve the project context before validating the source state.
+                # This keeps non-members on the anti-enumeration path and avoids
+                # exposing whether a hidden round is confirmed/effective.
+                source = _test_source_guard(connection, round_id, validate=False)
+                roles = _access(
+                    connection,
+                    project_id=int(source["project_id"]),
+                    user_id=user_id,
+                    allowed={"owner", "tester"},
+                    lock=True,
+                )
+                replay = _idem_begin(
+                    connection, user_id=user_id, endpoint=endpoint, key=key, payload=request
+                )
+                if replay:
+                    return _snapshot_replay(connection, replay)
+                source = _test_source_guard(connection, round_id, lock=True)
+                now = _now()
+                result = connection.execute(
+                    _sql(
+                        "INSERT INTO test_record "
+                        "(created_at,created_by,updated_at,updated_by,row_version,"
+                        "confirmation_round_id,supersedes_test_record_id,title,test_type,scope,"
+                        "environment_json,steps_json,expected_result,actual_result,result_status,"
+                        "no_issue_conclusion,tester_id,submitted_at) "
+                        "VALUES (:now,:uid,:now,:uid,1,:round_id,NULL,:title,'manual',:scope,"
+                        ":environment,:steps,:expected,:actual,:result_status,0,:uid,NULL)"
+                    ),
+                    {
+                        "now": now,
+                        "uid": user_id,
+                        "round_id": round_id,
+                        "title": request["title"],
+                        "scope": request["scope"],
+                        "environment": _canonical(request["environment"]),
+                        "steps": _canonical(request["steps"]),
+                        "expected": request["expected_result"],
+                        "actual": request["actual_result"],
+                        "result_status": request["result_status"],
+                    },
+                )
+                record_id = int(result.lastrowid)
+                row = _mapping(
+                    connection.execute(
+                        _sql("SELECT * FROM test_record WHERE id=:id"), {"id": record_id}
+                    )
+                )
+                response_data = {"test_record": _test_record(row)}
+                command = f"cmd_{uuid.uuid4().hex}"
+                _persist_command(
+                    connection,
+                    actor_user_id=user_id,
+                    operation="test.record.created",
+                    object_type="test_record",
+                    object_id=record_id,
+                    object_version_id=int(row["row_version"]),
+                    trace_id=trace_id,
+                    command_id=command,
+                    response_data=None,
+                    audit_metadata={
+                        "schema_version": "test_record.mvp4.audit.v1",
+                        "actual_role": _write_role(roles),
+                        "test_record_id": record_id,
+                        "row_version": int(row["row_version"]),
+                    },
+                    aggregate_type="test_record",
+                    aggregate_version=int(row["row_version"]),
+                    event_name="test.record.created",
+                    event_payload={"schema_version": "test_record.mvp4.v1", "row_version": 1},
+                    project_id=int(source["project_id"]),
+                    project_version_id=int(source["project_version_id"]),
+                )
+                _idem_complete(
+                    connection,
+                    user_id=user_id,
+                    endpoint=endpoint,
+                    key=key,
+                    response_ref=f"test_record:{record_id}",
+                )
+                return response_data
+        except (IntegrityError, OperationalError) as exc:
+            raise _map_database_error(exc) from exc
+
+    def get_test_record(self, *, record_id: int, user_id: int) -> dict[str, Any]:
+        with readonly() as connection:
+            row = _test_record_identity(connection, _id(record_id, "id"))
+            _read_access(connection, project_id=int(row["project_id"]), user_id=user_id)
+            return {"test_record": _test_record(row)}
+
+    def update_test_record(
+        self, *, record_id: int, user_id: int, payload: dict[str, Any], trace_id: str
+    ) -> dict[str, Any]:
+        allowed_fields = {
+            "expected_version",
+            "scope",
+            "environment",
+            "steps",
+            "expected_result",
+            "actual_result",
+            "result_status",
+        }
+        if (
+            not isinstance(payload, dict)
+            or "expected_version" not in payload
+            or not set(payload).issubset(allowed_fields)
+        ):
+            raise ApiError("VALIDATION_ERROR", "UpdateTestRecord request fields are invalid", 422)
+        writable = set(payload) - {"expected_version"}
+        if not writable:
+            raise ApiError("VALIDATION_ERROR", "At least one draft field is required", 422)
+        expected = _expected(payload["expected_version"])
+        values: dict[str, Any] = {}
+        if "scope" in payload:
+            values["scope"] = _test_text(payload["scope"], "scope")
+        if "environment" in payload:
+            values["environment_json"] = _canonical(_test_environment(payload["environment"]))
+        if "steps" in payload:
+            values["steps_json"] = _canonical(_test_steps(payload["steps"]))
+        if "expected_result" in payload:
+            values["expected_result"] = _test_text(payload["expected_result"], "expected_result")
+        if "actual_result" in payload:
+            values["actual_result"] = _test_text(payload["actual_result"], "actual_result")
+        if "result_status" in payload:
+            values["result_status"] = _test_result_status(payload["result_status"])
+        record_id = _id(record_id, "id")
+        try:
+            with transaction() as connection:
+                identity = _test_record_identity(connection, record_id)
+                roles = _access(
+                    connection,
+                    project_id=int(identity["project_id"]),
+                    user_id=user_id,
+                    allowed={"owner", "tester"},
+                    lock=True,
+                )
+                _test_source_guard(connection, int(identity["confirmation_round_id"]), lock=True)
+                row = _test_record_identity(connection, record_id, lock=True)
+                if row["submitted_at"] is not None:
+                    raise ApiError("TEST_RECORD_SUBMITTED", "Submitted Test Record is read-only", 409)
+                if int(row["row_version"]) != expected:
+                    raise ApiError(
+                        "VERSION_CONFLICT",
+                        "Test Record has changed",
+                        409,
+                        [{"field": "row_version", "reason": f"latest={row['row_version']}"}],
+                    )
+                now = _now()
+                assignments = [f"{field}=:{field}" for field in values]
+                assignments.extend(["row_version=row_version+1", "updated_at=:now", "updated_by=:uid"])
+                params = {**values, "id": record_id, "now": now, "uid": user_id}
+                connection.execute(
+                    _sql(f"UPDATE test_record SET {','.join(assignments)} WHERE id=:id"), params
+                )
+                updated = _test_record_identity(connection, record_id, lock=True)
+                response_data = {"test_record": _test_record(updated)}
+                command = f"cmd_{uuid.uuid4().hex}"
+                _persist_command(
+                    connection,
+                    actor_user_id=user_id,
+                    operation="test.record.draft.updated",
+                    object_type="test_record",
+                    object_id=record_id,
+                    object_version_id=int(updated["row_version"]),
+                    trace_id=trace_id,
+                    command_id=command,
+                    response_data=None,
+                    audit_metadata={
+                        "schema_version": "test_record.mvp4.audit.v1",
+                        "actual_role": _write_role(roles),
+                        "test_record_id": record_id,
+                        "row_version": int(updated["row_version"]),
+                    },
+                    aggregate_type="test_record",
+                    aggregate_version=int(updated["row_version"]),
+                    event_name="test.record.draft.updated",
+                    event_payload={
+                        "schema_version": "test_record.mvp4.v1",
+                        "row_version": int(updated["row_version"]),
+                    },
+                    project_id=int(updated["project_id"]),
+                    project_version_id=int(updated["project_version_id"]),
+                )
+                return response_data
+        except (IntegrityError, OperationalError) as exc:
+            raise _map_database_error(exc) from exc
+
+    def submit_test_record(
+        self, *, record_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str
+    ) -> dict[str, Any]:
+        payload = _exact(payload, {"expected_version"}, "SubmitTestRecord")
+        expected = _expected(payload["expected_version"])
+        record_id = _id(record_id, "id")
+        endpoint = f"submitTestRecord:/api/v1/test-records/{record_id}:submit"
+        try:
+            with transaction() as connection:
+                identity = _test_record_identity(connection, record_id)
+                roles = _access(
+                    connection,
+                    project_id=int(identity["project_id"]),
+                    user_id=user_id,
+                    allowed={"owner", "tester"},
+                    lock=True,
+                )
+                replay = _idem_begin(
+                    connection,
+                    user_id=user_id,
+                    endpoint=endpoint,
+                    key=key,
+                    payload={"expected_version": expected},
+                )
+                if replay:
+                    return _snapshot_replay(connection, replay)
+                _test_source_guard(connection, int(identity["confirmation_round_id"]), lock=True)
+                row = _test_record_identity(connection, record_id, lock=True)
+                if row["submitted_at"] is not None:
+                    raise ApiError("TEST_RECORD_SUBMITTED", "Submitted Test Record is read-only", 409)
+                if int(row["row_version"]) != expected:
+                    raise ApiError(
+                        "VERSION_CONFLICT",
+                        "Test Record has changed",
+                        409,
+                        [{"field": "row_version", "reason": f"latest={row['row_version']}"}],
+                    )
+                if not _test_complete(row):
+                    raise ApiError("TEST_RECORD_INCOMPLETE", "Test Record facts are incomplete", 409)
+                now = _now()
+                connection.execute(
+                    _sql(
+                        "UPDATE test_record SET submitted_at=:now,row_version=row_version+1,"
+                        "updated_at=:now,updated_by=:uid WHERE id=:id"
+                    ),
+                    {"now": now, "uid": user_id, "id": record_id},
+                )
+                updated = _test_record_identity(connection, record_id, lock=True)
+                response_data = {"test_record": _test_record(updated)}
+                command = f"cmd_{uuid.uuid4().hex}"
+                _persist_command(
+                    connection,
+                    actor_user_id=user_id,
+                    operation="test.record.submitted",
+                    object_type="test_record",
+                    object_id=record_id,
+                    object_version_id=int(updated["row_version"]),
+                    trace_id=trace_id,
+                    command_id=command,
+                    response_data=None,
+                    audit_metadata={
+                        "schema_version": "test_record.mvp4.audit.v1",
+                        "actual_role": _write_role(roles),
+                        "test_record_id": record_id,
+                        "row_version": int(updated["row_version"]),
+                    },
+                    aggregate_type="test_record",
+                    aggregate_version=int(updated["row_version"]),
+                    event_name="test.record.submitted",
+                    event_payload={
+                        "schema_version": "test_record.mvp4.v1",
+                        "row_version": int(updated["row_version"]),
+                    },
+                    project_id=int(updated["project_id"]),
+                    project_version_id=int(updated["project_version_id"]),
+                )
+                _idem_complete(
+                    connection,
+                    user_id=user_id,
+                    endpoint=endpoint,
+                    key=key,
+                    response_ref=f"test_record:{record_id}",
+                )
+                return response_data
+        except (IntegrityError, OperationalError) as exc:
+            raise _map_database_error(exc) from exc
+
     # Explicit aliases keep the service vocabulary readable to callers that
     # use the frozen operation names while retaining the concise adapter names.
     create_implementation_plan = create_plan
@@ -1464,6 +1955,11 @@ class ConfirmationService:
     get_confirmation_round = get_round
     update_confirmation_round_draft = update_round
     confirm_confirmation_round = confirm_round
+    list_confirmation_round_test_records = list_test_records
+    create_confirmation_round_test_record = create_test_record
+    get_test_record_resource = get_test_record
+    update_test_record_draft = update_test_record
+    submit_test_record_command = submit_test_record
 
 
 service = ConfirmationService()

@@ -46,6 +46,11 @@ const client = vi.hoisted(() => ({
   getConfirmationRound: vi.fn(),
   updateConfirmationRoundDraft: vi.fn(),
   confirmConfirmationRound: vi.fn(),
+  listConfirmationRoundTestRecords: vi.fn(),
+  createConfirmationRoundTestRecord: vi.fn(),
+  getTestRecord: vi.fn(),
+  updateTestRecordDraft: vi.fn(),
+  submitTestRecord: vi.fn(),
 }));
 
 vi.mock("./generated/client", () => client);
@@ -533,5 +538,23 @@ describe("realApi", () => {
     const idempotencyKey = client.createProject.mock.calls[0][1]["Idempotency-Key"];
     expect(idempotencyKey).toMatch(/^web-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
     expect(getRandomValues).toHaveBeenCalledOnce();
+  });
+
+  it("maps Test Record CRUD/submit and keeps command idempotency headers", async () => {
+    const record = { id: "record-1", confirmation_round_id: "round-1", title: "登录验证", scope: "登录流程", environment: { name: "local", preconditions: ["服务已启动"] }, steps: ["输入账号", "提交"], expected_result: "进入首页", actual_result: "进入首页", result_status: "success", tester_id: "tester-1", status: "draft", submitted_at: null, row_version: 1, test_type: "manual", created_at: "2026-08-24T00:00:00Z", updated_at: "2026-08-24T00:00:00Z" } as const;
+    client.listConfirmationRoundTestRecords.mockResolvedValue(success({ items: [record] }));
+    client.createConfirmationRoundTestRecord.mockResolvedValue(success({ test_record: record }));
+    client.getTestRecord.mockResolvedValue(success({ test_record: record }));
+    client.updateTestRecordDraft.mockResolvedValue(success({ test_record: { ...record, row_version: 2 } }));
+    client.submitTestRecord.mockResolvedValue(success({ test_record: { ...record, status: "submitted", submitted_at: "2026-08-24T00:01:00Z", row_version: 3 } }));
+
+    await expect(realApi.testRecords.list("round-1")).resolves.toMatchObject([{ id: "record-1", environment: { name: "local" } }]);
+    await expect(realApi.testRecords.create("round-1", { title: record.title, scope: record.scope, environment: { name: record.environment.name, preconditions: [...record.environment.preconditions] }, steps: [...record.steps], expectedResult: record.expected_result, actualResult: record.actual_result, resultStatus: record.result_status })).resolves.toMatchObject({ id: "record-1", rowVersion: 1 });
+    await expect(realApi.testRecords.get("record-1")).resolves.toMatchObject({ id: "record-1" });
+    await expect(realApi.testRecords.update("record-1", { expectedVersion: 1, actualResult: "进入首页" })).resolves.toMatchObject({ rowVersion: 2 });
+    await expect(realApi.testRecords.submit("record-1", 2)).resolves.toMatchObject({ status: "submitted", submittedAt: "2026-08-24T00:01:00Z" });
+    expect(client.createConfirmationRoundTestRecord.mock.calls[0][2]).toEqual(expect.objectContaining({ "Idempotency-Key": expect.stringMatching(/^web-/) }));
+    expect(client.submitTestRecord.mock.calls[0][2]).toEqual(expect.objectContaining({ "Idempotency-Key": expect.stringMatching(/^web-/) }));
+    expect(client.updateTestRecordDraft.mock.calls[0][1]).toEqual({ expected_version: 1, actual_result: "进入首页" });
   });
 });
