@@ -2,10 +2,11 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { LogoutButton } from "@/features/identity/logout-button";
 import { SessionRecoveryRedirect } from "@/features/identity/session-recovery-redirect";
+import { SiteFooter } from "@/components/site-footer";
 
 export function AppShell({ children, projectId, showLogout = true }: { children: ReactNode; projectId?: string; showLogout?: boolean }) {
   return (
-    <div className="min-h-screen bg-canvas text-primary">
+    <div className="flex min-h-screen flex-col bg-canvas text-primary">
       <SessionRecoveryRedirect />
       <header className="border-b border-default bg-surface">
         <div className="mx-auto flex min-h-control-lg max-w-content flex-wrap items-center justify-between gap-token-md px-token-md py-token-sm sm:px-token-xl">
@@ -21,7 +22,8 @@ export function AppShell({ children, projectId, showLogout = true }: { children:
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-content px-token-md py-token-xl sm:px-token-xl sm:py-token-3xl">{children}</main>
+      <main className="mx-auto w-full max-w-content flex-1 px-token-md py-token-xl sm:px-token-xl sm:py-token-3xl">{children}</main>
+      <SiteFooter />
     </div>
   );
 }
