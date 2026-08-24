@@ -4,11 +4,25 @@
 
 ## Current Phase
 
-MVP3 Complete in Main
+MVP4 Complete in Main
 
-MVP3 contract/migration materialization, backend business workflow, frontend workflow, disposable MySQL 8.4 integration acceptance, and ordinary Main promotion are complete. The accepted MVP3 implementation commit is `c39c710a25cf50cdc85497526f6c567066799a22`; it is a linear child of the frozen MVP3 base `1ca41c531475e62af026301684353657c567c6fa` through the three accepted package commits below. This governance closeout is a later child if promoted and does not claim `c39c710` remains the future remote tip.
+MVP4 Test Record contract materialization, backend and frontend vertical workflow, generated client, focused validation, disposable MySQL 8.4 integration acceptance, execution-branch push, and ordinary Main promotion are complete. The accepted MVP4 implementation commit is `2aff618b147f753b68b288891e79e1064fa70b56`, a direct child of the completed MVP3 Main baseline `7dd83c6423a1e449043e4fcf78c34783ce562119`. This governance closeout is a later child if promoted and does not claim `2aff618` remains the future remote tip.
 
-## MVP3 Accepted Baseline
+## MVP4 Accepted Baseline
+
+- Freeze: `MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1` / `MVP4-v1`; accepted OpenAPI raw SHA256 `7ef6943de306ea73339b6b96c333186dc425c0c84a3e241bc3af5ceb0ac62b98` (60 paths / 71 operations). AI is OUT.
+- Frozen base: completed MVP3 Main governance baseline `7dd83c6423a1e449043e4fcf78c34783ce562119`.
+- Accepted scope: confirmed/effective Confirmation Round → Test Record draft → edit/save → submit → submitted read-only → reopen/read identical persisted record. Post-submit Issue/no-Issue semantics, correction/supersede, evidence upload, AI, Release, and Deployment remain OUT.
+- Database scope: reuse-only on migration head `20260823_0006`; existing `confirmation_round`, `test_record`, `user_account`, `idempotency_record`, `operation_audit_log`, and `outbox_event` foundations were reused. No schema or migration change was made.
+- Accepted implementation commit: `2aff618b147f753b68b288891e79e1064fa70b56`; 32-file vertical delivery covering Contract, backend, generated client, frontend, focused tests, and disposable MySQL integration evidence.
+- Validation: OpenAPI generation/materialization checks PASS; backend focused validation 23 passed; frontend focused validation 33 passed plus typecheck; real HTTP → API → disposable MySQL `8.4.11` integration at Alembic `20260823_0006` passed. Temporary containers and network were removed.
+- Push acceptance: `origin/codex/mvp4-execution` was created at `2aff618b147f753b68b288891e79e1064fa70b56` by an ordinary non-force push after repository-local GCM account binding recovery and a successful non-writing dry-run.
+- Main promotion: ordinary non-force direct fast-forward `7dd83c6..2aff618` to `origin/main`; `origin/codex/mvp4-execution` remains at the accepted implementation commit.
+- `MVP4_STATUS=COMPLETED_IN_MAIN`; `MVP4_INTEGRATION_ACCEPTANCE=PASS`; `MVP4_MAIN_PROMOTION=PASS`.
+- `MVP4_CURRENT_GATE=MVP4-COMPLETE`; `MVP4_NEXT_GATE=AWAITING_NEW_USER_AUTHORITY`. No further MVP4 implementation action is authorized by this closeout.
+- `RELEASE_AUTHORITY=NOT_GRANTED`; `TAG_AUTHORITY=NOT_GRANTED`; `DEPLOYMENT_AUTHORITY=NOT_GRANTED`; `PRODUCTION_MIGRATION_AUTHORITY=NOT_GRANTED`; `PRODUCTION_CHANGED=NO`.
+
+## MVP3 Historical Accepted Baseline
 
 - Freeze: `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1` / `MVP3-v1`; artifact SHA256 `d5edb3d811091b8181959d7ff79f4a82e961685fde8924ffc60107c6fcb5b621`; AI is OUT.
 - Frozen base: `1ca41c531475e62af026301684353657c567c6fa`. Historical OpenAPI baseline SHA256 is `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations); materialized target raw SHA256 is `c37c50a3bebfe77daa245363dac9dae2212f303f59deff823540bddc2b7a6039` (57 paths / 66 operations).
@@ -170,17 +184,18 @@ The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and 
 
 ## Current Task
 
-`MVP3-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT`：MVP3 已在 Main 中完成，Package 1/2/3、真实 HTTP → MySQL 8.4 集成验收和普通 fast-forward Main promotion 均已通过；本次仅同步治理事实，不授予 Release、Tag、Deployment 或 Production 权限。
+`MVP4-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT`：MVP4 Test Record 最小纵向闭环、冻结 Contract、前后端实现、generated client、focused validation、真实 HTTP → MySQL 8.4 集成验收、execution-branch push 和普通 fast-forward Main promotion 均已通过；本次仅同步治理事实，不授予 Release、Tag、Deployment 或 Production 权限。
 
 ## Next Phase
 
-`MVP3-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何新范围开发、Release、Tag、Deployment、Production Migration 或 Production action 均需新的明确用户授权。
+`MVP4-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何新范围开发、Release、Tag、Deployment、Production Migration 或 Production action 均需新的明确用户授权。
 
 ## Prohibited
 
-- 不重新打开冻结的 `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1`、已接受的 MVP2 Gate、Product Semantics、State Machine 或 AI Boundary
+- 不重新打开冻结的 `MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1`、已接受的 MVP3/MVP2 Gate、Product Semantics、State Machine 或 AI Boundary
 - 不修改 OpenAPI、Alembic / Schema、已接受源分支或 `origin/main`，除非进入新的明确 Gate
-- 不把 disposable MySQL Gate 解释为 Staging/Production Existing Data Evidence，不绕过 0006 的同目标 0/0/0 fail-closed guard
+- 不把 disposable MySQL Gate 解释为 Staging/Production Existing Data Evidence，不绕过 `20260823_0006` 的同目标 0/0/0 fail-closed guard
+- 不把 Test Record submitted read-only 扩展为 Issue/no-Issue、correction、supersede、evidence upload 或 AI 能力
 - 不把历史 P1 事实描述为当前 MVP2 状态
 - 不执行 Release、Tag、Deployment、Production 或 Production migration
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑

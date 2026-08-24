@@ -1,6 +1,19 @@
 # PROJECT MEMORY
 
-## MVP3 Current Governance Memory
+## MVP4 Current Governance Memory
+
+- Freeze is unchanged: `MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1`, contract `MVP4-v1`, and frozen base `7dd83c6423a1e449043e4fcf78c34783ce562119`; AI, schema change, migration change, and post-submit Issue semantics are OUT.
+- The accepted materialized OpenAPI raw SHA256 is `7ef6943de306ea73339b6b96c333186dc425c0c84a3e241bc3af5ceb0ac62b98` (60 paths / 71 operations). Its five Test Record operations cover list/create by Confirmation Round, single-record get, draft update, and submit.
+- Accepted scope is the minimum vertical chain: confirmed/effective Confirmation Round → Test Record draft → edit/save with optimistic concurrency → submit → submitted read-only → reopen/read identical persisted data. Submitted records are immutable; correction, reopen, supersede, evidence upload, and Issue/no-Issue disposition remain OUT.
+- Migration head remains `20260823_0006`. MVP4 reused the existing `confirmation_round`, `test_record`, `user_account`, `idempotency_record`, `operation_audit_log`, and `outbox_event` foundations and introduced no table, column, index, or migration.
+- Accepted implementation commit is `2aff618b147f753b68b288891e79e1064fa70b56`, a direct child of the MVP3 governance baseline `7dd83c6423a1e449043e4fcf78c34783ce562119`. It contains the 32-file Contract/backend/generated-client/frontend/test vertical delivery.
+- Focused validation is PASS: OpenAPI generation/materialization checks, 23 backend focused tests, 33 frontend focused tests, and frontend typecheck. Real HTTP → API → disposable MySQL `8.4.11` integration passed at Alembic `20260823_0006`; temporary containers and network were removed.
+- Push acceptance is PASS: repository-local GitHub username binding resolved GCM multi-account ambiguity; the exact non-writing dry-run passed; `origin/codex/mvp4-execution` was then created at the accepted commit by one ordinary non-force push.
+- Main promotion is PASS: `origin/main` was ordinarily fast-forwarded directly from `7dd83c6423a1e449043e4fcf78c34783ce562119` to `2aff618b147f753b68b288891e79e1064fa70b56`. The execution branch remains at the same accepted implementation commit. A later governance closeout child does not change the accepted implementation identity.
+- `MVP4_STATUS=COMPLETED_IN_MAIN`; `MVP4_INTEGRATION_ACCEPTANCE=PASS`; `MVP4_MAIN_PROMOTION=PASS`; current Gate is `MVP4-COMPLETE`; next Gate is `AWAITING_NEW_USER_AUTHORITY`.
+- No Release, Tag, Deployment, Production Migration, or Production authority was granted or exercised. `PRODUCTION_CHANGED=NO`.
+
+## MVP3 Historical Governance Memory
 
 - Freeze is unchanged: `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1`, contract `MVP3-v1`, frozen base `1ca41c531475e62af026301684353657c567c6fa`, artifact SHA256 `d5edb3d811091b8181959d7ff79f4a82e961685fde8924ffc60107c6fcb5b621`; AI is OUT.
 - The historical OpenAPI baseline remains SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations). The accepted materialized target raw SHA256 is `c37c50a3bebfe77daa245363dac9dae2212f303f59deff823540bddc2b7a6039` (57 paths / 66 operations).
