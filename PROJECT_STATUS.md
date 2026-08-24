@@ -1,14 +1,28 @@
 # PROJECT STATUS
 
-> 最后更新：2026-08-23
+> 最后更新：2026-08-24
 
 ## Current Phase
 
-MVP2 Complete
+MVP3 Complete in Main
 
-MVP2 code, integration acceptance, reconciliation, and Main promotion are complete. The accepted reconciliation merge `32e8d7e1395ddb90395f146d06ac29a99ebbd011` is in Main ancestry, preserving parents `14bc14ea8af1cdd85d82556271dfe0a0957cc5af` and `201a53ec40d3eb7c6e62025355c0a7806ff524de`. This governance closeout is a later child; the merge is not claimed as the future remote tip.
+MVP3 contract/migration materialization, backend business workflow, frontend workflow, disposable MySQL 8.4 integration acceptance, and ordinary Main promotion are complete. The accepted MVP3 implementation commit is `c39c710a25cf50cdc85497526f6c567066799a22`; it is a linear child of the frozen MVP3 base `1ca41c531475e62af026301684353657c567c6fa` through the three accepted package commits below. This governance closeout is a later child if promoted and does not claim `c39c710` remains the future remote tip.
 
-## MVP2 Accepted Baseline
+## MVP3 Accepted Baseline
+
+- Freeze: `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1` / `MVP3-v1`; artifact SHA256 `d5edb3d811091b8181959d7ff79f4a82e961685fde8924ffc60107c6fcb5b621`; AI is OUT.
+- Frozen base: `1ca41c531475e62af026301684353657c567c6fa`. Historical OpenAPI baseline SHA256 is `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations); materialized target raw SHA256 is `c37c50a3bebfe77daa245363dac9dae2212f303f59deff823540bddc2b7a6039` (57 paths / 66 operations).
+- Migration head: `20260823_0006` from `20260821_0005`; the frozen same-target 0/0/0 existing-data guard remains mandatory before its first DDL. No Production Migration Authority was granted or exercised.
+- Accepted commits: Backend Package 1 `e3bbcf7519d968f106ecbdb3820a8d1c5b4637f6`, Backend Package 2 `b7c1a62f3f00e922af7df6444703a89c835c9578`, Frontend Package 3 `c39c710a25cf50cdc85497526f6c567066799a22`.
+- Package acceptance: `BACKEND_PACKAGE_1=PASS`, `BACKEND_PACKAGE_2=PASS`, `FRONTEND_PACKAGE_3=PASS`.
+- Integration acceptance: PASS on disposable MySQL `8.4.11` at Alembic `20260823_0006` using a real HTTP API runtime. The frozen chain passed: V1 effective and Round1 confirmed; V2 saved while V1 remained effective; V2 effective produced `needs_reconfirmation`; Round2 confirmation superseded Round1 and became effective.
+- Integration cleanup: temporary API/MySQL containers and Docker network removed; repository files unchanged and worktree clean.
+- Main promotion: ordinary non-force fast-forward `1ca41c5..c39c710` to `origin/main`; `origin/codex/backend-mvp3-package1` remains at the same accepted commit.
+- `MVP3_STATUS=COMPLETED_IN_MAIN`; `MVP3_INTEGRATION_ACCEPTANCE=PASS`; `MVP3_MAIN_PROMOTION=PASS`.
+- `MVP3_CURRENT_GATE=MVP3-COMPLETE`; `MVP3_NEXT_GATE=AWAITING_NEW_USER_AUTHORITY`. No further MVP3 implementation action is authorized by this closeout.
+- `RELEASE_AUTHORITY=NOT_GRANTED`; `TAG_AUTHORITY=NOT_GRANTED`; `DEPLOYMENT_AUTHORITY=NOT_GRANTED`; `PRODUCTION_MIGRATION_AUTHORITY=NOT_GRANTED`; `PRODUCTION_CHANGED=NO`.
+
+## MVP2 Historical Accepted Baseline
 
 - Freeze: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1` / `mvp2.prd-review.rc02.v1`.
 - Contract: `packages/contracts/openapi/openapi.json`, SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e`, 50 paths / 56 operations.
@@ -156,16 +170,17 @@ The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and 
 
 ## Current Task
 
-`MVP2-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT` 已完成：已记录 MVP2 在 Main 中完成、接受的 reconciliation merge、冻结契约与迁移事实、集成验收结果及剩余权限边界。不得将本 closeout 推断为 Release、Tag、Deployment 或 Production 授权。
+`MVP3-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT`：MVP3 已在 Main 中完成，Package 1/2/3、真实 HTTP → MySQL 8.4 集成验收和普通 fast-forward Main promotion 均已通过；本次仅同步治理事实，不授予 Release、Tag、Deployment 或 Production 权限。
 
 ## Next Phase
 
-`MVP2-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何开发、Release、Tag、Deployment 或 Production action 均需新的明确用户授权。
+`MVP3-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何新范围开发、Release、Tag、Deployment、Production Migration 或 Production action 均需新的明确用户授权。
 
 ## Prohibited
 
-- 不重新打开冻结的 RC-02、Product Semantics、State Machine 或 AI Boundary
-- 不修改 OpenAPI、Alembic / Schema、已接受源分支或 `origin/main`
+- 不重新打开冻结的 `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1`、已接受的 MVP2 Gate、Product Semantics、State Machine 或 AI Boundary
+- 不修改 OpenAPI、Alembic / Schema、已接受源分支或 `origin/main`，除非进入新的明确 Gate
+- 不把 disposable MySQL Gate 解释为 Staging/Production Existing Data Evidence，不绕过 0006 的同目标 0/0/0 fail-closed guard
 - 不把历史 P1 事实描述为当前 MVP2 状态
 - 不执行 Release、Tag、Deployment、Production 或 Production migration
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑

@@ -1,6 +1,18 @@
 # PROJECT MEMORY
 
-## MVP2 Current Governance Memory
+## MVP3 Current Governance Memory
+
+- Freeze is unchanged: `MVP3-SCOPE-CONTRACT-FREEZE-20260823-V1`, contract `MVP3-v1`, frozen base `1ca41c531475e62af026301684353657c567c6fa`, artifact SHA256 `d5edb3d811091b8181959d7ff79f4a82e961685fde8924ffc60107c6fcb5b621`; AI is OUT.
+- The historical OpenAPI baseline remains SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations). The accepted materialized target raw SHA256 is `c37c50a3bebfe77daa245363dac9dae2212f303f59deff823540bddc2b7a6039` (57 paths / 66 operations).
+- Migration `20260823_0006` is accepted on top of `20260821_0005`. Its same-target runtime guard remains frozen: authenticate and verify target identity, read the three foundation counts before DDL, and continue only for 0/0/0. Disposable evidence never substitutes for Staging or Production existing-data evidence.
+- Backend Package 1 `e3bbcf7519d968f106ecbdb3820a8d1c5b4637f6`, Backend Package 2 `b7c1a62f3f00e922af7df6444703a89c835c9578`, and Frontend Package 3 `c39c710a25cf50cdc85497526f6c567066799a22` are accepted.
+- Integration acceptance is PASS on disposable MySQL `8.4.11`, Alembic `20260823_0006`, and a real HTTP API runtime. The accepted chain is: confirmed MVP2 source → Plan → V1 → effective → Round1 confirmed; save V2 while V1 remains effective; switch to V2 → `needs_reconfirmation`; confirm Round2 → Round1 `superseded`, Round2 confirmed/effective.
+- The Integration Gate used 18 successful HTTP calls including authentication and repeated frozen MVP3 operations. Temporary API/MySQL containers and their Docker network were removed; no repository file, staging environment, deployment, or production system was changed.
+- Main promotion is PASS: `origin/main` was ordinarily fast-forwarded from `1ca41c531475e62af026301684353657c567c6fa` to the accepted MVP3 implementation commit `c39c710a25cf50cdc85497526f6c567066799a22`. The source branch `origin/codex/backend-mvp3-package1` remains at that accepted commit. A later governance closeout child does not change the accepted implementation identity and must not be described as part of the three-package implementation.
+- `MVP3_STATUS=COMPLETED_IN_MAIN`; `MVP3_INTEGRATION_ACCEPTANCE=PASS`; `MVP3_MAIN_PROMOTION=PASS`; current Gate is `MVP3-COMPLETE`; next Gate is `AWAITING_NEW_USER_AUTHORITY`.
+- No Release, Tag, Deployment, Production Migration, or Production authority was granted or exercised. `PRODUCTION_CHANGED=NO`.
+
+## MVP2 Historical Governance Memory
 
 - Freeze is unchanged: `RC-02-FREEZE-11-20260821-MVP2-PRD-REVIEW-V1`, contract `mvp2.prd-review.rc02.v1`, OpenAPI SHA256 `80c5060dad07e02c3092303fa479ca73428ce44f1d9d8e0dc640c6249b15b01e` (50 paths / 56 operations), migration head `20260821_0005`; AI is OUT.
 - Backend Package 1 `2499d7a`, Backend Package 2 `28e904e`, Frontend Package `00511ae`, and source-binding fix `201a53e` are accepted. The fix preserves the persisted effective Requirement Version ID in confirmed/effective lists and leaves draft/non-effective null.
