@@ -34,6 +34,16 @@ import {
   submitPrdDesignReview,
   getDesignReview,
   decideDesignReview,
+  listProjectVersionImplementationPlans,
+  createProjectVersionImplementationPlan,
+  getImplementationPlan,
+  createImplementationPlanVersion,
+  setEffectiveImplementationPlanVersion,
+  listImplementationPlanConfirmationRounds,
+  createImplementationPlanConfirmationRound,
+  getConfirmationRound,
+  updateConfirmationRoundDraft,
+  confirmConfirmationRound,
 } from "./generated/client";
 import type {
   ApiResponseHealthData,
@@ -70,10 +80,20 @@ import type {
   Mvp2CreatePrdVersionRequest,
   Mvp2DesignReviewData,
   Mvp2ErrorCode,
+  Mvp3ErrorCode,
   Mvp2PrdContent,
   Mvp2PrdData,
   Mvp2PrdListData,
   Mvp2PrdVersionData,
+  Mvp3PlanContent,
+  Mvp3Readiness,
+  Mvp3ImplementationPlan,
+  Mvp3ImplementationPlanListDataItemsItem,
+  Mvp3ImplementationPlanVersion,
+  Mvp3ImplementationPlanVersionDataImplementationPlanVersion,
+  Mvp3ConfirmationRound,
+  Mvp3ConfirmationRoundDataConfirmationRound,
+  Mvp3ConfirmationRoundListDataItemsItem,
 } from "./generated/models";
 import type {
   FileItemView,
@@ -113,8 +133,15 @@ import type {
   PrdView,
   SavePrdVersionInput,
   SubmitPrdReviewInput,
+  PlanContentView,
+  ReadinessView,
+  ImplementationPlanView,
+  ImplementationPlanVersionView,
+  ConfirmationRoundView,
+  ImplementationPlanPort,
+  ConfirmationRoundPort,
 } from "./ports";
-import { PortError } from "./ports";
+import { capabilitiesForRoles, PortError } from "./ports";
 import { createClientId } from "../client-id";
 
 type GeneratedResponse = { data: unknown; status: number; headers: Headers };
@@ -149,7 +176,7 @@ function isEnvelope<T>(value: unknown): value is Envelope<T> {
   return Boolean(value && typeof value === "object" && "data" in value && "trace_id" in value);
 }
 
-function categoryFor(status: number, apiCode?: ErrorCode | Mvp2ErrorCode): FrontendErrorCategory {
+function categoryFor(status: number, apiCode?: ErrorCode | Mvp2ErrorCode | Mvp3ErrorCode): FrontendErrorCategory {
   if (apiCode === "VERSION_CONFLICT" || apiCode === "IDEMPOTENCY_CONFLICT" || status === 409) return "CONFLICT";
   if (apiCode === "RATE_LIMITED") return "RATE_LIMITED";
   if (apiCode === "STORAGE_UNAVAILABLE" || apiCode === "DEPENDENCY_UNAVAILABLE") return "STORAGE_UNAVAILABLE";
@@ -258,6 +285,8 @@ const mapProject = (data: ProjectSummary): ProjectSummaryView => ({
   projectVersion: data.version,
   stage: data.last_module ?? "项目初始化",
   updatedAt: data.updated_at,
+  roles: data.permissions.roles,
+  capabilities: capabilitiesForRoles(data.permissions.roles),
 });
 
 const mapVersion = (data: ProjectVersionSummary): VersionView => ({
@@ -632,6 +661,8 @@ async function projectOverview(projectId: string, viewedVersionId?: string): Pro
     isHistory: !version.data.is_working,
     canEdit: version.data.is_working,
     blocker: null,
+    roles: project.data.permissions.roles,
+    capabilities: capabilitiesForRoles(project.data.permissions.roles),
   };
 }
 
@@ -737,6 +768,94 @@ async function uploadFile(projectId: string, file: File, _scenario?: unknown, on
   }
 }
 
+const mapPlanContent = (data: Mvp3PlanContent): PlanContentView => ({
+  schemaVersion: data.schema_version,
+  features: data.features,
+  businessRules: data.business_rules,
+  stateRequirements: data.state_requirements,
+  exceptions: data.exceptions,
+  interactions: data.interactions,
+  dependencies: data.dependencies,
+  acceptanceScope: data.acceptance_scope,
+});
+
+const serializePlanContent = (data: PlanContentView): Mvp3PlanContent => ({
+  schema_version: data.schemaVersion,
+  features: data.features,
+  business_rules: data.businessRules,
+  state_requirements: data.stateRequirements,
+  exceptions: data.exceptions,
+  interactions: data.interactions,
+  dependencies: data.dependencies,
+  acceptance_scope: data.acceptanceScope,
+});
+
+const mapReadiness = (data: Mvp3Readiness): ReadinessView => ({
+  schemaVersion: data.schema_version,
+  scopeStatus: data.scope_status,
+  implementationStatus: data.implementation_status,
+  configurationStatus: data.configuration_status,
+  dataChangeStatus: data.data_change_status,
+  knownBlockers: data.known_blockers,
+});
+
+const serializeReadiness = (data: ReadinessView): Mvp3Readiness => ({
+  schema_version: data.schemaVersion,
+  scope_status: data.scopeStatus,
+  implementation_status: data.implementationStatus,
+  configuration_status: data.configurationStatus,
+  data_change_status: data.dataChangeStatus,
+  known_blockers: data.knownBlockers,
+});
+
+type PlanVersionWire = Mvp3ImplementationPlanVersion | Mvp3ImplementationPlanVersionDataImplementationPlanVersion;
+const mapPlanVersion = (data: PlanVersionWire): ImplementationPlanVersionView => ({
+  id: data.id,
+  implementationPlanId: data.implementation_plan_id,
+  sourceVersionId: data.source_version_id ?? null,
+  versionNo: data.version_no,
+  reviewId: data.review_id,
+  content: mapPlanContent(data.content_json),
+  contentHash: data.content_hash,
+  changeNote: data.change_note,
+  isEffective: data.is_effective,
+  createdBy: data.created_by ?? null,
+  createdAt: data.created_at,
+});
+
+type PlanWire = Mvp3ImplementationPlan | Mvp3ImplementationPlanListDataItemsItem;
+const mapPlan = (data: PlanWire): ImplementationPlanView => ({
+  id: data.id,
+  projectVersionId: data.project_version_id,
+  sourcePrdVersionId: data.source_prd_version_id,
+  sourceDesignReviewId: data.source_design_review_id,
+  name: data.name,
+  status: data.status,
+  currentVersionId: data.current_version_id ?? null,
+  effectiveVersionId: data.effective_version_id ?? null,
+  rowVersion: data.row_version,
+  confirmationState: data.confirmation_state,
+  versions: "versions" in data ? data.versions.map(mapPlanVersion) : [],
+});
+
+type RoundWire = Mvp3ConfirmationRound | Mvp3ConfirmationRoundDataConfirmationRound | Mvp3ConfirmationRoundListDataItemsItem;
+const mapRound = (data: RoundWire): ConfirmationRoundView => ({
+  id: data.id,
+  implementationPlanId: data.implementation_plan_id,
+  planVersionId: data.plan_version_id,
+  sourceRoundId: data.source_round_id ?? null,
+  roundNo: data.round_no,
+  status: data.status,
+  confirmStatus: data.confirm_status ?? null,
+  implementationSummary: data.implementation_summary,
+  readiness: mapReadiness(data.readiness_json),
+  rowVersion: data.row_version,
+  isEffective: data.is_effective,
+  confirmedBy: data.confirmed_by ?? null,
+  confirmedAt: data.confirmed_at ?? null,
+  supersededAt: data.superseded_at ?? null,
+});
+
 export const realApi: FrontendApi = {
   identity: {
     async login(input) {
@@ -818,6 +937,77 @@ export const realApi: FrontendApi = {
       throw new PortError("CONTRACT_UNAVAILABLE", "派生版本的 change_type 与 inheritance_choices 允许值尚未冻结，真实模式已阻止提交。");
     },
   },
+  implementationPlans: {
+    async list(projectVersionId) {
+      const result = await protectedRequest<{ items: Mvp3ImplementationPlanListDataItemsItem[] }>(() => listProjectVersionImplementationPlans(projectVersionId, requestOptions()));
+      return result.data.items.map(mapPlan);
+    },
+    async create(projectVersionId, input) {
+      const scope = `create-implementation-plan:${projectVersionId}:${JSON.stringify(input)}`;
+      const result = await protectedRequest<{ implementation_plan: Mvp3ImplementationPlan }>(() => createProjectVersionImplementationPlan(projectVersionId, {
+        name: input.name,
+        source_prd_version_id: input.sourcePrdVersionId,
+        source_design_review_id: input.sourceDesignReviewId,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapPlan(result.data.implementation_plan);
+    },
+    async get(planId) {
+      const result = await protectedRequest<{ implementation_plan: Mvp3ImplementationPlan }>(() => getImplementationPlan(planId, requestOptions()));
+      return mapPlan(result.data.implementation_plan);
+    },
+    async saveVersion(planId, input) {
+      const scope = `save-implementation-plan-version:${planId}:${input.expectedVersion}:${JSON.stringify(input.content)}:${input.changeNote}`;
+      const result = await protectedRequest<{ implementation_plan_version: Mvp3ImplementationPlanVersionDataImplementationPlanVersion; plan_row_version: number }>(() => createImplementationPlanVersion(planId, {
+        expected_version: input.expectedVersion,
+        content_json: serializePlanContent(input.content),
+        change_note: input.changeNote,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return { version: mapPlanVersion(result.data.implementation_plan_version), planRowVersion: result.data.plan_row_version };
+    },
+    async setEffective(planVersionId, expectedVersion) {
+      const scope = `set-effective-implementation-plan-version:${planVersionId}:${expectedVersion}`;
+      const result = await protectedRequest<{ implementation_plan: Mvp3ImplementationPlan }>(() => setEffectiveImplementationPlanVersion(planVersionId, { expected_version: expectedVersion }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapPlan(result.data.implementation_plan);
+    },
+  } satisfies ImplementationPlanPort,
+  confirmationRounds: {
+    async list(planId) {
+      const result = await protectedRequest<{ items: Mvp3ConfirmationRoundListDataItemsItem[] }>(() => listImplementationPlanConfirmationRounds(planId, requestOptions()));
+      return result.data.items.map(mapRound);
+    },
+    async create(planId, input) {
+      const scope = `create-confirmation-round:${planId}:${JSON.stringify(input)}`;
+      const result = await protectedRequest<{ confirmation_round: Mvp3ConfirmationRoundDataConfirmationRound }>(() => createImplementationPlanConfirmationRound(planId, {
+        plan_version_id: input.planVersionId,
+        implementation_summary: input.implementationSummary,
+        readiness_json: serializeReadiness(input.readiness),
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapRound(result.data.confirmation_round);
+    },
+    async get(roundId) {
+      const result = await protectedRequest<{ confirmation_round: Mvp3ConfirmationRoundDataConfirmationRound }>(() => getConfirmationRound(roundId, requestOptions()));
+      return mapRound(result.data.confirmation_round);
+    },
+    async updateDraft(roundId, input) {
+      const result = await protectedRequest<{ confirmation_round: Mvp3ConfirmationRoundDataConfirmationRound }>(() => updateConfirmationRoundDraft(roundId, {
+        expected_version: input.expectedVersion,
+        plan_version_id: input.planVersionId,
+        implementation_summary: input.implementationSummary,
+        readiness_json: serializeReadiness(input.readiness),
+      }, requestOptions()));
+      return mapRound(result.data.confirmation_round);
+    },
+    async confirm(roundId, expectedVersion) {
+      const scope = `confirm-confirmation-round:${roundId}:${expectedVersion}`;
+      const result = await protectedRequest<{ confirmation_round: Mvp3ConfirmationRoundDataConfirmationRound }>(() => confirmConfirmationRound(roundId, { expected_version: expectedVersion }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapRound(result.data.confirmation_round);
+    },
+  } satisfies ConfirmationRoundPort,
   requirements: {
     async list(projectVersionId: string) {
       const result = await protectedRequest<RequirementListData>(() => listRequirements(projectVersionId, undefined, requestOptions()));

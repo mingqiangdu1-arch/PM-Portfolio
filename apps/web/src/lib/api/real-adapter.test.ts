@@ -36,6 +36,16 @@ const client = vi.hoisted(() => ({
   submitPrdDesignReview: vi.fn(),
   getDesignReview: vi.fn(),
   decideDesignReview: vi.fn(),
+  listProjectVersionImplementationPlans: vi.fn(),
+  createProjectVersionImplementationPlan: vi.fn(),
+  getImplementationPlan: vi.fn(),
+  createImplementationPlanVersion: vi.fn(),
+  setEffectiveImplementationPlanVersion: vi.fn(),
+  listImplementationPlanConfirmationRounds: vi.fn(),
+  createImplementationPlanConfirmationRound: vi.fn(),
+  getConfirmationRound: vi.fn(),
+  updateConfirmationRoundDraft: vi.fn(),
+  confirmConfirmationRound: vi.fn(),
 }));
 
 vi.mock("./generated/client", () => client);
@@ -98,6 +108,69 @@ describe("realApi", () => {
     expect(client.createPrdVersion.mock.calls[0][1]).toMatchObject({ expected_version: 3, change_note: "首次保存", content_json: { schema_version: "prd.mvp2.v1", primary_user: "负责人" } });
     expect(client.submitPrdDesignReview.mock.calls[0][1]).toEqual({ prd_id: "prd-1", prd_version_id: "prd-v1", content_hash: "a".repeat(64), expected_version: 3 });
     expect(client.decideDesignReview.mock.calls[0][1]).toEqual({ decision: "pass", expected_version: 2 });
+  });
+
+  it("materializes all MVP3 operations with the frozen command header boundary", async () => {
+    const content = { schema_version: "implementation_plan.mvp3.v1", features: [{ key: "feature", description: "A feature" }], business_rules: [], state_requirements: [], exceptions: [], interactions: [], dependencies: [], acceptance_scope: [{ key: "acceptance", description: "An acceptance rule" }] };
+    const readiness = { schema_version: "implementation_confirmation.readiness.mvp3.v1", scope_status: "ready", implementation_status: "ready", configuration_status: "not_applicable", data_change_status: "not_applicable", known_blockers: [] };
+    const version = { id: "plan-version-1", implementation_plan_id: "plan-1", source_version_id: null, version_no: "V1", review_id: "review-1", content_json: content, content_hash: "a".repeat(64), change_note: "first", is_effective: true, created_by: "user-1", created_at: "2026-08-24T00:00:00Z" };
+    const plan = { id: "plan-1", project_version_id: "pv-1", source_prd_version_id: "prd-version-1", source_design_review_id: "review-1", name: "Plan", status: "active", current_version_id: "plan-version-1", effective_version_id: "plan-version-1", row_version: 3, confirmation_state: "needs_confirmation", versions: [version] };
+    const round = { id: "round-1", implementation_plan_id: "plan-1", plan_version_id: "plan-version-1", source_round_id: null, round_no: 1, status: "draft", confirm_status: null, implementation_summary: "A human implementation scope summary", readiness_json: readiness, row_version: 1, is_effective: false, confirmed_by: null, confirmed_at: null, superseded_at: null };
+    const planSummary = { ...plan } as Omit<typeof plan, "versions">;
+    delete (planSummary as { versions?: unknown }).versions;
+    client.listProjectVersionImplementationPlans.mockResolvedValue(success({ items: [planSummary] }));
+    client.createProjectVersionImplementationPlan.mockResolvedValue(success({ implementation_plan: plan }));
+    client.getImplementationPlan.mockResolvedValue(success({ implementation_plan: plan }));
+    client.createImplementationPlanVersion.mockResolvedValue(success({ implementation_plan_version: version, plan_row_version: 3 }));
+    client.setEffectiveImplementationPlanVersion.mockResolvedValue(success({ implementation_plan: plan }));
+    client.listImplementationPlanConfirmationRounds.mockResolvedValue(success({ items: [round] }));
+    client.createImplementationPlanConfirmationRound.mockResolvedValue(success({ confirmation_round: round }));
+    client.getConfirmationRound.mockResolvedValue(success({ confirmation_round: round }));
+    client.updateConfirmationRoundDraft.mockResolvedValue(success({ confirmation_round: round }));
+    client.confirmConfirmationRound.mockResolvedValue(success({ confirmation_round: { ...round, status: "confirmed", confirm_status: "confirmed" } }));
+
+    await expect(realApi.implementationPlans.list("pv-1")).resolves.toMatchObject([{ id: "plan-1", sourcePrdVersionId: "prd-version-1", sourceDesignReviewId: "review-1", currentVersionId: "plan-version-1", effectiveVersionId: "plan-version-1", versions: [] }]);
+    await expect(realApi.implementationPlans.create("pv-1", { name: "Plan", sourcePrdVersionId: "prd-version-1", sourceDesignReviewId: "review-1" })).resolves.toMatchObject({ id: "plan-1", confirmationState: "needs_confirmation" });
+    await expect(realApi.implementationPlans.get("plan-1")).resolves.toMatchObject({ versions: [{ id: "plan-version-1", sourceVersionId: null, content: { schemaVersion: "implementation_plan.mvp3.v1", features: [{ key: "feature" }] } }] });
+    await expect(realApi.implementationPlans.saveVersion("plan-1", { expectedVersion: 2, changeNote: "first", content: { schemaVersion: "implementation_plan.mvp3.v1", features: [{ key: "feature", description: "A feature" }], businessRules: [], stateRequirements: [], exceptions: [], interactions: [], dependencies: [], acceptanceScope: [{ key: "acceptance", description: "An acceptance rule" }] } })).resolves.toMatchObject({ version: { id: "plan-version-1", versionNo: "V1", sourceVersionId: null, content: { acceptanceScope: [{ key: "acceptance" }] } }, planRowVersion: 3 });
+    await expect(realApi.implementationPlans.setEffective("plan-version-1", 3)).resolves.toMatchObject({ effectiveVersionId: "plan-version-1", confirmationState: "needs_confirmation" });
+    await expect(realApi.confirmationRounds.list("plan-1")).resolves.toMatchObject([{ id: "round-1", roundNo: 1, readiness: { scopeStatus: "ready", knownBlockers: [] } }]);
+    await expect(realApi.confirmationRounds.create("plan-1", { planVersionId: "plan-version-1", implementationSummary: "A human implementation scope summary", readiness: { schemaVersion: "implementation_confirmation.readiness.mvp3.v1", scopeStatus: "ready", implementationStatus: "ready", configurationStatus: "not_applicable", dataChangeStatus: "not_applicable", knownBlockers: [] } })).resolves.toMatchObject({ id: "round-1", planVersionId: "plan-version-1", implementationSummary: "A human implementation scope summary" });
+    await expect(realApi.confirmationRounds.get("round-1")).resolves.toMatchObject({ id: "round-1", readiness: { implementationStatus: "ready" } });
+    await expect(realApi.confirmationRounds.updateDraft("round-1", { expectedVersion: 1, planVersionId: "plan-version-1", implementationSummary: "A human implementation scope summary", readiness: { schemaVersion: "implementation_confirmation.readiness.mvp3.v1", scopeStatus: "ready", implementationStatus: "ready", configurationStatus: "not_applicable", dataChangeStatus: "not_applicable", knownBlockers: [] } })).resolves.toMatchObject({ status: "draft", rowVersion: 1 });
+    await expect(realApi.confirmationRounds.confirm("round-1", 1)).resolves.toMatchObject({ status: "confirmed", confirmStatus: "confirmed" });
+
+    for (const command of [client.createProjectVersionImplementationPlan, client.createImplementationPlanVersion, client.setEffectiveImplementationPlanVersion, client.createImplementationPlanConfirmationRound, client.confirmConfirmationRound]) {
+      expect(command.mock.calls.at(-1)?.[2]).toEqual(expect.objectContaining({ "Idempotency-Key": expect.stringMatching(/^web-/) }));
+    }
+    expect(client.updateConfirmationRoundDraft.mock.calls[0]?.[2]).toEqual(expect.not.objectContaining({ "Idempotency-Key": expect.anything() }));
+  });
+
+  it("reuses the same Idempotency-Key for retryable failures in all five MVP3 command families", async () => {
+    const content = { schemaVersion: "implementation_plan.mvp3.v1" as const, features: [{ key: "feature", description: "A feature" }], businessRules: [], stateRequirements: [], exceptions: [], interactions: [], dependencies: [], acceptanceScope: [{ key: "acceptance", description: "An acceptance rule" }] };
+    const readiness = { schemaVersion: "implementation_confirmation.readiness.mvp3.v1" as const, scopeStatus: "ready" as const, implementationStatus: "ready" as const, configurationStatus: "not_applicable" as const, dataChangeStatus: "not_applicable" as const, knownBlockers: [] };
+    const wireContent = { schema_version: content.schemaVersion, features: content.features, business_rules: [], state_requirements: [], exceptions: [], interactions: [], dependencies: [], acceptance_scope: content.acceptanceScope };
+    const wireReadiness = { schema_version: readiness.schemaVersion, scope_status: readiness.scopeStatus, implementation_status: readiness.implementationStatus, configuration_status: readiness.configurationStatus, data_change_status: readiness.dataChangeStatus, known_blockers: [] };
+    const plan = { id: "plan-1", project_version_id: "pv-1", source_prd_version_id: "prd-version-1", source_design_review_id: "review-1", name: "Plan", status: "active", current_version_id: "version-1", effective_version_id: "version-1", row_version: 2, confirmation_state: "needs_confirmation", versions: [] };
+    const version = { id: "version-1", implementation_plan_id: "plan-1", source_version_id: null, version_no: "V1", review_id: "review-1", content_json: wireContent, content_hash: "a".repeat(64), change_note: "first", is_effective: true, created_by: "user-1", created_at: "2026-08-24T00:00:00Z" };
+    const round = { id: "round-1", implementation_plan_id: "plan-1", plan_version_id: "version-1", source_round_id: null, round_no: 1, status: "confirmed", confirm_status: "confirmed", implementation_summary: "A human implementation scope summary", readiness_json: wireReadiness, row_version: 2, is_effective: true, confirmed_by: "user-1", confirmed_at: "2026-08-24T00:00:00Z", superseded_at: null };
+    client.createProjectVersionImplementationPlan.mockResolvedValueOnce(failure("DEPENDENCY_UNAVAILABLE", 503)).mockResolvedValueOnce(success({ implementation_plan: plan }));
+    client.createImplementationPlanVersion.mockResolvedValueOnce(failure("DEPENDENCY_UNAVAILABLE", 503)).mockResolvedValueOnce(success({ implementation_plan_version: version, plan_row_version: 2 }));
+    client.setEffectiveImplementationPlanVersion.mockResolvedValueOnce(failure("DEPENDENCY_UNAVAILABLE", 503)).mockResolvedValueOnce(success({ implementation_plan: plan }));
+    client.createImplementationPlanConfirmationRound.mockResolvedValueOnce(failure("DEPENDENCY_UNAVAILABLE", 503)).mockResolvedValueOnce(success({ confirmation_round: round }));
+    client.confirmConfirmationRound.mockResolvedValueOnce(failure("DEPENDENCY_UNAVAILABLE", 503)).mockResolvedValueOnce(success({ confirmation_round: round }));
+    const planInput = { name: "Plan", sourcePrdVersionId: "prd-version-1", sourceDesignReviewId: "review-1" };
+    const saveInput = { expectedVersion: 1, changeNote: "first", content };
+    const roundInput = { planVersionId: "version-1", implementationSummary: "A human implementation scope summary", readiness };
+    const retry = async (call: () => Promise<unknown>, command: ReturnType<typeof vi.fn>) => { await expect(call()).rejects.toBeInstanceOf(PortError); await call(); expect(command.mock.calls[1][2]["Idempotency-Key"]).toBe(command.mock.calls[0][2]["Idempotency-Key"]); };
+    await retry(() => realApi.implementationPlans.create("pv-1", planInput), client.createProjectVersionImplementationPlan);
+    await retry(() => realApi.implementationPlans.saveVersion("plan-1", saveInput), client.createImplementationPlanVersion);
+    await retry(() => realApi.implementationPlans.setEffective("version-1", 1), client.setEffectiveImplementationPlanVersion);
+    await retry(() => realApi.confirmationRounds.create("plan-1", roundInput), client.createImplementationPlanConfirmationRound);
+    await retry(() => realApi.confirmationRounds.confirm("round-1", 2), client.confirmConfirmationRound);
+    client.updateConfirmationRoundDraft.mockResolvedValue(success({ confirmation_round: round }));
+    await realApi.confirmationRounds.updateDraft("round-1", { expectedVersion: 2, ...roundInput });
+    expect(client.updateConfirmationRoundDraft.mock.calls[0][2]).toEqual(expect.not.objectContaining({ "Idempotency-Key": expect.anything() }));
   });
 
   it("refreshes once after a 401 and retries the original protected request", async () => {

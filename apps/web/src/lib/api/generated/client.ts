@@ -24,16 +24,36 @@ import type {
   CompareProjectVersionsParams,
   CompleteFileUploadHeaders,
   CompleteFileUploadRequest,
+  ConfirmConfirmationRound403,
+  ConfirmConfirmationRound404,
+  ConfirmConfirmationRound409,
+  ConfirmConfirmationRound422,
+  ConfirmConfirmationRoundHeaders,
   ConfirmRequirementResponse,
   ConfirmRequirementVersionHeaders,
   ConfirmRequirementVersionRequest,
   CreateAiTaskHeaders,
   CreateAiTaskRequest,
   CreateFileRelationHeaders,
+  CreateImplementationPlanConfirmationRound403,
+  CreateImplementationPlanConfirmationRound404,
+  CreateImplementationPlanConfirmationRound409,
+  CreateImplementationPlanConfirmationRound422,
+  CreateImplementationPlanConfirmationRoundHeaders,
+  CreateImplementationPlanVersion403,
+  CreateImplementationPlanVersion404,
+  CreateImplementationPlanVersion409,
+  CreateImplementationPlanVersion422,
+  CreateImplementationPlanVersionHeaders,
   CreatePrdVersionHeaders,
   CreateProjectHeaders,
   CreateProjectRequest,
   CreateProjectResponse,
+  CreateProjectVersionImplementationPlan403,
+  CreateProjectVersionImplementationPlan404,
+  CreateProjectVersionImplementationPlan409,
+  CreateProjectVersionImplementationPlan422,
+  CreateProjectVersionImplementationPlanHeaders,
   CreateProjectVersionPrdHeaders,
   CreateRequirementHeaders,
   CreateRequirementRequest,
@@ -53,10 +73,18 @@ import type {
   FormalizeAiResultHeaders,
   FormalizeAiResultRequest,
   FormalizeAiResultResponse,
+  GetConfirmationRound403,
+  GetConfirmationRound404,
+  GetImplementationPlan403,
+  GetImplementationPlan404,
   InitFileUploadHeaders,
   InternalHealthResponse,
   ListAiTasksParams,
   ListFileVersionsParams,
+  ListImplementationPlanConfirmationRounds403,
+  ListImplementationPlanConfirmationRounds404,
+  ListProjectVersionImplementationPlans403,
+  ListProjectVersionImplementationPlans404,
   ListProjectVersionsParams,
   ListProjectsParams,
   ListRequirementsParams,
@@ -74,6 +102,17 @@ import type {
   Mvp2PrdResponse,
   Mvp2PrdVersionResponse,
   Mvp2SubmitDesignReviewRequest,
+  Mvp3ConfirmConfirmationRoundRequest,
+  Mvp3ConfirmationRoundListResponse,
+  Mvp3ConfirmationRoundResponse,
+  Mvp3CreateConfirmationRoundRequest,
+  Mvp3CreateImplementationPlanRequest,
+  Mvp3CreateImplementationPlanVersionRequest,
+  Mvp3ImplementationPlanListResponse,
+  Mvp3ImplementationPlanResponse,
+  Mvp3ImplementationPlanVersionResponse,
+  Mvp3SetEffectiveImplementationPlanVersionRequest,
+  Mvp3UpdateConfirmationRoundDraftRequest,
   ProjectCommandRequest,
   ProjectContextResponse,
   ProjectListResponse,
@@ -96,6 +135,11 @@ import type {
   ReviseRequirementVersionRequest,
   SessionResponse,
   SetClarificationModeRequest,
+  SetEffectiveImplementationPlanVersion403,
+  SetEffectiveImplementationPlanVersion404,
+  SetEffectiveImplementationPlanVersion409,
+  SetEffectiveImplementationPlanVersion422,
+  SetEffectiveImplementationPlanVersionHeaders,
   SetRequirementClarificationModeHeaders,
   SetWorkingProjectVersionHeaders,
   SetWorkingVersionRequest,
@@ -111,6 +155,10 @@ import type {
   SubmitClarificationAnswersRequest,
   SubmitPrdDesignReviewHeaders,
   SubmitRequirementClarificationAnswersHeaders,
+  UpdateConfirmationRoundDraft403,
+  UpdateConfirmationRoundDraft404,
+  UpdateConfirmationRoundDraft409,
+  UpdateConfirmationRoundDraft422,
   UpdateProjectContextRequest,
   UpdateProjectRequest,
   WorkingVersionChangeResponse
@@ -1098,6 +1146,185 @@ export const register = async (authRegisterRequest: AuthRegisterRequest, options
 
 
 
+export type getConfirmationRoundResponse200 = {
+  data: Mvp3ConfirmationRoundResponse
+  status: 200
+}
+
+export type getConfirmationRoundResponse403 = {
+  data: GetConfirmationRound403
+  status: 403
+}
+
+export type getConfirmationRoundResponse404 = {
+  data: GetConfirmationRound404
+  status: 404
+}
+
+export type getConfirmationRoundResponseSuccess = (getConfirmationRoundResponse200) & {
+  headers: Headers;
+};
+export type getConfirmationRoundResponseError = (getConfirmationRoundResponse403 | getConfirmationRoundResponse404) & {
+  headers: Headers;
+};
+
+export type getConfirmationRoundResponse = (getConfirmationRoundResponseSuccess | getConfirmationRoundResponseError)
+
+export const getGetConfirmationRoundUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/confirmation-rounds/${id}`
+}
+
+export const getConfirmationRound = async (id: string, options?: RequestInit): Promise<getConfirmationRoundResponse> => {
+
+  const res = await fetch(getGetConfirmationRoundUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getConfirmationRoundResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getConfirmationRoundResponse
+}
+
+
+
+export type updateConfirmationRoundDraftResponse200 = {
+  data: Mvp3ConfirmationRoundResponse
+  status: 200
+}
+
+export type updateConfirmationRoundDraftResponse403 = {
+  data: UpdateConfirmationRoundDraft403
+  status: 403
+}
+
+export type updateConfirmationRoundDraftResponse404 = {
+  data: UpdateConfirmationRoundDraft404
+  status: 404
+}
+
+export type updateConfirmationRoundDraftResponse409 = {
+  data: UpdateConfirmationRoundDraft409
+  status: 409
+}
+
+export type updateConfirmationRoundDraftResponse422 = {
+  data: UpdateConfirmationRoundDraft422
+  status: 422
+}
+
+export type updateConfirmationRoundDraftResponseSuccess = (updateConfirmationRoundDraftResponse200) & {
+  headers: Headers;
+};
+export type updateConfirmationRoundDraftResponseError = (updateConfirmationRoundDraftResponse403 | updateConfirmationRoundDraftResponse404 | updateConfirmationRoundDraftResponse409 | updateConfirmationRoundDraftResponse422) & {
+  headers: Headers;
+};
+
+export type updateConfirmationRoundDraftResponse = (updateConfirmationRoundDraftResponseSuccess | updateConfirmationRoundDraftResponseError)
+
+export const getUpdateConfirmationRoundDraftUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/confirmation-rounds/${id}`
+}
+
+export const updateConfirmationRoundDraft = async (id: string,
+    mvp3UpdateConfirmationRoundDraftRequest: Mvp3UpdateConfirmationRoundDraftRequest, options?: RequestInit): Promise<updateConfirmationRoundDraftResponse> => {
+
+  const res = await fetch(getUpdateConfirmationRoundDraftUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(mvp3UpdateConfirmationRoundDraftRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: updateConfirmationRoundDraftResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateConfirmationRoundDraftResponse
+}
+
+
+
+export type confirmConfirmationRoundResponse200 = {
+  data: Mvp3ConfirmationRoundResponse
+  status: 200
+}
+
+export type confirmConfirmationRoundResponse403 = {
+  data: ConfirmConfirmationRound403
+  status: 403
+}
+
+export type confirmConfirmationRoundResponse404 = {
+  data: ConfirmConfirmationRound404
+  status: 404
+}
+
+export type confirmConfirmationRoundResponse409 = {
+  data: ConfirmConfirmationRound409
+  status: 409
+}
+
+export type confirmConfirmationRoundResponse422 = {
+  data: ConfirmConfirmationRound422
+  status: 422
+}
+
+export type confirmConfirmationRoundResponseSuccess = (confirmConfirmationRoundResponse200) & {
+  headers: Headers;
+};
+export type confirmConfirmationRoundResponseError = (confirmConfirmationRoundResponse403 | confirmConfirmationRoundResponse404 | confirmConfirmationRoundResponse409 | confirmConfirmationRoundResponse422) & {
+  headers: Headers;
+};
+
+export type confirmConfirmationRoundResponse = (confirmConfirmationRoundResponseSuccess | confirmConfirmationRoundResponseError)
+
+export const getConfirmConfirmationRoundUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/confirmation-rounds/${id}:confirm`
+}
+
+export const confirmConfirmationRound = async (id: string,
+    mvp3ConfirmConfirmationRoundRequest: Mvp3ConfirmConfirmationRoundRequest,
+    headers: ConfirmConfirmationRoundHeaders, options?: RequestInit): Promise<confirmConfirmationRoundResponse> => {
+
+  const res = await fetch(getConfirmConfirmationRoundUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp3ConfirmConfirmationRoundRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: confirmConfirmationRoundResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as confirmConfirmationRoundResponse
+}
+
+
+
 export type getDesignReviewResponse200 = {
   data: Mvp2DesignReviewResponse
   status: 200
@@ -1958,6 +2185,302 @@ export const getApiHealth = async ( options?: RequestInit): Promise<getApiHealth
 
 
 
+export type getImplementationPlanResponse200 = {
+  data: Mvp3ImplementationPlanResponse
+  status: 200
+}
+
+export type getImplementationPlanResponse403 = {
+  data: GetImplementationPlan403
+  status: 403
+}
+
+export type getImplementationPlanResponse404 = {
+  data: GetImplementationPlan404
+  status: 404
+}
+
+export type getImplementationPlanResponseSuccess = (getImplementationPlanResponse200) & {
+  headers: Headers;
+};
+export type getImplementationPlanResponseError = (getImplementationPlanResponse403 | getImplementationPlanResponse404) & {
+  headers: Headers;
+};
+
+export type getImplementationPlanResponse = (getImplementationPlanResponseSuccess | getImplementationPlanResponseError)
+
+export const getGetImplementationPlanUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/implementation-plans/${id}`
+}
+
+export const getImplementationPlan = async (id: string, options?: RequestInit): Promise<getImplementationPlanResponse> => {
+
+  const res = await fetch(getGetImplementationPlanUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getImplementationPlanResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getImplementationPlanResponse
+}
+
+
+
+export type listImplementationPlanConfirmationRoundsResponse200 = {
+  data: Mvp3ConfirmationRoundListResponse
+  status: 200
+}
+
+export type listImplementationPlanConfirmationRoundsResponse403 = {
+  data: ListImplementationPlanConfirmationRounds403
+  status: 403
+}
+
+export type listImplementationPlanConfirmationRoundsResponse404 = {
+  data: ListImplementationPlanConfirmationRounds404
+  status: 404
+}
+
+export type listImplementationPlanConfirmationRoundsResponseSuccess = (listImplementationPlanConfirmationRoundsResponse200) & {
+  headers: Headers;
+};
+export type listImplementationPlanConfirmationRoundsResponseError = (listImplementationPlanConfirmationRoundsResponse403 | listImplementationPlanConfirmationRoundsResponse404) & {
+  headers: Headers;
+};
+
+export type listImplementationPlanConfirmationRoundsResponse = (listImplementationPlanConfirmationRoundsResponseSuccess | listImplementationPlanConfirmationRoundsResponseError)
+
+export const getListImplementationPlanConfirmationRoundsUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/implementation-plans/${id}/confirmation-rounds`
+}
+
+export const listImplementationPlanConfirmationRounds = async (id: string, options?: RequestInit): Promise<listImplementationPlanConfirmationRoundsResponse> => {
+
+  const res = await fetch(getListImplementationPlanConfirmationRoundsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listImplementationPlanConfirmationRoundsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listImplementationPlanConfirmationRoundsResponse
+}
+
+
+
+export type createImplementationPlanConfirmationRoundResponse201 = {
+  data: Mvp3ConfirmationRoundResponse
+  status: 201
+}
+
+export type createImplementationPlanConfirmationRoundResponse403 = {
+  data: CreateImplementationPlanConfirmationRound403
+  status: 403
+}
+
+export type createImplementationPlanConfirmationRoundResponse404 = {
+  data: CreateImplementationPlanConfirmationRound404
+  status: 404
+}
+
+export type createImplementationPlanConfirmationRoundResponse409 = {
+  data: CreateImplementationPlanConfirmationRound409
+  status: 409
+}
+
+export type createImplementationPlanConfirmationRoundResponse422 = {
+  data: CreateImplementationPlanConfirmationRound422
+  status: 422
+}
+
+export type createImplementationPlanConfirmationRoundResponseSuccess = (createImplementationPlanConfirmationRoundResponse201) & {
+  headers: Headers;
+};
+export type createImplementationPlanConfirmationRoundResponseError = (createImplementationPlanConfirmationRoundResponse403 | createImplementationPlanConfirmationRoundResponse404 | createImplementationPlanConfirmationRoundResponse409 | createImplementationPlanConfirmationRoundResponse422) & {
+  headers: Headers;
+};
+
+export type createImplementationPlanConfirmationRoundResponse = (createImplementationPlanConfirmationRoundResponseSuccess | createImplementationPlanConfirmationRoundResponseError)
+
+export const getCreateImplementationPlanConfirmationRoundUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/implementation-plans/${id}/confirmation-rounds`
+}
+
+export const createImplementationPlanConfirmationRound = async (id: string,
+    mvp3CreateConfirmationRoundRequest: Mvp3CreateConfirmationRoundRequest,
+    headers: CreateImplementationPlanConfirmationRoundHeaders, options?: RequestInit): Promise<createImplementationPlanConfirmationRoundResponse> => {
+
+  const res = await fetch(getCreateImplementationPlanConfirmationRoundUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp3CreateConfirmationRoundRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createImplementationPlanConfirmationRoundResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createImplementationPlanConfirmationRoundResponse
+}
+
+
+
+export type createImplementationPlanVersionResponse201 = {
+  data: Mvp3ImplementationPlanVersionResponse
+  status: 201
+}
+
+export type createImplementationPlanVersionResponse403 = {
+  data: CreateImplementationPlanVersion403
+  status: 403
+}
+
+export type createImplementationPlanVersionResponse404 = {
+  data: CreateImplementationPlanVersion404
+  status: 404
+}
+
+export type createImplementationPlanVersionResponse409 = {
+  data: CreateImplementationPlanVersion409
+  status: 409
+}
+
+export type createImplementationPlanVersionResponse422 = {
+  data: CreateImplementationPlanVersion422
+  status: 422
+}
+
+export type createImplementationPlanVersionResponseSuccess = (createImplementationPlanVersionResponse201) & {
+  headers: Headers;
+};
+export type createImplementationPlanVersionResponseError = (createImplementationPlanVersionResponse403 | createImplementationPlanVersionResponse404 | createImplementationPlanVersionResponse409 | createImplementationPlanVersionResponse422) & {
+  headers: Headers;
+};
+
+export type createImplementationPlanVersionResponse = (createImplementationPlanVersionResponseSuccess | createImplementationPlanVersionResponseError)
+
+export const getCreateImplementationPlanVersionUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/implementation-plans/${id}/versions`
+}
+
+export const createImplementationPlanVersion = async (id: string,
+    mvp3CreateImplementationPlanVersionRequest: Mvp3CreateImplementationPlanVersionRequest,
+    headers: CreateImplementationPlanVersionHeaders, options?: RequestInit): Promise<createImplementationPlanVersionResponse> => {
+
+  const res = await fetch(getCreateImplementationPlanVersionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp3CreateImplementationPlanVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createImplementationPlanVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createImplementationPlanVersionResponse
+}
+
+
+
+export type setEffectiveImplementationPlanVersionResponse200 = {
+  data: Mvp3ImplementationPlanResponse
+  status: 200
+}
+
+export type setEffectiveImplementationPlanVersionResponse403 = {
+  data: SetEffectiveImplementationPlanVersion403
+  status: 403
+}
+
+export type setEffectiveImplementationPlanVersionResponse404 = {
+  data: SetEffectiveImplementationPlanVersion404
+  status: 404
+}
+
+export type setEffectiveImplementationPlanVersionResponse409 = {
+  data: SetEffectiveImplementationPlanVersion409
+  status: 409
+}
+
+export type setEffectiveImplementationPlanVersionResponse422 = {
+  data: SetEffectiveImplementationPlanVersion422
+  status: 422
+}
+
+export type setEffectiveImplementationPlanVersionResponseSuccess = (setEffectiveImplementationPlanVersionResponse200) & {
+  headers: Headers;
+};
+export type setEffectiveImplementationPlanVersionResponseError = (setEffectiveImplementationPlanVersionResponse403 | setEffectiveImplementationPlanVersionResponse404 | setEffectiveImplementationPlanVersionResponse409 | setEffectiveImplementationPlanVersionResponse422) & {
+  headers: Headers;
+};
+
+export type setEffectiveImplementationPlanVersionResponse = (setEffectiveImplementationPlanVersionResponseSuccess | setEffectiveImplementationPlanVersionResponseError)
+
+export const getSetEffectiveImplementationPlanVersionUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/plan-versions/${id}:set-effective`
+}
+
+export const setEffectiveImplementationPlanVersion = async (id: string,
+    mvp3SetEffectiveImplementationPlanVersionRequest: Mvp3SetEffectiveImplementationPlanVersionRequest,
+    headers: SetEffectiveImplementationPlanVersionHeaders, options?: RequestInit): Promise<setEffectiveImplementationPlanVersionResponse> => {
+
+  const res = await fetch(getSetEffectiveImplementationPlanVersionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp3SetEffectiveImplementationPlanVersionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: setEffectiveImplementationPlanVersionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as setEffectiveImplementationPlanVersionResponse
+}
+
+
+
 export type getPrdVersionResponse200 = {
   data: Mvp2PrdVersionResponse
   status: 200
@@ -2404,6 +2927,122 @@ export const submitPrdDesignReview = async (versionId: string,
 
   const data: submitPrdDesignReviewResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as submitPrdDesignReviewResponse
+}
+
+
+
+export type listProjectVersionImplementationPlansResponse200 = {
+  data: Mvp3ImplementationPlanListResponse
+  status: 200
+}
+
+export type listProjectVersionImplementationPlansResponse403 = {
+  data: ListProjectVersionImplementationPlans403
+  status: 403
+}
+
+export type listProjectVersionImplementationPlansResponse404 = {
+  data: ListProjectVersionImplementationPlans404
+  status: 404
+}
+
+export type listProjectVersionImplementationPlansResponseSuccess = (listProjectVersionImplementationPlansResponse200) & {
+  headers: Headers;
+};
+export type listProjectVersionImplementationPlansResponseError = (listProjectVersionImplementationPlansResponse403 | listProjectVersionImplementationPlansResponse404) & {
+  headers: Headers;
+};
+
+export type listProjectVersionImplementationPlansResponse = (listProjectVersionImplementationPlansResponseSuccess | listProjectVersionImplementationPlansResponseError)
+
+export const getListProjectVersionImplementationPlansUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/implementation-plans`
+}
+
+export const listProjectVersionImplementationPlans = async (versionId: string, options?: RequestInit): Promise<listProjectVersionImplementationPlansResponse> => {
+
+  const res = await fetch(getListProjectVersionImplementationPlansUrl(versionId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listProjectVersionImplementationPlansResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProjectVersionImplementationPlansResponse
+}
+
+
+
+export type createProjectVersionImplementationPlanResponse201 = {
+  data: Mvp3ImplementationPlanResponse
+  status: 201
+}
+
+export type createProjectVersionImplementationPlanResponse403 = {
+  data: CreateProjectVersionImplementationPlan403
+  status: 403
+}
+
+export type createProjectVersionImplementationPlanResponse404 = {
+  data: CreateProjectVersionImplementationPlan404
+  status: 404
+}
+
+export type createProjectVersionImplementationPlanResponse409 = {
+  data: CreateProjectVersionImplementationPlan409
+  status: 409
+}
+
+export type createProjectVersionImplementationPlanResponse422 = {
+  data: CreateProjectVersionImplementationPlan422
+  status: 422
+}
+
+export type createProjectVersionImplementationPlanResponseSuccess = (createProjectVersionImplementationPlanResponse201) & {
+  headers: Headers;
+};
+export type createProjectVersionImplementationPlanResponseError = (createProjectVersionImplementationPlanResponse403 | createProjectVersionImplementationPlanResponse404 | createProjectVersionImplementationPlanResponse409 | createProjectVersionImplementationPlanResponse422) & {
+  headers: Headers;
+};
+
+export type createProjectVersionImplementationPlanResponse = (createProjectVersionImplementationPlanResponseSuccess | createProjectVersionImplementationPlanResponseError)
+
+export const getCreateProjectVersionImplementationPlanUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/implementation-plans`
+}
+
+export const createProjectVersionImplementationPlan = async (versionId: string,
+    mvp3CreateImplementationPlanRequest: Mvp3CreateImplementationPlanRequest,
+    headers: CreateProjectVersionImplementationPlanHeaders, options?: RequestInit): Promise<createProjectVersionImplementationPlanResponse> => {
+
+  const res = await fetch(getCreateProjectVersionImplementationPlanUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp3CreateImplementationPlanRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createProjectVersionImplementationPlanResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createProjectVersionImplementationPlanResponse
 }
 
 

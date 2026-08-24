@@ -5,8 +5,10 @@ export interface UserView { id: string; displayName: string; email: string }
 export interface SessionView { user: UserView; expiresAt: string }
 export interface AuthCredentials { email: string; password: string }
 export interface RegistrationInput extends AuthCredentials { displayName: string }
-export interface ProjectSummaryView { id: string; name: string; goal: string; workingVersionId: string; workingVersionNo: string; projectVersion: number; stage: string; updatedAt: string }
-export interface ProjectOverviewView extends ProjectSummaryView { viewedVersionId: string; viewedVersionNo: string; isHistory: boolean; canEdit: boolean; blocker: string | null }
+export type ProjectRole = "owner" | "reviewer" | "implementer" | "tester";
+export interface ProjectCapabilities { role: ProjectRole | null; canPlanWrite: boolean; canSetEffective: boolean; canConfirmationCreate: boolean; canConfirmationUpdate: boolean; canConfirm: boolean; readOnly: boolean }
+export interface ProjectSummaryView { id: string; name: string; goal: string; workingVersionId: string; workingVersionNo: string; projectVersion: number; stage: string; updatedAt: string; roles?: ProjectRole[]; capabilities?: ProjectCapabilities }
+export interface ProjectOverviewView extends ProjectSummaryView { viewedVersionId: string; viewedVersionNo: string; isHistory: boolean; canEdit: boolean; blocker: string | null; roles?: ProjectRole[]; capabilities?: ProjectCapabilities }
 export interface VersionView { id: string; number: string; source: string | null; reason: string; createdAt: string; isWorking: boolean }
 export interface CreateProjectInput { name: string; goal: string; startMode: "new" | "import" }
 export interface DeriveVersionInput { sourceVersionId: string; reason: string; inheritContext: boolean; expectedProjectVersion: number }
@@ -17,9 +19,65 @@ export interface IdentityPort { login(input: AuthCredentials): Promise<SessionVi
 export interface ProjectPort { list(scenario?: Scenario): Promise<ProjectSummaryView[]>; create(input: CreateProjectInput, scenario?: Scenario): Promise<{ projectId: string; workingVersionId: string }>; overview(projectId: string, viewedVersionId?: string): Promise<ProjectOverviewView>; versions(projectId: string): Promise<VersionView[]>; setWorking(projectId: string, versionId: string, expectedProjectVersion: number, scenario?: Scenario): Promise<ProjectOverviewView>; derive(projectId: string, input: DeriveVersionInput, scenario?: Scenario): Promise<VersionView> }
 export interface FilePort { list(projectId: string): Promise<FileItemView[]>; upload(projectId: string, file: File, scenario?: Scenario, onProgress?: (progress: number) => void): Promise<FileItemView>; retry(projectId: string, item: FileItemView): Promise<FileItemView>; relate(projectId: string, fileId: string, relation: string): Promise<FileItemView> }
 export interface HealthPort { get(): Promise<HealthView> }
-export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort }
+export interface PlanItemView { key: string; description: string }
+export interface PlanContentView {
+  schemaVersion: "implementation_plan.mvp3.v1";
+  features: PlanItemView[];
+  businessRules: PlanItemView[];
+  stateRequirements: PlanItemView[];
+  exceptions: PlanItemView[];
+  interactions: PlanItemView[];
+  dependencies: PlanItemView[];
+  acceptanceScope: PlanItemView[];
+}
+export interface ReadinessView {
+  schemaVersion: "implementation_confirmation.readiness.mvp3.v1";
+  scopeStatus: "ready" | "not_ready";
+  implementationStatus: "ready" | "not_ready";
+  configurationStatus: "ready" | "not_ready" | "not_applicable";
+  dataChangeStatus: "ready" | "not_ready" | "not_applicable";
+  knownBlockers: string[];
+}
+export interface ImplementationPlanVersionView {
+  id: string; implementationPlanId: string; sourceVersionId: string | null; versionNo: string; reviewId: string;
+  content: PlanContentView; contentHash: string; changeNote: string; isEffective: boolean; createdBy: string | null; createdAt: string;
+}
+export type PlanConfirmationState = "confirmed" | "needs_confirmation" | "needs_reconfirmation" | "not_ready";
+export interface ImplementationPlanView {
+  id: string; projectVersionId: string; sourcePrdVersionId: string; sourceDesignReviewId: string; name: string;
+  status: "draft" | "active"; currentVersionId: string | null; effectiveVersionId: string | null; rowVersion: number;
+  confirmationState: PlanConfirmationState; versions: ImplementationPlanVersionView[];
+}
+export interface ConfirmationRoundView {
+  id: string; implementationPlanId: string; planVersionId: string; sourceRoundId: string | null; roundNo: number;
+  status: "draft" | "confirmed" | "superseded"; confirmStatus: "confirmed" | null; implementationSummary: string;
+  readiness: ReadinessView; rowVersion: number; isEffective: boolean; confirmedBy: string | null; confirmedAt: string | null; supersededAt: string | null;
+}
+export interface CreateImplementationPlanInput { name: string; sourcePrdVersionId: string; sourceDesignReviewId: string }
+export interface SaveImplementationPlanVersionInput { expectedVersion: number; content: PlanContentView; changeNote: string }
+export interface CreateConfirmationRoundInput { planVersionId: string; implementationSummary: string; readiness: ReadinessView }
+export interface UpdateConfirmationRoundDraftInput extends CreateConfirmationRoundInput { expectedVersion: number }
+export interface ImplementationPlanPort {
+  list(projectVersionId: string): Promise<ImplementationPlanView[]>;
+  create(projectVersionId: string, input: CreateImplementationPlanInput): Promise<ImplementationPlanView>;
+  get(planId: string): Promise<ImplementationPlanView>;
+  saveVersion(planId: string, input: SaveImplementationPlanVersionInput): Promise<{ version: ImplementationPlanVersionView; planRowVersion: number }>;
+  setEffective(planVersionId: string, expectedVersion: number): Promise<ImplementationPlanView>;
+}
+export interface ConfirmationRoundPort {
+  list(planId: string): Promise<ConfirmationRoundView[]>;
+  create(planId: string, input: CreateConfirmationRoundInput): Promise<ConfirmationRoundView>;
+  get(roundId: string): Promise<ConfirmationRoundView>;
+  updateDraft(roundId: string, input: UpdateConfirmationRoundDraftInput): Promise<ConfirmationRoundView>;
+  confirm(roundId: string, expectedVersion: number): Promise<ConfirmationRoundView>;
+}
+export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort; implementationPlans: ImplementationPlanPort; confirmationRounds: ConfirmationRoundPort }
+export const capabilitiesForRoles = (roles: ProjectRole[] = []): ProjectCapabilities => {
+  const role = roles.includes("owner") ? "owner" : roles.includes("implementer") ? "implementer" : roles[0] ?? null;
+  return { role, canPlanWrite: role === "owner", canSetEffective: role === "owner", canConfirmationCreate: role === "owner" || role === "implementer", canConfirmationUpdate: role === "owner" || role === "implementer", canConfirm: role === "owner", readOnly: role !== "owner" && role !== "implementer" };
+};
 export type FrontendErrorCategory = "UNAUTHENTICATED" | "FORBIDDEN" | "CONFLICT" | "RATE_LIMITED" | "STORAGE_UNAVAILABLE" | "CONTRACT_UNAVAILABLE" | "FAILED";
-import type { ErrorCode, Mvp2ErrorCode, Sprint2ErrorCode } from "./generated/models";
+import type { ErrorCode, Mvp2ErrorCode, Mvp3ErrorCode, Sprint2ErrorCode } from "./generated/models";
 import type {
   AiResultStatus,
   AiTaskStatus,
@@ -40,7 +98,7 @@ export class PortError extends Error {
     public readonly status?: number,
     public readonly traceId?: string,
     public readonly details: unknown[] = [],
-    public readonly apiCode?: ErrorCode | Sprint2ErrorCode | Mvp2ErrorCode,
+    public readonly apiCode?: ErrorCode | Sprint2ErrorCode | Mvp2ErrorCode | Mvp3ErrorCode,
   ) { super(traceId ? `${message} Trace: ${traceId}` : message); this.name = "PortError"; }
 }
 
