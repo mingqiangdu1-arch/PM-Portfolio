@@ -1,5 +1,18 @@
 # PROJECT MEMORY
 
+## MVP5 Current Governance Memory
+
+- `MVP5_STATUS=COMPLETED_IN_MAIN`; current Gate is `MVP5-COMPLETE`; accepted scope is Option C: submitted Test Record → No-Issue/Validation Complete or Issue → defect/optimization classification → disposition.
+- The accepted MVP5 implementation commit is `dd7ff5356a2f8362f2f0287cfa3132aae4a8bd33`, parent `03e2054c195d7b798f494193bc0ba464fcdc6180`; it is the product implementation identity. A later governance closeout child does not replace this implementation identity.
+- `origin/main` and `origin/codex/mvp5-execution` were both promoted to `dd7ff5356a2f8362f2f0287cfa3132aae4a8bd33` by ordinary non-force fast-forward. No force push, other-ref push, or tag push was used; `PRODUCTION_CHANGED=NO`.
+- The final OpenAPI identity is SHA256 `cc4c77cfa8d1d9937969ddaeacdfe24283cbb3283e9f43dd6e01c77ab5cee6f3` (64 paths / 77 operations). Contract/Runtime semantic consistency passed: `createIssueDisposition` accepts `current_version_fix | defer | reject`; persisted Response/domain history may retain `derive_new_version`; the sole public derive entry is `POST /api/v1/projects/{project_id}/versions:derive`.
+- The feedback loop is accepted: `current_version_fix` preserves source Issue and source Confirmation Round and creates a next Confirmation Round draft without an extra Project Version; `derive_new_version` creates the atomic non-working Project Version with Issue source binding; optimization flow and No-Issue backend mutual exclusion passed.
+- Real AI integration is PASS using DeepSeek through the OpenAI-compatible Requirement Clarification path. AI is proposal-only (`AI_DIRECT_AUTHORITY=NO`), Human confirmation is required, manual fallback is preserved, and the controlled call cost was `$0.000241`. No API key, Secret, or Authorization header was persisted or committed.
+- Validation is PASS: backend focused validation, AI focused 38 passed, frontend affected 14 passed, frontend typecheck/lint/production build, HTTP/API/MySQL integration, migration chain, Contract materialization, and full local product flow. Product functional completeness for the current demo scope is PASS; `MVP6_REQUIRED_FOR_CORE_DEMO=NO`.
+- The implementation package contained 68 files: Contract 3, Backend 7, AI 9, Frontend 8, generated client 34, Tests 7, Database 0. Alembic head remains `20260823_0006`; no migration or undeclared schema change was introduced.
+- Post-promotion content state is clean by content checks: tracked content diff 0, staged content diff 0, true-untracked count 0, and diff check PASS. The known 354 EOL/stat-only status noise remains accepted and was not normalized. `SECRET_TOKEN_PATTERN_HITS=0`; `SECRET_COMMITTED=NO`.
+- MVP5 is complete for the current product demo scope. The next independently authorized phase is `DEPLOYMENT_V2` on the existing Alibaba Cloud server; this closeout does not authorize deployment, release, tag, production migration, or production secret work.
+
 ## MVP4 Current Governance Memory
 
 - Freeze is unchanged: `MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1`, contract `MVP4-v1`, and frozen base `7dd83c6423a1e449043e4fcf78c34783ce562119`; AI, schema change, migration change, and post-submit Issue semantics are OUT.

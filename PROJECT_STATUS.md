@@ -1,10 +1,25 @@
 # PROJECT STATUS
 
-> 最后更新：2026-08-24
+> 最后更新：2026-08-25
 
 ## Current Phase
 
-MVP4 Complete in Main
+MVP5 Complete in Main
+
+MVP5 validation-feedback closure, real DeepSeek Requirement Clarification, Contract/Runtime alignment, focused validation, exact 68-file commit, feature-branch push, and ordinary non-force fast-forward Main promotion are complete. The accepted MVP5 implementation commit is `dd7ff5356a2f8362f2f0287cfa3132aae4a8bd33`, a direct child of the accepted MVP5 baseline `03e2054c195d7b798f494193bc0ba464fcdc6180`. The governance closeout is a later child and does not change the implementation commit identity.
+
+## MVP5 Accepted Baseline
+
+- `MVP5_STATUS=COMPLETED_IN_MAIN`; `MVP5_CURRENT_GATE=MVP5-COMPLETE`; `MVP5_OPTION=C`.
+- Implementation commit: `dd7ff5356a2f8362f2f0287cfa3132aae4a8bd33`; parent `03e2054c195d7b798f494193bc0ba464fcdc6180`; `origin/main` and `origin/codex/mvp5-execution` both point to the implementation commit before governance closeout.
+- Accepted product scope: submitted Test Record → Validation Decision → No Issue/Validation Complete or defect/optimization Issue → disposition. `current_version_fix` preserves source Issue and Confirmation Round and creates a next Confirmation Round draft without an extra Project Version. `derive_new_version` is exposed only through `POST /api/v1/projects/{project_id}/versions:derive`.
+- Real AI: DeepSeek OpenAI-compatible Requirement Clarification passed with Human-in-the-loop; AI has no direct authority, manual fallback remains available, and the controlled call cost was `$0.000241`. No Secret or Authorization header was committed.
+- Final OpenAPI identity: `cc4c77cfa8d1d9937969ddaeacdfe24283cbb3283e9f43dd6e01c77ab5cee6f3` (64 paths / 77 operations). OpenAPI/Runtime semantic consistency passed.
+- Database: Alembic head `20260823_0006`; no new migration and no undeclared schema change.
+- Validation: backend focused PASS; AI focused 38 passed; frontend affected 14 passed; frontend typecheck, lint, production build, HTTP/API/MySQL integration, database migration chain, controlled real AI, Contract materialization, and full local product flow all PASS. Product functional completeness for the current demo scope PASS; MVP6 is not required for the core demo.
+- Commit package: 68 files — Contract 3, Backend 7, AI 9, Frontend 8, generated client 34, Tests 7, Database 0. Main promotion was ordinary non-force fast-forward; force push, other-ref push, and tag push were not used.
+- Content state after promotion: tracked content diff 0, staged content diff 0, true-untracked count 0. Known 354 EOL/stat-only status noise is accepted and was not normalized. `SECRET_TOKEN_PATTERN_HITS=0`; `SECRET_COMMITTED=NO`.
+- `PRODUCTION_CHANGED=NO`; Tag, Release, Deployment, and Production Migration authority remain not granted.
 
 MVP4 Test Record contract materialization, backend and frontend vertical workflow, generated client, focused validation, disposable MySQL 8.4 integration acceptance, execution-branch push, and ordinary Main promotion are complete. The accepted MVP4 implementation commit is `2aff618b147f753b68b288891e79e1064fa70b56`, a direct child of the completed MVP3 Main baseline `7dd83c6423a1e449043e4fcf78c34783ce562119`. This governance closeout is a later child if promoted and does not claim `2aff618` remains the future remote tip.
 
@@ -184,18 +199,18 @@ The P1 release facts (including `1be1aec`, `portfolio-p1-v1-accepted-main`, and 
 
 ## Current Task
 
-`MVP4-POST-MAIN-PROMOTION-GOVERNANCE-CLOSEOUT`：MVP4 Test Record 最小纵向闭环、冻结 Contract、前后端实现、generated client、focused validation、真实 HTTP → MySQL 8.4 集成验收、execution-branch push 和普通 fast-forward Main promotion 均已通过；本次仅同步治理事实，不授予 Release、Tag、Deployment 或 Production 权限。
+`MVP5-GOVERNANCE-CLOSEOUT`：MVP5 Option C 产品闭环、真实 AI Requirement Clarification、Contract/Runtime alignment、focused validation、精确 68-file implementation commit、execution-branch push 和普通 fast-forward Main promotion 均已通过；本次仅同步最终治理事实，不授予 Release、Tag、Deployment 或 Production 权限。
 
 ## Next Phase
 
-`MVP4-COMPLETE`；`AWAITING_NEW_USER_AUTHORITY`。后续任何新范围开发、Release、Tag、Deployment、Production Migration 或 Production action 均需新的明确用户授权。
+`MVP5-COMPLETE`。当前 MVP5 产品核心开发完成于当前 Demo scope；下一阶段为独立 `DEPLOYMENT_V2` intake。任何 Deployment、Release、Tag、Production Migration 或 Production action 均需新的明确用户授权。
 
 ## Prohibited
 
 - 不重新打开冻结的 `MVP4-TEST-RECORD-CONTRACT-FREEZE-20260824-V1`、已接受的 MVP3/MVP2 Gate、Product Semantics、State Machine 或 AI Boundary
 - 不修改 OpenAPI、Alembic / Schema、已接受源分支或 `origin/main`，除非进入新的明确 Gate
 - 不把 disposable MySQL Gate 解释为 Staging/Production Existing Data Evidence，不绕过 `20260823_0006` 的同目标 0/0/0 fail-closed guard
-- 不把 Test Record submitted read-only 扩展为 Issue/no-Issue、correction、supersede、evidence upload 或 AI 能力
+- 不重新打开已完成的 MVP5 Contract、AI、Validation/Issue、generated client 或 product flow；任何新产品范围必须取得新的明确授权
 - 不把历史 P1 事实描述为当前 MVP2 状态
 - 不执行 Release、Tag、Deployment、Production 或 Production migration
 - 未经新指令继续扩展已完成的全量高保真范围或修改已确认业务逻辑
