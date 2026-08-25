@@ -102,8 +102,8 @@ class ManualRecovery(StrictModel):
 
 
 class ClarificationExecution(StrictModel):
-    truth_label: Literal["FORMAL_MOCK"]
-    provider_id: Literal["requirement-clarify-formal-mock"]
+    truth_label: Literal["FORMAL_MOCK", "REAL_PROVIDER"]
+    provider_id: str = Field(min_length=1, max_length=64)
     trace_id: str = Field(min_length=1, max_length=64)
     command_id: str = Field(min_length=1, max_length=64)
     task_statuses: tuple[TaskStatus, ...]
@@ -111,3 +111,4 @@ class ClarificationExecution(StrictModel):
     context_snapshot: dict[str, Any]
     recovery: ManualRecovery | None
     formalization_allowed: Literal[False] = False
+    provider_response: dict[str, Any] | None = None

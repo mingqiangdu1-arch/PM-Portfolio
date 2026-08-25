@@ -11,7 +11,16 @@ export interface ProjectSummaryView { id: string; name: string; goal: string; wo
 export interface ProjectOverviewView extends ProjectSummaryView { viewedVersionId: string; viewedVersionNo: string; isHistory: boolean; canEdit: boolean; blocker: string | null; roles?: ProjectRole[]; capabilities?: ProjectCapabilities }
 export interface VersionView { id: string; number: string; source: string | null; reason: string; createdAt: string; isWorking: boolean }
 export interface CreateProjectInput { name: string; goal: string; startMode: "new" | "import" }
-export interface DeriveVersionInput { sourceVersionId: string; reason: string; inheritContext: boolean; expectedProjectVersion: number }
+export type VersionChangeType = "bug_fix" | "optimization" | "scope_change";
+export interface DeriveVersionInput {
+  sourceVersionId: string;
+  sourceIssueId?: string | null;
+  changeType?: VersionChangeType;
+  reason: string;
+  inheritContext: boolean;
+  inheritanceChoices?: { requirements: boolean; prd: boolean; implementationPlan: boolean };
+  expectedProjectVersion: number;
+}
 export interface PendingUploadRecovery { uploadId: string; storedFileId: string; checksumSha256: string; completeIdempotencyKey: string; file: File }
 export interface FileItemView { id: string; name: string; progress: number; status: "uploading" | "uploaded" | "failed" | "parsing" | "manual-required"; relation: string | null; error?: string; retryFile?: File; pendingUpload?: PendingUploadRecovery }
 export interface HealthView { status: string; service: string; environment: string; release: string; traceId: string }
@@ -75,10 +84,10 @@ export type TestRecordResultStatus = "success" | "failed" | "partial";
 export type TestRecordStatus = "draft" | "submitted";
 export interface TestEnvironmentView { name: string; preconditions: string[] }
 export interface TestRecordView {
-  id: string; confirmationRoundId: string; title: string; scope: string; environment: TestEnvironmentView;
+  id: string; projectId: string; projectVersionId: string; confirmationRoundId: string; title: string; scope: string; environment: TestEnvironmentView;
   steps: string[]; expectedResult: string; actualResult: string; resultStatus: TestRecordResultStatus;
   testerId: string; status: TestRecordStatus; submittedAt: string | null; rowVersion: number;
-  testType: "manual"; createdAt: string; updatedAt: string;
+  noIssueConclusion: boolean; testType: "manual"; createdAt: string; updatedAt: string;
 }
 export interface CreateTestRecordInput {
   title: string; scope: string; environment: TestEnvironmentView; steps: string[];
@@ -91,8 +100,37 @@ export interface TestRecordPort {
   get(recordId: string): Promise<TestRecordView>;
   update(recordId: string, input: UpdateTestRecordInput): Promise<TestRecordView>;
   submit(recordId: string, expectedVersion: number): Promise<TestRecordView>;
+  concludeNoIssue(recordId: string, expectedVersion: number): Promise<TestRecordView>;
 }
-export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort; implementationPlans: ImplementationPlanPort; confirmationRounds: ConfirmationRoundPort; testRecords: TestRecordPort }
+export type IssueType = "defect" | "feedback" | "data_anomaly" | "optimization";
+export type IssuePriority = "low" | "medium" | "high" | "urgent";
+export type IssueSeverity = "low" | "medium" | "high" | "critical";
+export type IssueStatus = "open_needs_disposition" | "routed_current_fix" | "routed_new_version" | "deferred" | "rejected";
+export type IssueDispositionType = "current_version_fix" | "derive_new_version" | "defer" | "reject";
+export interface BugDetailView { reproduceSteps: string; expectedResult: string; actualResult: string; environment: Record<string, unknown> | null }
+export interface OptimizationDetailView { problemEvidence: string; hypothesis: string; expectedOutcome: string; impactScope: string; needNewVersion: boolean }
+export interface IssueDispositionView { id: string; sequenceNo: number; dispositionType: IssueDispositionType; reason: string; targetProjectVersionId: string | null; responsibleUserId: string; decidedBy: string; decidedAt: string }
+export interface IssueView {
+  id: string; projectVersionId: string; testRecordId: string | null; sourceType: "test_record"; issueType: IssueType;
+  title: string; description: string; priority: IssuePriority; severity: IssueSeverity; status: IssueStatus;
+  assigneeId: string | null; rowVersion: number; bugDetail: BugDetailView | null;
+  optimizationDetail: OptimizationDetailView | null; dispositions: IssueDispositionView[];
+  createdAt: string; updatedAt: string;
+}
+export interface CreateIssueInput {
+  testRecordId: string; issueType: IssueType; title: string; description: string; priority: IssuePriority;
+  severity: IssueSeverity; assigneeId: string | null; bugDetail: BugDetailView | null;
+  optimizationDetail: OptimizationDetailView | null;
+}
+export interface UpdateIssueInput extends Partial<Omit<CreateIssueInput, "testRecordId" | "issueType">> { expectedVersion: number }
+export interface IssuePort {
+  list(projectVersionId: string): Promise<IssueView[]>;
+  create(projectVersionId: string, input: CreateIssueInput): Promise<IssueView>;
+  get(issueId: string): Promise<IssueView>;
+  update(issueId: string, input: UpdateIssueInput): Promise<IssueView>;
+  dispose(issueId: string, expectedVersion: number, dispositionType: Exclude<IssueDispositionType, "derive_new_version">, reason: string, responsibleUserId: string): Promise<IssueView>;
+}
+export interface FrontendApi { identity: IdentityPort; projects: ProjectPort; files: FilePort; health: HealthPort; requirements: RequirementPort; prds: PrdPort; ai: AiPort; implementationPlans: ImplementationPlanPort; confirmationRounds: ConfirmationRoundPort; testRecords: TestRecordPort; issues: IssuePort }
 export const capabilitiesForRoles = (roles: ProjectRole[] = []): ProjectCapabilities => {
   const role = roles.includes("owner") ? "owner" : roles.includes("implementer") ? "implementer" : roles[0] ?? null;
   return { role, canPlanWrite: role === "owner", canSetEffective: role === "owner", canConfirmationCreate: role === "owner" || role === "implementer", canConfirmationUpdate: role === "owner" || role === "implementer", canConfirm: role === "owner", canTestRecordWrite: roles.includes("owner") || roles.includes("tester"), readOnly: role !== "owner" && role !== "implementer" };
@@ -352,7 +390,7 @@ export interface AiTaskResultRefView { resultId: string; status: AiResultStatus;
 export interface AiResultQualityView { formatStatus: string; traceabilityStatus: string; safetyStatus: string; requiredItemsMet: number; requiredItemsTotal: number; majorError: boolean; blockerCodes: string[] }
 export interface AiResultConvergenceView { shouldFinish: boolean; finishReason: FinishReason | null; nextRoundNo: number | null }
 export interface AiResultCapabilitySummaryView {
-  truthLabel: "FORMAL_MOCK" | null;
+  truthLabel: "FORMAL_MOCK" | "REAL_PROVIDER" | null;
   providerCode: string | null;
   modelCode: string | null;
 }

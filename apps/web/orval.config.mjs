@@ -3,6 +3,10 @@ const config = {
   api: {
     input: {
       target: process.env.OPENAPI_SCHEMA_PATH,
+      // The frozen contract intentionally carries project-specific response
+      // extensions that Orval's OpenAPI validator rejects. Integrity is
+      // enforced by generate-api-client.mjs before generation.
+      unsafeDisableValidation: true,
     },
     output: {
       target: 'src/lib/api/generated/client.ts',

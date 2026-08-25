@@ -4,11 +4,12 @@ import { TestRecordWorkspace } from "./test-record-workspace";
 import { capabilitiesForRoles, type ConfirmationRoundView, type FrontendApi, type TestRecordView } from "@/lib/api/ports";
 
 const round: ConfirmationRoundView = { id: "round-1", implementationPlanId: "plan-1", planVersionId: "plan-version-1", sourceRoundId: null, roundNo: 1, status: "confirmed", confirmStatus: "confirmed", implementationSummary: "已确认的实现范围", readiness: { schemaVersion: "implementation_confirmation.readiness.mvp3.v1", scopeStatus: "ready", implementationStatus: "ready", configurationStatus: "not_applicable", dataChangeStatus: "not_applicable", knownBlockers: [] }, rowVersion: 3, isEffective: true, confirmedBy: "owner-1", confirmedAt: "2026-08-24T00:00:00Z", supersededAt: null };
-const record: TestRecordView = { id: "record-1", confirmationRoundId: "round-1", title: "登录验证", scope: "登录流程", environment: { name: "local", preconditions: ["服务已启动"] }, steps: ["输入账号", "提交"], expectedResult: "进入首页", actualResult: "进入首页", resultStatus: "success", testerId: "tester-1", status: "draft", submittedAt: null, rowVersion: 1, testType: "manual", createdAt: "2026-08-24T00:00:00Z", updatedAt: "2026-08-24T00:00:00Z" };
+const record: TestRecordView = { id: "record-1", projectId: "project-1", projectVersionId: "version-1", confirmationRoundId: "round-1", title: "登录验证", scope: "登录流程", environment: { name: "local", preconditions: ["服务已启动"] }, steps: ["输入账号", "提交"], expectedResult: "进入首页", actualResult: "进入首页", resultStatus: "success", testerId: "tester-1", status: "draft", submittedAt: null, rowVersion: 1, noIssueConclusion: false, testType: "manual", createdAt: "2026-08-24T00:00:00Z", updatedAt: "2026-08-24T00:00:00Z" };
 
 function apiFor(overrides: Partial<FrontendApi["testRecords"]> = {}) {
-  const testRecords = { list: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue(record), get: vi.fn().mockResolvedValue(record), update: vi.fn().mockResolvedValue({ ...record, rowVersion: 2 }), submit: vi.fn().mockResolvedValue({ ...record, status: "submitted" as const, submittedAt: "2026-08-24T00:01:00Z", rowVersion: 3 }), ...overrides };
-  return { api: { testRecords } as unknown as FrontendApi, testRecords };
+  const testRecords = { list: vi.fn().mockResolvedValue([]), create: vi.fn().mockResolvedValue(record), get: vi.fn().mockResolvedValue(record), update: vi.fn().mockResolvedValue({ ...record, rowVersion: 2 }), submit: vi.fn().mockResolvedValue({ ...record, status: "submitted" as const, submittedAt: "2026-08-24T00:01:00Z", rowVersion: 3 }), concludeNoIssue: vi.fn().mockResolvedValue({ ...record, status: "submitted" as const, submittedAt: "2026-08-24T00:01:00Z", rowVersion: 4, noIssueConclusion: true }), ...overrides };
+  const issues = { list: vi.fn().mockResolvedValue([]), create: vi.fn(), get: vi.fn(), update: vi.fn(), dispose: vi.fn() };
+  return { api: { testRecords, issues } as unknown as FrontendApi, testRecords, issues };
 }
 
 describe("TestRecordWorkspace", () => {
@@ -72,5 +73,17 @@ describe("TestRecordWorkspace", () => {
     expect(await screen.findByText("当前身份只读")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "提交并冻结" })).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByDisplayValue("进入首页").every((field) => field.hasAttribute("disabled"))).toBe(true));
+  });
+
+  it("makes the no-Issue decision explicit and reaches Validation Complete", async () => {
+    const submitted = { ...record, status: "submitted" as const, submittedAt: "2026-08-24T00:01:00Z", rowVersion: 3 };
+    const { api, testRecords, issues } = apiFor({ list: vi.fn().mockResolvedValue([submitted]) });
+    render(<TestRecordWorkspace round={round} capabilities={capabilitiesForRoles(["tester"])} api={api} />);
+    const action = await screen.findByRole("button", { name: "确认无 Issue，完成验证" });
+    await waitFor(() => expect(issues.list).toHaveBeenCalledWith("version-1"));
+    fireEvent.click(action);
+    await waitFor(() => expect(testRecords.concludeNoIssue).toHaveBeenCalledWith("record-1", 3));
+    expect(await screen.findByText("Validation Complete")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "创建 Issue" })).not.toBeInTheDocument();
   });
 });

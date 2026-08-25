@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 
 
@@ -8,6 +8,17 @@ def _as_bool(value: str | None, *, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _secret(name: str) -> str | None:
+    direct = os.getenv(name)
+    file_name = os.getenv(f"{name}_FILE")
+    if direct and file_name:
+        raise ValueError(f"{name} and {name}_FILE are mutually exclusive")
+    if file_name:
+        with open(file_name, encoding="utf-8") as handle:
+            direct = handle.read()
+    return direct.strip() if direct and direct.strip() else None
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +29,8 @@ class Settings:
     broker_url: str
     task_default_queue: str
     provider_mode: str
+    provider_model: str
+    provider_api_key: str | None = field(repr=False)
     context_mode: str
     live_provider_authorized: bool
     flow_enabled: bool
@@ -49,6 +62,13 @@ class Settings:
             raise ValueError("CI must use Provider Stub")
         if environment == "production" and (provider_mode == "stub" or context_mode == "stub"):
             raise ValueError("production cannot start with Provider or Context stubs")
+        provider_model = os.getenv("AI_PROVIDER_MODEL", "deepseek-v4-flash").strip()
+        if provider_model not in {"deepseek-v4-flash", "deepseek-v4-pro"}:
+            raise ValueError("AI_PROVIDER_MODEL is not allowed by the DeepSeek profile")
+        provider_api_key = _secret("DEEPSEEK_API_KEY") or _secret("AI_PROVIDER_API_KEY")
+        live_provider_authorized = _as_bool(os.getenv("AI_LIVE_PROVIDER_AUTHORIZED"), default=False)
+        if provider_mode == "openai_compatible" and not live_provider_authorized:
+            raise ValueError("openai_compatible provider requires AI_LIVE_PROVIDER_AUTHORIZED=true")
         service_jwt_ttl_seconds = int(os.getenv("AI_SERVICE_JWT_TTL_SECONDS", "120"))
         if not 1 <= service_jwt_ttl_seconds <= 300:
             raise ValueError("AI_SERVICE_JWT_TTL_SECONDS must be between 1 and 300")
@@ -80,11 +100,10 @@ class Settings:
             broker_url=os.getenv("AI_BROKER_URL", "redis://redis:6379/0"),
             task_default_queue=os.getenv("AI_TASK_DEFAULT_QUEUE", "interactive"),
             provider_mode=provider_mode,
+            provider_model=provider_model,
+            provider_api_key=provider_api_key,
             context_mode=context_mode,
-            live_provider_authorized=_as_bool(
-                os.getenv("AI_LIVE_PROVIDER_AUTHORIZED"),
-                default=False,
-            ),
+            live_provider_authorized=live_provider_authorized,
             flow_enabled=_as_bool(os.getenv("FLOW_ENABLED"), default=False),
             internal_jwt_secret=internal_jwt_secret,
             business_api_jwt_secret=business_api_jwt_secret,
@@ -106,6 +125,7 @@ class Settings:
             "environment": self.environment,
             "product_release": self.product_release,
             "provider_mode": self.provider_mode,
+            "provider_model": self.provider_model,
             "context_mode": self.context_mode,
             "live_provider_authorized": self.live_provider_authorized,
             "flow_enabled": self.flow_enabled,

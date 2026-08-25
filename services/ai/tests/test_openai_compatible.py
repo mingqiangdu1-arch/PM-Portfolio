@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -32,6 +34,12 @@ def test_deepseek_profile_uses_current_models_and_calculates_available_cost() ->
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url == "https://api.deepseek.com/chat/completions"
         assert request.headers["Authorization"] == "Bearer test-only-key"
+        body = json.loads(request.content)
+        assert body["response_format"] == {"type": "json_object"}
+        assert body["thinking"] == {"type": "disabled"}
+        assert body["temperature"] == 0.2
+        assert body["stream"] is False
+        assert body["messages"][0]["role"] == "system"
         return httpx.Response(
             200,
             json={
@@ -119,3 +127,11 @@ def test_adapter_classifies_server_and_malformed_responses() -> None:
     )
     with pytest.raises(ProviderMalformedResponse):
         malformed.generate(provider_request())
+
+    incomplete = OpenAICompatibleAdapter(
+        deepseek_profile(),
+        api_key="test-only-key",
+        client=client(lambda request: httpx.Response(200, json={"choices": [{"message": {"content": "{}"}, "finish_reason": "length"}]})),
+    )
+    with pytest.raises(ProviderMalformedResponse, match="truncated"):
+        incomplete.generate(provider_request())

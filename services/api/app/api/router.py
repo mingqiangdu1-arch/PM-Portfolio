@@ -6,6 +6,7 @@ from app.api.v1.implementation_plans import router as implementation_plans_route
 from app.api.v1.prds import router as prds_router
 from app.api.v1.requirements import router as requirements_router
 from app.api.v1.sprint1 import router as sprint1_router
+from app.api.v1.validation import router as validation_router
 from app.internal_api.ai_tasks import router as internal_ai_tasks_router
 from app.internal_api.health import router as internal_health_router
 
@@ -16,5 +17,6 @@ api_router.include_router(implementation_plans_router)
 api_router.include_router(requirements_router)
 api_router.include_router(prds_router)
 api_router.include_router(ai_tasks_router)
+api_router.include_router(validation_router)
 api_router.include_router(internal_health_router)
 api_router.include_router(internal_ai_tasks_router)

@@ -283,6 +283,8 @@ def _safe_capability_summary(row: dict[str, Any]) -> dict[str, str]:
         summary["model_code"] = model_code
     if isinstance(capability, dict) and capability.get("truth_label") == "FORMAL_MOCK":
         summary["truth_label"] = "FORMAL_MOCK"
+    elif provider_code == "deepseek":
+        summary["truth_label"] = "REAL_PROVIDER"
     return summary
 
 

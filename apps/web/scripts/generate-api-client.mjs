@@ -9,7 +9,7 @@ if (!schemaPath || !existsSync(schemaPath)) {
   process.exit(1);
 }
 
-const expectedHash = "c37c50a3bebfe77daa245363dac9dae2212f303f59deff823540bddc2b7a6039";
+const expectedHash = "cc4c77cfa8d1d9937969ddaeacdfe24283cbb3283e9f43dd6e01c77ab5cee6f3";
 const actualHash = createHash("sha256").update(readFileSync(schemaPath)).digest("hex");
 if (actualHash !== expectedHash) {
   console.error(`OpenAPI contract hash mismatch: expected ${expectedHash}, got ${actualHash}`);

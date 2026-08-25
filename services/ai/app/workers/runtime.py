@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from typing import Any
 from app.context.runtime import validate_freshness_response, validate_runtime_context
 from app.requirement_clarification.formal_mock import FormalMockRequirementClarifier
+from app.providers.base import ProviderError
 from app.requirement_clarification.models import RequirementClarifyTask, ClarificationSource
 from app.requirement_clarification.result import validate_context_snapshot, validate_result_content
 
@@ -47,7 +48,7 @@ def _validate_result_source_binding(result: dict[str, Any], raw_ref: dict[str, A
 
 class TaskRuntime:
     """Runtime requires a repository atomic persistence port; no partial success is allowed."""
-    def __init__(self, *, repository: Any, context_client: Any, provider: FormalMockRequirementClarifier, token_budget: int, object_store: Any):
+    def __init__(self, *, repository: Any, context_client: Any, provider: Any, token_budget: int, object_store: Any):
         self.repository, self.context_client, self.provider, self.token_budget, self.object_store = repository, context_client, provider, token_budget, object_store
     def execute(self, *, task_public_id: str, trace_id: str) -> None:
         task = self.repository.get_task(task_public_id)
@@ -85,9 +86,15 @@ class TaskRuntime:
             sources = (source,)
             envelope = RequirementClarifyTask(schema_version="0.2.0", task_public_id=task.task_public_id, user_id=task.user_id, project_id=task.project_id, project_version_id=task.project_version_id, module=task.module, task_type=task.task_type, target={"object_type":"requirement","object_id":task.target_object_id,"object_version_id":task.target_object_version_id}, target_snapshot_hash=task.target_snapshot_hash, source_ref_ids=context.source_ref_ids, capability_selection=None, risk_acceptances=tuple(item.model_dump() for item in context.risk_acceptances), command_id=task.command_id, trace_id=trace_id, requested_at=datetime.now(UTC), input=context.input.model_dump(), status="generating")
             self.repository.update_status(task_public_id, "generating")
-            bundle = self.repository.resolve_bundle()
+            selector = getattr(self.provider, "bundle_selector", None)
+            bundle = self.repository.resolve_bundle(**selector) if selector else self.repository.resolve_bundle()
             call_id = self.repository.create_call(task, bundle, capability_fingerprint=bundle["fingerprint"])
-            execution = self.provider.run(envelope, sources)
+            if getattr(self.provider, "accepts_requirement_content", False):
+                execution = self.provider.run(
+                    envelope, sources, requirement_content=context.requirement_content
+                )
+            else:
+                execution = self.provider.run(envelope, sources)
             provider_returned = True
             self.repository.update_status(task_public_id, "checking")
             validate_context_snapshot(execution.context_snapshot)
@@ -108,6 +115,22 @@ class TaskRuntime:
             key, fingerprint = self.object_store.put_result(project_id=task.project_id, task_public_id=task_public_id, ai_call_id=str(call_id), result_no=1, content=execution.result)
             self.object_store.verify_result(key=key, content_fingerprint=fingerprint)
             self.repository.persist_success(task, call_id, context, execution, key, fingerprint)
+        except ProviderError as exc:
+            failure_code = f"PROVIDER_{exc.error_class.upper()}"
+            if call_id is not None:
+                self.repository.persist_failure(
+                    task,
+                    call_id,
+                    None,
+                    status="failed",
+                    failure_code=failure_code,
+                    call_succeeded=False,
+                )
+            else:
+                self.repository.mark_status_with_event(
+                    task_public_id, "failed", failure_code=failure_code
+                )
+            return
         except Exception:
             if call_id is not None:
                 self.repository.persist_failure(task, call_id, None, status="failed", failure_code="AI_RUNTIME_FAILED", call_succeeded=provider_returned)

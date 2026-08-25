@@ -2104,8 +2104,11 @@
             "type": "string"
           },
           "change_type": {
-            "maxLength": 32,
-            "minLength": 1,
+            "enum": [
+              "bug_fix",
+              "optimization",
+              "scope_change"
+            ],
             "type": "string"
           },
           "expected_project_version": {
@@ -2113,9 +2116,23 @@
             "type": "integer"
           },
           "inheritance_choices": {
-            "additionalProperties": {
-              "type": "boolean"
+            "additionalProperties": false,
+            "properties": {
+              "implementation_plan": {
+                "type": "boolean"
+              },
+              "prd": {
+                "type": "boolean"
+              },
+              "requirements": {
+                "type": "boolean"
+              }
             },
+            "required": [
+              "requirements",
+              "prd",
+              "implementation_plan"
+            ],
             "type": "object"
           },
           "source_issue_id": {
@@ -2248,7 +2265,12 @@
           "STORAGE_UNAVAILABLE",
           "DEPENDENCY_UNAVAILABLE",
           "HTTP_ERROR",
-          "INTERNAL_ERROR"
+          "INTERNAL_ERROR",
+          "TEST_RECORD_NOT_SUBMITTED",
+          "TEST_RECORD_HAS_ISSUES",
+          "VALIDATION_ALREADY_CONCLUDED",
+          "ISSUE_VALIDATION_CONFLICT",
+          "ISSUE_NOT_OPEN"
         ],
         "type": "string"
       },
@@ -5327,6 +5349,17 @@
           "id": {
             "type": "string"
           },
+          "no_issue_conclusion": {
+            "type": "boolean"
+          },
+          "project_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "project_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
           "result_status": {
             "$ref": "#/components/schemas/Mvp4ResultStatus"
           },
@@ -5390,7 +5423,10 @@
           "submitted_at",
           "row_version",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "project_id",
+          "project_version_id",
+          "no_issue_conclusion"
         ],
         "type": "object"
       },
@@ -5534,6 +5570,544 @@
         },
         "required": [
           "expected_version"
+        ],
+        "type": "object"
+      },
+      "Mvp5BugDetailInput": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_result": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "environment": {
+            "additionalProperties": true,
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "expected_result": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "reproduce_steps": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reproduce_steps",
+          "expected_result",
+          "actual_result",
+          "environment"
+        ],
+        "type": "object"
+      },
+      "Mvp5Issue": {
+        "additionalProperties": false,
+        "properties": {
+          "assignee_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bug_detail": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mvp5BugDetailInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "dispositions": {
+            "items": {
+              "$ref": "#/components/schemas/Mvp5IssueDisposition"
+            },
+            "type": "array"
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "issue_type": {
+            "enum": [
+              "defect",
+              "feedback",
+              "data_anomaly",
+              "optimization"
+            ],
+            "type": "string"
+          },
+          "optimization_detail": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mvp5OptimizationDetailInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
+            "type": "string"
+          },
+          "project_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "row_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "type": "string"
+          },
+          "source_type": {
+            "const": "test_record"
+          },
+          "status": {
+            "enum": [
+              "open_needs_disposition",
+              "routed_current_fix",
+              "routed_new_version",
+              "deferred",
+              "rejected"
+            ],
+            "type": "string"
+          },
+          "test_record_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_version_id",
+          "test_record_id",
+          "source_type",
+          "issue_type",
+          "title",
+          "description",
+          "priority",
+          "severity",
+          "status",
+          "assignee_id",
+          "row_version",
+          "bug_detail",
+          "optimization_detail",
+          "dispositions",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "assignee_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bug_detail": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mvp5BugDetailInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "issue_type": {
+            "enum": [
+              "defect",
+              "feedback",
+              "data_anomaly",
+              "optimization"
+            ],
+            "type": "string"
+          },
+          "optimization_detail": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Mvp5OptimizationDetailInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "type": "string"
+          },
+          "test_record_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "test_record_id",
+          "issue_type",
+          "title",
+          "description",
+          "priority",
+          "severity",
+          "assignee_id",
+          "bug_detail",
+          "optimization_detail"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueData": {
+        "additionalProperties": false,
+        "properties": {
+          "issue": {
+            "$ref": "#/components/schemas/Mvp5Issue"
+          }
+        },
+        "required": [
+          "issue"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueDisposition": {
+        "additionalProperties": false,
+        "properties": {
+          "decided_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decided_by": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "disposition_type": {
+            "enum": [
+              "current_version_fix",
+              "derive_new_version",
+              "defer",
+              "reject"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "responsible_user_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          },
+          "sequence_no": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "target_project_version_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "sequence_no",
+          "disposition_type",
+          "reason",
+          "target_project_version_id",
+          "responsible_user_id",
+          "decided_by",
+          "decided_at"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueDispositionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "disposition_type": {
+            "enum": [
+              "current_version_fix",
+              "defer",
+              "reject"
+            ],
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "reason": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "responsible_user_id": {
+            "pattern": "^[1-9][0-9]*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_version",
+          "disposition_type",
+          "reason",
+          "responsible_user_id"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueListData": {
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Mvp5Issue"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp5IssueListData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Mvp5IssueData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "Mvp5IssueUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VersionedCommand"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "assignee_id": {
+                "pattern": "^[1-9][0-9]*$",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bug_detail": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Mvp5BugDetailInput"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "maxLength": 12000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "expected_version": {
+                "minimum": 1,
+                "type": "integer"
+              },
+              "optimization_detail": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Mvp5OptimizationDetailInput"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "priority": {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "urgent"
+                ],
+                "type": "string"
+              },
+              "severity": {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "critical"
+                ],
+                "type": "string"
+              },
+              "title": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "expected_version"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Mvp5NoIssueConclusionRequest": {
+        "$ref": "#/components/schemas/VersionedCommand"
+      },
+      "Mvp5OptimizationDetailInput": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_outcome": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "hypothesis": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "impact_scope": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "need_new_version": {
+            "type": "boolean"
+          },
+          "problem_evidence": {
+            "maxLength": 12000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "problem_evidence",
+          "hypothesis",
+          "expected_outcome",
+          "impact_scope",
+          "need_new_version"
         ],
         "type": "object"
       },
@@ -10944,6 +11518,226 @@
         }
       }
     },
+    "/api/v1/issues/{issue_id}": {
+      "get": {
+        "operationId": "getIssue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issue_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp5IssueResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "active_project_member"
+          ]
+        }
+      },
+      "patch": {
+        "operationId": "updateIssue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issue_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp5IssueUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp5IssueResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-expected-version": {
+          "field": "expected_version",
+          "required": true,
+          "stale_error": "VERSION_CONFLICT"
+        },
+        "x-idempotency": {
+          "replay": "same key and request replays the original successful response",
+          "required": true,
+          "scope": "authenticated-user+endpoint-object-id+key+request-hash"
+        },
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
+          ]
+        }
+      }
+    },
+    "/api/v1/issues/{issue_id}/dispositions": {
+      "post": {
+        "operationId": "createIssueDisposition",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issue_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp5IssueDispositionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp5IssueResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-derived-version-atomic-command": true,
+        "x-expected-version": {
+          "field": "expected_version",
+          "required": true,
+          "stale_error": "VERSION_CONFLICT"
+        },
+        "x-idempotency": {
+          "replay": "same key and request replays the original successful response",
+          "required": true,
+          "scope": "authenticated-user+endpoint-object-id+key+request-hash"
+        },
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner"
+          ]
+        }
+      }
+    },
     "/api/v1/plan-versions/{id}:set-effective": {
       "post": {
         "operationId": "setEffectiveImplementationPlanVersion",
@@ -11819,6 +12613,160 @@
           "admin_bypass": false,
           "allowed_project_roles": [
             "owner"
+          ]
+        }
+      }
+    },
+    "/api/v1/project-versions/{version_id}/issues": {
+      "get": {
+        "operationId": "listProjectVersionIssues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp5IssueListResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "active_project_member"
+          ]
+        }
+      },
+      "post": {
+        "operationId": "createProjectVersionIssue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp5IssueCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp5IssueResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-idempotency": {
+          "replay": "same key and request replays the original successful response",
+          "required": true,
+          "scope": "authenticated-user+endpoint-object-id+key+request-hash"
+        },
+        "x-mutual-exclusion": "no_issue_conclusion must be false",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
           ]
         }
       }
@@ -14063,6 +15011,89 @@
         ]
       }
     },
+    "/api/v1/test-records/{id}:conclude-no-issue": {
+      "post": {
+        "operationId": "concludeTestRecordNoIssue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "pattern": "^[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mvp5NoIssueConclusionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mvp4TestRecordResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "validation-feedback"
+        ],
+        "x-contract-phase": "mvp5-validation-feedback-v1",
+        "x-expected-version": {
+          "field": "expected_version",
+          "required": true,
+          "stale_error": "VERSION_CONFLICT"
+        },
+        "x-idempotency": {
+          "replay": "same key and request replays the original successful response",
+          "required": true,
+          "scope": "authenticated-user+endpoint-object-id+key+request-hash"
+        },
+        "x-mutual-exclusion": "no Issue may exist for this Test Record",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "tester"
+          ]
+        }
+      }
+    },
     "/api/v1/test-records/{id}:submit": {
       "post": {
         "operationId": "submitTestRecord",
@@ -14388,6 +15419,16 @@
     "operations_added": 5,
     "paths_added": 3,
     "schema_change_required": false
+  },
+  "x-mvp5": {
+    "contract_version": "MVP5-v1",
+    "freeze_id": "MVP5-VALIDATION-FEEDBACK-CONTRACT-FREEZE-20260825-V1",
+    "new_migration_required": false,
+    "operations_added": 6,
+    "paths_added": 4,
+    "product_goal": "REAL_AI_REQUIREMENT_TO_VALIDATION_FEEDBACK_CLOSURE",
+    "schema_change_required": false,
+    "state_machine_change_required": false
   },
   "x-optimistic-lock-field": "expected_version",
   "x-raw-input-policy": {

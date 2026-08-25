@@ -471,6 +471,8 @@ def _test_record(row: dict[str, Any]) -> dict[str, Any]:
     submitted_at = row.get("submitted_at")
     return {
         "id": str(row["id"]),
+        "project_id": str(row["project_id"]),
+        "project_version_id": str(row["project_version_id"]),
         "confirmation_round_id": str(row["confirmation_round_id"]),
         "title": row["title"],
         "test_type": "manual",
@@ -480,6 +482,7 @@ def _test_record(row: dict[str, Any]) -> dict[str, Any]:
         "expected_result": row["expected_result"],
         "actual_result": row["actual_result"],
         "result_status": row["result_status"],
+        "no_issue_conclusion": bool(row.get("no_issue_conclusion", False)),
         "tester_id": str(row["tester_id"]),
         "status": "submitted" if submitted_at is not None else "draft",
         "submitted_at": _iso(submitted_at),
@@ -1627,7 +1630,7 @@ class ConfirmationService:
             context = _mapping(
                 connection.execute(
                     _sql(
-                        "SELECT r.id,v.project_id FROM confirmation_round r "
+                        "SELECT r.id,v.id AS project_version_id,v.project_id FROM confirmation_round r "
                         "JOIN implementation_plan p ON p.id=r.implementation_plan_id "
                         "JOIN project_version v ON v.id=p.project_version_id "
                         "WHERE r.id=:id AND p.archived_at IS NULL AND v.archived_at IS NULL"
@@ -1649,7 +1652,18 @@ class ConfirmationService:
                 .mappings()
                 .all()
             )
-            return {"items": [_test_record(dict(row)) for row in rows]}
+            return {
+                "items": [
+                    _test_record(
+                        {
+                            **dict(row),
+                            "project_id": context["project_id"],
+                            "project_version_id": context["project_version_id"],
+                        }
+                    )
+                    for row in rows
+                ]
+            }
 
     def create_test_record(
         self, *, round_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str
@@ -1719,6 +1733,8 @@ class ConfirmationService:
                         _sql("SELECT * FROM test_record WHERE id=:id"), {"id": record_id}
                     )
                 )
+                row["project_id"] = source["project_id"]
+                row["project_version_id"] = source["project_version_id"]
                 response_data = {"test_record": _test_record(row)}
                 command = f"cmd_{uuid.uuid4().hex}"
                 _persist_command(

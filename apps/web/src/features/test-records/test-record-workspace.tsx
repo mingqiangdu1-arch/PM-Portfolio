@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { StatusPanel } from "@/components/status-panel";
 import { frontendApi } from "@/lib/api/frontend-api";
 import type { ConfirmationRoundView, FrontendApi, ProjectCapabilities, TestRecordResultStatus, TestRecordView } from "@/lib/api/ports";
+import { IssueWorkspace } from "@/features/issues/issue-workspace";
 
 type DraftForm = {
   title: string;
@@ -26,7 +27,7 @@ function errorText(reason: unknown) {
   return "Test Record 操作未完成，请保留当前输入后重试。";
 }
 
-export function TestRecordWorkspace({ round, capabilities, api = frontendApi }: { round: ConfirmationRoundView; capabilities: ProjectCapabilities | null; api?: FrontendApi }) {
+export function TestRecordWorkspace({ round, capabilities, projectId, projectVersionId, api = frontendApi }: { round: ConfirmationRoundView; capabilities: ProjectCapabilities | null; projectId?: string; projectVersionId?: string; api?: FrontendApi }) {
   const sourceValid = round.status === "confirmed" && round.isEffective;
   const canWrite = sourceValid && capabilities?.canTestRecordWrite === true;
   const [records, setRecords] = useState<TestRecordView[]>([]);
@@ -37,6 +38,7 @@ export function TestRecordWorkspace({ round, capabilities, api = frontendApi }: 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [issuePresent, setIssuePresent] = useState(false);
   const openSequence = useRef(0);
 
   const selected = useMemo(() => records.find((record) => record.id === selectedId) ?? null, [records, selectedId]);
@@ -106,6 +108,17 @@ export function TestRecordWorkspace({ round, capabilities, api = frontendApi }: 
     finally { setBusy(false); }
   }
 
+  async function concludeNoIssue() {
+    if (!selected || selected.status !== "submitted" || selected.noIssueConclusion || issuePresent || !canWrite) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      const record = await api.testRecords.concludeNoIssue(selected.id, selected.rowVersion);
+      setRecords((current) => current.map((item) => item.id === record.id ? record : item));
+      setMessage("已明确确认无 Issue，当前验证完成。");
+    } catch (reason) { setError(errorText(reason)); }
+    finally { setBusy(false); }
+  }
+
   const fields = (readOnly: boolean) => <>
     <label className="block"><span className="field-label">Scope</span><textarea className="textarea-field min-h-20" value={form.scope} onChange={(event) => updateField("scope", event.target.value)} disabled={readOnly} /></label>
     <label className="block"><span className="field-label">Environment name</span><input className="input-field" value={form.environmentName} onChange={(event) => updateField("environmentName", event.target.value)} disabled={readOnly} /></label>
@@ -126,6 +139,9 @@ export function TestRecordWorkspace({ round, capabilities, api = frontendApi }: 
     {records.length ? <div className="space-y-token-sm"><h3 className="font-semibold">已有记录</h3><div className="grid gap-token-sm md:grid-cols-2">{records.map((record) => <button type="button" key={record.id} className={`rounded-token-md border p-token-sm text-left ${selected?.id === record.id ? "border-primary bg-primary-subtle" : "border-subtle hover:bg-subtle"}`} onClick={() => void reopen(record.id)} disabled={openingId === record.id}><span className="font-medium">{record.title}</span><span className="mt-token-xs block text-xs text-muted">{openingId === record.id ? "正在重新读取…" : `${record.status} · ${record.resultStatus} · row ${record.rowVersion}`}</span></button>)}</div></div> : null}
     {canWrite && !selected ? <form className="space-y-token-md border-t border-subtle pt-token-md" onSubmit={create}><h3 className="font-semibold">创建 Test Record 草稿</h3><label className="block"><span className="field-label">Title</span><input className="input-field" value={form.title} onChange={(event) => updateField("title", event.target.value)} minLength={1} maxLength={200} disabled={busy} required /></label>{fields(false)}<Button type="submit" loading={busy}>创建草稿</Button></form> : null}
     {selected ? <form className="space-y-token-md border-t border-subtle pt-token-md" onSubmit={save}><div className="flex flex-wrap items-center justify-between gap-token-sm"><h3 className="font-semibold">{selected.status === "submitted" ? "已提交记录（只读）" : "编辑 Test Record 草稿"}</h3><span className="text-xs text-muted">{selected.status} · submitted_at {selected.submittedAt ?? "—"}</span></div><label className="block"><span className="field-label">Title（创建后不可修改）</span><input className="input-field" value={form.title} disabled /></label>{fields(!editable)}<div className="flex flex-wrap gap-token-sm">{editable ? <><Button type="submit" loading={busy}>保存草稿</Button><Button type="button" variant="secondary" loading={busy} onClick={submit}>提交并冻结</Button></> : null}</div></form> : null}
+    {selected?.noIssueConclusion ? <StatusPanel tone="success" title="Validation Complete">用户已明确确认无 Issue；这不是“尚未检查”。</StatusPanel> : null}
+    {selected?.status === "submitted" && !selected.noIssueConclusion && canWrite ? <Button type="button" onClick={() => void concludeNoIssue()} disabled={busy || issuePresent}>确认无 Issue，完成验证</Button> : null}
+    {selected?.status === "submitted" ? <IssueWorkspace projectId={projectId ?? selected.projectId} projectVersionId={projectVersionId ?? selected.projectVersionId} record={selected} capabilities={capabilities} api={api} onIssuePresenceChange={setIssuePresent} /> : null}
     {canWrite ? <Button type="button" variant="secondary" disabled={busy} onClick={() => { setSelectedId(null); setForm(blank); setError(""); setMessage(""); }}>新建另一条记录</Button> : null}
   </section>;
 }

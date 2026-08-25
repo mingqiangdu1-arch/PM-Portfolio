@@ -67,7 +67,17 @@ class OpenAICompatibleAdapter:
                 },
                 json={
                     "model": request.model,
-                    "messages": [{"role": "user", "content": request.input_text}],
+                    "thinking": {"type": "disabled"},
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "Return exactly one valid JSON object. Do not use markdown or prose outside JSON.",
+                        },
+                        {"role": "user", "content": request.input_text},
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "max_tokens": 4096,
+                    "temperature": 0.2,
                     "stream": False,
                 },
             )
@@ -94,6 +104,12 @@ class OpenAICompatibleAdapter:
             raise ProviderMalformedResponse("provider response schema mismatch") from exc
         if finish_reason not in {"stop", "length", "content_filter"}:
             raise ProviderMalformedResponse("unsupported provider finish_reason")
+        if finish_reason == "length":
+            raise ProviderMalformedResponse("provider structured output was truncated")
+        if finish_reason == "content_filter":
+            raise ProviderMalformedResponse("provider structured output was filtered")
+        if not isinstance(content, str) or not content.strip():
+            raise ProviderMalformedResponse("provider returned empty structured output")
 
         estimated_cost = self._estimate_cost(request.model, usage)
         return ProviderResponse(

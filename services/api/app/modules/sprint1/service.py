@@ -6,6 +6,7 @@ import hmac
 import json
 import secrets
 import uuid
+import re
 from datetime import UTC, datetime, timedelta
 from typing import Any, Iterable
 
@@ -22,6 +23,15 @@ from app.platform.security import (
     verify_password,
 )
 from app.platform.storage import S3ObjectStorage, S3Signer, checksum_sha256_base64
+
+
+_POSITIVE_ID = re.compile(r"^[1-9][0-9]*$")
+
+
+def _id(value: Any, field: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (str, int)) or not _POSITIVE_ID.fullmatch(str(value)):
+        raise ApiError(code="VALIDATION_ERROR", message=f"{field} must be a positive ID", http_status=422)
+    return int(value)
 
 
 def _now() -> datetime:
@@ -639,6 +649,28 @@ class Sprint1Service:
             return {"previous": _version_summary(previous), "current": _version_summary(current), "project_version": result_project_version}
 
     def derive_version(self, *, project_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
+        required = {"source_version_id", "change_type", "change_reason", "inheritance_choices", "expected_project_version"}
+        allowed = required | {"source_issue_id"}
+        if not isinstance(payload, dict) or not required.issubset(payload) or not set(payload).issubset(allowed):
+            raise ApiError(code="VALIDATION_ERROR", message="DeriveProjectVersion request fields are invalid", http_status=422)
+        if payload["change_type"] not in {"bug_fix", "optimization", "scope_change"}:
+            raise ApiError(code="VALIDATION_ERROR", message="change_type is invalid", http_status=422)
+        inheritance = payload["inheritance_choices"]
+        if (
+            not isinstance(inheritance, dict)
+            or set(inheritance) != {"requirements", "prd", "implementation_plan"}
+            or any(not isinstance(value, bool) for value in inheritance.values())
+        ):
+            raise ApiError(code="VALIDATION_ERROR", message="inheritance_choices is invalid", http_status=422)
+        if isinstance(payload["expected_project_version"], bool) or not isinstance(payload["expected_project_version"], int) or payload["expected_project_version"] < 1:
+            raise ApiError(code="VALIDATION_ERROR", message="expected_project_version is invalid", http_status=422)
+        payload = dict(payload)
+        payload["source_version_id"] = _id(payload["source_version_id"], "source_version_id")
+        if payload.get("source_issue_id") is not None:
+            payload["source_issue_id"] = str(_id(payload["source_issue_id"], "source_issue_id"))
+        if not isinstance(payload["change_reason"], str) or not payload["change_reason"].strip():
+            raise ApiError(code="VALIDATION_ERROR", message="change_reason is required", http_status=422)
+        payload["change_reason"] = payload["change_reason"].strip()
         endpoint = f"POST:/api/v1/projects/{project_id}/versions:derive"
         with transaction() as connection:
             replay = _idempotency_begin(connection, user_id=user_id, endpoint=endpoint, key=key, payload=payload)
@@ -653,15 +685,78 @@ class Sprint1Service:
             source = _mapping(connection.execute(_sql("SELECT * FROM project_version WHERE id=:id AND project_id=:pid"), {"id": int(payload["source_version_id"]), "pid": project_id}))
             if not source:
                 raise ApiError(code="RESOURCE_NOT_FOUND", message="Source version not found", http_status=404)
+            source_issue = None
+            if payload.get("source_issue_id"):
+                source_issue = _mapping(
+                    connection.execute(
+                        _sql(
+                            "SELECT i.* FROM issue i JOIN project_version v ON v.id=i.project_version_id "
+                            "WHERE i.id=:id AND i.project_version_id=:version_id AND v.project_id=:project_id "
+                            "AND i.archived_at IS NULL FOR UPDATE"
+                        ),
+                        {
+                            "id": int(payload["source_issue_id"]),
+                            "version_id": int(source["id"]),
+                            "project_id": project_id,
+                        },
+                    )
+                )
+                if not source_issue:
+                    raise ApiError(code="RESOURCE_NOT_FOUND", message="Source Issue not found", http_status=404)
+                if source_issue["status"] != "open_needs_disposition":
+                    raise ApiError(code="ISSUE_NOT_OPEN", message="Source Issue already has a final disposition", http_status=409)
+                expected_change = {
+                    "defect": "bug_fix",
+                    "optimization": "optimization",
+                    "feedback": "scope_change",
+                    "data_anomaly": "scope_change",
+                }[source_issue["issue_type"]]
+                if payload["change_type"] != expected_change:
+                    raise ApiError(code="ISSUE_VALIDATION_CONFLICT", message="change_type does not match the source Issue classification", http_status=409)
             next_no = int(connection.execute(_sql("SELECT COUNT(*) FROM project_version WHERE project_id=:pid"), {"pid": project_id}).scalar_one()) + 1
             now = _now()
             result = connection.execute(_sql("INSERT INTO project_version (created_at,created_by,updated_at,updated_by,row_version,archived_at,archived_by,project_id,parent_version_id,version_no,version_name,creation_reason,lifecycle_status,workflow_node,is_working) VALUES (:now,:uid,:now,:uid,1,NULL,NULL,:pid,:parent,:version_no,:version_no,:reason,:lifecycle,:node,0)"), {"now": now, "uid": user_id, "pid": project_id, "parent": source["id"], "version_no": f"V{next_no}", "reason": payload["change_reason"], "lifecycle": source["lifecycle_status"], "node": source["workflow_node"]})
             version_id = int(result.lastrowid)
             command_id = _command_id()
             connection.execute(_sql("INSERT INTO version_change_record (created_at,created_by,project_id,from_version_id,to_version_id,source_issue_id,change_type,change_reason,inheritance_summary_json,trace_id) VALUES (:now,:uid,:pid,:source,:target,:issue,:change_type,:reason,:inheritance,:trace)"), {"now": now, "uid": user_id, "pid": project_id, "source": source["id"], "target": version_id, "issue": int(payload["source_issue_id"]) if payload.get("source_issue_id") else None, "change_type": payload["change_type"], "reason": payload["change_reason"], "inheritance": json.dumps(payload["inheritance_choices"]), "trace": trace_id})
+            if source_issue:
+                sequence = int(
+                    connection.execute(
+                        _sql("SELECT COALESCE(MAX(sequence_no),0)+1 FROM issue_disposition WHERE issue_id=:id"),
+                        {"id": source_issue["id"]},
+                    ).scalar_one()
+                )
+                connection.execute(
+                    _sql(
+                        "INSERT INTO issue_disposition "
+                        "(created_at,created_by,issue_id,sequence_no,disposition_type,reason,"
+                        "target_project_version_id,responsible_user_id,decided_by,decided_at) "
+                        "VALUES (:now,:uid,:issue_id,:sequence,'derive_new_version',:reason,"
+                        ":target,:uid,:uid,:now)"
+                    ),
+                    {
+                        "now": now,
+                        "uid": user_id,
+                        "issue_id": source_issue["id"],
+                        "sequence": sequence,
+                        "reason": payload["change_reason"],
+                        "target": version_id,
+                    },
+                )
+                connection.execute(
+                    _sql(
+                        "UPDATE issue SET status='routed_new_version',row_version=row_version+1,"
+                        "updated_at=:now,updated_by=:uid WHERE id=:id"
+                    ),
+                    {"now": now, "uid": user_id, "id": source_issue["id"]},
+                )
             connection.execute(_sql("UPDATE project SET updated_at=:now,updated_by=:uid,row_version=row_version+1 WHERE id=:pid"), {"now": now, "uid": user_id, "pid": project_id})
             _audit(connection, actor_user_id=user_id, operation="project_version.derive", object_type="project_version", object_id=version_id, object_version_id=version_id, trace_id=trace_id, command_id=command_id, reason=payload["change_reason"])
             _outbox(connection, aggregate_type="project_version", aggregate_id=version_id, aggregate_version=1, event_name="project.version.derived", payload={"from_version_id": str(source["id"]), "inheritance_summary": payload["inheritance_choices"], "source_issue_id": payload.get("source_issue_id")}, trace_id=trace_id, command_id=command_id, module="project", user_id=user_id, project_id=project_id, project_version_id=version_id)
+            if source_issue:
+                issue_version = int(source_issue["row_version"]) + 1
+                _audit(connection, actor_user_id=user_id, operation="issue.disposition.derived_version", object_type="issue", object_id=int(source_issue["id"]), object_version_id=issue_version, trace_id=trace_id, command_id=command_id, reason=payload["change_reason"])
+                _outbox(connection, aggregate_type="issue", aggregate_id=int(source_issue["id"]), aggregate_version=issue_version, event_name="issue.disposition.created", payload={"schema_version": "validation_feedback.mvp5.v1", "disposition_type": "derive_new_version", "target_project_version_id": str(version_id)}, trace_id=trace_id, command_id=command_id, module="validation", user_id=user_id, project_id=project_id, project_version_id=int(source["id"]))
             _idempotency_complete(connection, user_id=user_id, endpoint=endpoint, key=key, response_ref=str(version_id))
             row = _mapping(connection.execute(_sql("SELECT * FROM project_version WHERE id=:id"), {"id": version_id}))
             assert row

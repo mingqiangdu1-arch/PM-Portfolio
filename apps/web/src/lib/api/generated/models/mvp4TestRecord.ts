@@ -12,6 +12,11 @@ export interface Mvp4TestRecord {
   environment: Mvp4TestEnvironment;
   expected_result: string;
   id: string;
+  no_issue_conclusion: boolean;
+  /** @pattern ^[1-9][0-9]*$ */
+  project_id: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  project_version_id: string;
   result_status: Mvp4ResultStatus;
   /** @minimum 1 */
   row_version: number;

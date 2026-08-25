@@ -49,6 +49,13 @@ import {
   getTestRecord,
   updateTestRecordDraft,
   submitTestRecord,
+  deriveProjectVersion,
+  concludeTestRecordNoIssue,
+  listProjectVersionIssues,
+  createProjectVersionIssue,
+  getIssue,
+  updateIssue,
+  createIssueDisposition,
 } from "./generated/client";
 import type {
   ApiResponseHealthData,
@@ -102,6 +109,9 @@ import type {
   Mvp4TestRecord,
   Mvp4TestRecordListData,
   Mvp4TestRecordData,
+  Mvp5Issue,
+  Mvp5IssueData,
+  Mvp5IssueListData,
 } from "./generated/models";
 import type {
   FileItemView,
@@ -151,6 +161,10 @@ import type {
   TestRecordPort,
   TestRecordView,
   TestEnvironmentView,
+  IssuePort,
+  IssueView,
+  BugDetailView,
+  OptimizationDetailView,
 } from "./ports";
 import { capabilitiesForRoles, PortError } from "./ports";
 import { createClientId } from "../client-id";
@@ -869,6 +883,8 @@ const mapRound = (data: RoundWire): ConfirmationRoundView => ({
 
 const mapTestRecord = (data: Mvp4TestRecord): TestRecordView => ({
   id: data.id,
+  projectId: (data as Mvp4TestRecord & { project_id: string }).project_id,
+  projectVersionId: (data as Mvp4TestRecord & { project_version_id: string }).project_version_id,
   confirmationRoundId: data.confirmation_round_id,
   title: data.title,
   scope: data.scope,
@@ -881,10 +897,28 @@ const mapTestRecord = (data: Mvp4TestRecord): TestRecordView => ({
   status: data.status,
   submittedAt: data.submitted_at ?? null,
   rowVersion: data.row_version,
+  noIssueConclusion: Boolean((data as Mvp4TestRecord & { no_issue_conclusion?: boolean }).no_issue_conclusion),
   testType: data.test_type,
   createdAt: data.created_at,
   updatedAt: data.updated_at,
 });
+
+type IssueWire = Mvp5Issue;
+
+const mapBugDetail = (value: IssueWire["bug_detail"]): BugDetailView | null => value ? ({ reproduceSteps: value.reproduce_steps, expectedResult: value.expected_result, actualResult: value.actual_result, environment: value.environment }) : null;
+const mapOptimizationDetail = (value: IssueWire["optimization_detail"]): OptimizationDetailView | null => value ? ({ problemEvidence: value.problem_evidence, hypothesis: value.hypothesis, expectedOutcome: value.expected_outcome, impactScope: value.impact_scope, needNewVersion: value.need_new_version }) : null;
+const mapIssue = (data: IssueWire): IssueView => ({
+  id: data.id, projectVersionId: data.project_version_id, testRecordId: data.test_record_id,
+  sourceType: data.source_type, issueType: data.issue_type, title: data.title, description: data.description,
+  priority: data.priority, severity: data.severity, status: data.status, assigneeId: data.assignee_id,
+  rowVersion: data.row_version, bugDetail: mapBugDetail(data.bug_detail),
+  optimizationDetail: mapOptimizationDetail(data.optimization_detail),
+  dispositions: data.dispositions.map((item) => ({ id: item.id, sequenceNo: item.sequence_no, dispositionType: item.disposition_type, reason: item.reason, targetProjectVersionId: item.target_project_version_id, responsibleUserId: item.responsible_user_id, decidedBy: item.decided_by, decidedAt: item.decided_at })),
+  createdAt: data.created_at, updatedAt: data.updated_at,
+});
+
+const serializeBugDetail = (value: BugDetailView | null) => value ? ({ reproduce_steps: value.reproduceSteps, expected_result: value.expectedResult, actual_result: value.actualResult, environment: value.environment }) : null;
+const serializeOptimizationDetail = (value: OptimizationDetailView | null) => value ? ({ problem_evidence: value.problemEvidence, hypothesis: value.hypothesis, expected_outcome: value.expectedOutcome, impact_scope: value.impactScope, need_new_version: value.needNewVersion }) : null;
 
 const serializeEnvironment = (data: TestEnvironmentView) => ({ name: data.name, preconditions: data.preconditions });
 
@@ -965,8 +999,19 @@ export const realApi: FrontendApi = {
       retryKeys.delete(scope);
       return projectOverview(projectId, result.data.current.id);
     },
-    async derive() {
-      throw new PortError("CONTRACT_UNAVAILABLE", "派生版本的 change_type 与 inheritance_choices 允许值尚未冻结，真实模式已阻止提交。");
+    async derive(projectId, input) {
+      const scope = `derive-version:${projectId}:${JSON.stringify(input)}`;
+      const choices = input.inheritanceChoices ?? { requirements: input.inheritContext, prd: input.inheritContext, implementationPlan: input.inheritContext };
+      const result = await protectedRequest<ProjectVersionSummary>(() => deriveProjectVersion(projectId, {
+        source_version_id: input.sourceVersionId,
+        source_issue_id: input.sourceIssueId ?? null,
+        change_type: input.changeType ?? "scope_change",
+        change_reason: input.reason,
+        inheritance_choices: { requirements: choices.requirements, prd: choices.prd, implementation_plan: choices.implementationPlan },
+        expected_project_version: input.expectedProjectVersion,
+      }, { "Idempotency-Key": retryKey(scope) }, requestOptions()));
+      retryKeys.delete(scope);
+      return mapVersion(result.data);
     },
   },
   implementationPlans: {
@@ -1081,7 +1126,61 @@ export const realApi: FrontendApi = {
       retryKeys.delete(scope);
       return mapTestRecord(result.data.test_record);
     },
+    async concludeNoIssue(recordId, expectedVersion) {
+      const scope = `conclude-no-issue:${recordId}:${expectedVersion}`;
+      const result = await protectedRequest<Mvp4TestRecordData>(() => concludeTestRecordNoIssue(
+        recordId,
+        { expected_version: expectedVersion },
+        { "Idempotency-Key": retryKey(scope) },
+        requestOptions(),
+      ));
+      retryKeys.delete(scope);
+      return mapTestRecord(result.data.test_record);
+    },
   } satisfies TestRecordPort,
+  issues: {
+    async list(projectVersionId) {
+      const result = await protectedRequest<Mvp5IssueListData>(() => listProjectVersionIssues(projectVersionId, { page_size: 100 }, requestOptions()));
+      return result.data.items.map(mapIssue);
+    },
+    async create(projectVersionId, input) {
+      const scope = `create-issue:${projectVersionId}:${JSON.stringify(input)}`;
+      const result = await protectedRequest<Mvp5IssueData>(() => createProjectVersionIssue(
+        projectVersionId,
+        { test_record_id: input.testRecordId, issue_type: input.issueType, title: input.title, description: input.description, priority: input.priority, severity: input.severity, assignee_id: input.assigneeId, bug_detail: serializeBugDetail(input.bugDetail), optimization_detail: serializeOptimizationDetail(input.optimizationDetail) },
+        { "Idempotency-Key": retryKey(scope) },
+        requestOptions(),
+      ));
+      retryKeys.delete(scope);
+      return mapIssue(result.data.issue);
+    },
+    async get(issueId) {
+      const result = await protectedRequest<Mvp5IssueData>(() => getIssue(issueId, requestOptions()));
+      return mapIssue(result.data.issue);
+    },
+    async update(issueId, input) {
+      const scope = `update-issue:${issueId}:${input.expectedVersion}`;
+      const result = await protectedRequest<Mvp5IssueData>(() => updateIssue(
+        issueId,
+        { expected_version: input.expectedVersion, ...(input.title === undefined ? {} : { title: input.title }), ...(input.description === undefined ? {} : { description: input.description }), ...(input.priority === undefined ? {} : { priority: input.priority }), ...(input.severity === undefined ? {} : { severity: input.severity }), ...(input.assigneeId === undefined ? {} : { assignee_id: input.assigneeId }), ...(input.bugDetail === undefined ? {} : { bug_detail: serializeBugDetail(input.bugDetail) }), ...(input.optimizationDetail === undefined ? {} : { optimization_detail: serializeOptimizationDetail(input.optimizationDetail) }) },
+        { "Idempotency-Key": retryKey(scope) },
+        requestOptions(),
+      ));
+      retryKeys.delete(scope);
+      return mapIssue(result.data.issue);
+    },
+    async dispose(issueId, expectedVersion, dispositionType, reason, responsibleUserId) {
+      const scope = `dispose-issue:${issueId}:${expectedVersion}:${dispositionType}:${reason}:${responsibleUserId}`;
+      const result = await protectedRequest<Mvp5IssueData>(() => createIssueDisposition(
+        issueId,
+        { expected_version: expectedVersion, disposition_type: dispositionType, reason, responsible_user_id: responsibleUserId },
+        { "Idempotency-Key": retryKey(scope) },
+        requestOptions(),
+      ));
+      retryKeys.delete(scope);
+      return mapIssue(result.data.issue);
+    },
+  } satisfies IssuePort,
   requirements: {
     async list(projectVersionId: string) {
       const result = await protectedRequest<RequirementListData>(() => listRequirements(projectVersionId, undefined, requestOptions()));

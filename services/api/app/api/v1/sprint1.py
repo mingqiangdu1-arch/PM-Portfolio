@@ -176,7 +176,7 @@ def set_working(project_id: int, version_id: int, request: Request, body: Annota
 
 
 @router.post("/api/v1/projects/{project_id}/versions:derive")
-def derive_version(project_id: int, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, require_idempotency_key], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+def derive_version(project_id: int, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, Depends(require_idempotency_key)], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = _user(authorization)
     return _ok(request, service.derive_version(project_id=project_id, user_id=user["id"], payload=body, key=key, trace_id=request.state.trace_id))
 

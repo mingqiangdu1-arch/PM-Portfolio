@@ -23,6 +23,9 @@ def _build_runtime_from_env() -> object:
     from app.context.runtime import BusinessContextClient
     from app.security import ServiceJwtIssuer
     from app.requirement_clarification.formal_mock import FormalMockRequirementClarifier
+    from app.requirement_clarification.real_provider import RealRequirementClarifier
+    from app.providers.openai_compatible import OpenAICompatibleAdapter
+    from app.providers.profiles.deepseek import deepseek_profile
     from app.integrations.result_storage import S3ResultObjectStore
     from app.workers.runtime import TaskRuntime
     settings = Settings.from_env()
@@ -37,7 +40,18 @@ def _build_runtime_from_env() -> object:
     context_client = BusinessContextClient(base_url=settings.business_api_url, token=lambda task_id, trace: issuer.issue(scopes={"context:read"}, task_id=task_id, trace_id=trace))
     import boto3
     client = boto3.client("s3", endpoint_url=settings.ai_result_storage_endpoint, region_name=settings.ai_result_storage_region, aws_access_key_id=settings.ai_result_storage_access_key, aws_secret_access_key=settings.ai_result_storage_secret_key)
-    return TaskRuntime(repository=repository, context_client=context_client, provider=FormalMockRequirementClarifier(), token_budget=settings.context_token_budget, object_store=S3ResultObjectStore(client, bucket=settings.ai_result_storage_bucket, prefix=settings.ai_result_storage_prefix))
+    if settings.provider_mode == "openai_compatible":
+        if not settings.provider_api_key:
+            raise RuntimeError("DeepSeek API key is not configured")
+        adapter = OpenAICompatibleAdapter(
+            deepseek_profile(),
+            api_key=settings.provider_api_key,
+            network_authorized=settings.live_provider_authorized,
+        )
+        provider = RealRequirementClarifier(adapter, model=settings.provider_model)
+    else:
+        provider = FormalMockRequirementClarifier()
+    return TaskRuntime(repository=repository, context_client=context_client, provider=provider, token_budget=settings.context_token_budget, object_store=S3ResultObjectStore(client, bucket=settings.ai_result_storage_bucket, prefix=settings.ai_result_storage_prefix))
 
 
 @celery_app.task(name="ai.execute_task", ignore_result=True)

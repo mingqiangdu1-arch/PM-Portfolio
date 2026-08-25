@@ -24,6 +24,7 @@ import type {
   CompareProjectVersionsParams,
   CompleteFileUploadHeaders,
   CompleteFileUploadRequest,
+  ConcludeTestRecordNoIssueHeaders,
   ConfirmConfirmationRound403,
   ConfirmConfirmationRound404,
   ConfirmConfirmationRound409,
@@ -46,6 +47,7 @@ import type {
   CreateImplementationPlanVersion409,
   CreateImplementationPlanVersion422,
   CreateImplementationPlanVersionHeaders,
+  CreateIssueDispositionHeaders,
   CreatePrdVersionHeaders,
   CreateProjectHeaders,
   CreateProjectRequest,
@@ -55,6 +57,7 @@ import type {
   CreateProjectVersionImplementationPlan409,
   CreateProjectVersionImplementationPlan422,
   CreateProjectVersionImplementationPlanHeaders,
+  CreateProjectVersionIssueHeaders,
   CreateProjectVersionPrdHeaders,
   CreateRequirementHeaders,
   CreateRequirementRequest,
@@ -86,6 +89,7 @@ import type {
   ListImplementationPlanConfirmationRounds404,
   ListProjectVersionImplementationPlans403,
   ListProjectVersionImplementationPlans404,
+  ListProjectVersionIssuesParams,
   ListProjectVersionsParams,
   ListProjectsParams,
   ListRequirementsParams,
@@ -119,6 +123,11 @@ import type {
   Mvp4TestRecordListResponse,
   Mvp4TestRecordResponse,
   Mvp4UpdateTestRecordRequest,
+  Mvp5IssueCreateRequest,
+  Mvp5IssueDispositionRequest,
+  Mvp5IssueListResponse,
+  Mvp5IssueResponse,
+  Mvp5IssueUpdateRequest,
   ProjectCommandRequest,
   ProjectContextResponse,
   ProjectListResponse,
@@ -166,8 +175,10 @@ import type {
   UpdateConfirmationRoundDraft404,
   UpdateConfirmationRoundDraft409,
   UpdateConfirmationRoundDraft422,
+  UpdateIssueHeaders,
   UpdateProjectContextRequest,
   UpdateProjectRequest,
+  VersionedCommand,
   WorkingVersionChangeResponse
 } from './models';
 
@@ -1332,6 +1343,138 @@ export const confirmConfirmationRound = async (id: string,
 
 
 
+export type listConfirmationRoundTestRecordsResponse200 = {
+  data: Mvp4TestRecordListResponse
+  status: 200
+}
+
+export type listConfirmationRoundTestRecordsResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type listConfirmationRoundTestRecordsResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type listConfirmationRoundTestRecordsResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type listConfirmationRoundTestRecordsResponseSuccess = (listConfirmationRoundTestRecordsResponse200) & {
+  headers: Headers;
+};
+export type listConfirmationRoundTestRecordsResponseError = (listConfirmationRoundTestRecordsResponse401 | listConfirmationRoundTestRecordsResponse403 | listConfirmationRoundTestRecordsResponse404) & {
+  headers: Headers;
+};
+
+export type listConfirmationRoundTestRecordsResponse = (listConfirmationRoundTestRecordsResponseSuccess | listConfirmationRoundTestRecordsResponseError)
+
+export const getListConfirmationRoundTestRecordsUrl = (roundId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/confirmation-rounds/${roundId}/test-records`
+}
+
+/**
+ * @summary List Test Records for a Confirmation Round
+ */
+export const listConfirmationRoundTestRecords = async (roundId: string, options?: RequestInit): Promise<listConfirmationRoundTestRecordsResponse> => {
+
+  const res = await fetch(getListConfirmationRoundTestRecordsUrl(roundId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listConfirmationRoundTestRecordsResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listConfirmationRoundTestRecordsResponse
+}
+
+
+
+export type createConfirmationRoundTestRecordResponse201 = {
+  data: Mvp4TestRecordResponse
+  status: 201
+}
+
+export type createConfirmationRoundTestRecordResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type createConfirmationRoundTestRecordResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type createConfirmationRoundTestRecordResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type createConfirmationRoundTestRecordResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type createConfirmationRoundTestRecordResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type createConfirmationRoundTestRecordResponseSuccess = (createConfirmationRoundTestRecordResponse201) & {
+  headers: Headers;
+};
+export type createConfirmationRoundTestRecordResponseError = (createConfirmationRoundTestRecordResponse401 | createConfirmationRoundTestRecordResponse403 | createConfirmationRoundTestRecordResponse404 | createConfirmationRoundTestRecordResponse409 | createConfirmationRoundTestRecordResponse422) & {
+  headers: Headers;
+};
+
+export type createConfirmationRoundTestRecordResponse = (createConfirmationRoundTestRecordResponseSuccess | createConfirmationRoundTestRecordResponseError)
+
+export const getCreateConfirmationRoundTestRecordUrl = (roundId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/confirmation-rounds/${roundId}/test-records`
+}
+
+/**
+ * @summary Create a draft Test Record for a Confirmation Round
+ */
+export const createConfirmationRoundTestRecord = async (roundId: string,
+    mvp4CreateTestRecordRequest: Mvp4CreateTestRecordRequest,
+    headers: CreateConfirmationRoundTestRecordHeaders, options?: RequestInit): Promise<createConfirmationRoundTestRecordResponse> => {
+
+  const res = await fetch(getCreateConfirmationRoundTestRecordUrl(roundId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp4CreateTestRecordRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createConfirmationRoundTestRecordResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createConfirmationRoundTestRecordResponse
+}
+
+
+
 export type getDesignReviewResponse200 = {
   data: Mvp2DesignReviewResponse
   status: 200
@@ -2424,6 +2567,211 @@ export const createImplementationPlanVersion = async (id: string,
 
 
 
+export type getIssueResponse200 = {
+  data: Mvp5IssueResponse
+  status: 200
+}
+
+export type getIssueResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type getIssueResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type getIssueResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type getIssueResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type getIssueResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type getIssueResponseSuccess = (getIssueResponse200) & {
+  headers: Headers;
+};
+export type getIssueResponseError = (getIssueResponse401 | getIssueResponse403 | getIssueResponse404 | getIssueResponse409 | getIssueResponse422) & {
+  headers: Headers;
+};
+
+export type getIssueResponse = (getIssueResponseSuccess | getIssueResponseError)
+
+export const getGetIssueUrl = (issueId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/issues/${issueId}`
+}
+
+export const getIssue = async (issueId: string, options?: RequestInit): Promise<getIssueResponse> => {
+
+  const res = await fetch(getGetIssueUrl(issueId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getIssueResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getIssueResponse
+}
+
+
+
+export type updateIssueResponse200 = {
+  data: Mvp5IssueResponse
+  status: 200
+}
+
+export type updateIssueResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type updateIssueResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type updateIssueResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type updateIssueResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type updateIssueResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type updateIssueResponseSuccess = (updateIssueResponse200) & {
+  headers: Headers;
+};
+export type updateIssueResponseError = (updateIssueResponse401 | updateIssueResponse403 | updateIssueResponse404 | updateIssueResponse409 | updateIssueResponse422) & {
+  headers: Headers;
+};
+
+export type updateIssueResponse = (updateIssueResponseSuccess | updateIssueResponseError)
+
+export const getUpdateIssueUrl = (issueId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/issues/${issueId}`
+}
+
+export const updateIssue = async (issueId: string,
+    mvp5IssueUpdateRequest: Mvp5IssueUpdateRequest,
+    headers: UpdateIssueHeaders, options?: RequestInit): Promise<updateIssueResponse> => {
+
+  const res = await fetch(getUpdateIssueUrl(issueId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp5IssueUpdateRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: updateIssueResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as updateIssueResponse
+}
+
+
+
+export type createIssueDispositionResponse200 = {
+  data: Mvp5IssueResponse
+  status: 200
+}
+
+export type createIssueDispositionResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type createIssueDispositionResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type createIssueDispositionResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type createIssueDispositionResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type createIssueDispositionResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type createIssueDispositionResponseSuccess = (createIssueDispositionResponse200) & {
+  headers: Headers;
+};
+export type createIssueDispositionResponseError = (createIssueDispositionResponse401 | createIssueDispositionResponse403 | createIssueDispositionResponse404 | createIssueDispositionResponse409 | createIssueDispositionResponse422) & {
+  headers: Headers;
+};
+
+export type createIssueDispositionResponse = (createIssueDispositionResponseSuccess | createIssueDispositionResponseError)
+
+export const getCreateIssueDispositionUrl = (issueId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/issues/${issueId}/dispositions`
+}
+
+export const createIssueDisposition = async (issueId: string,
+    mvp5IssueDispositionRequest: Mvp5IssueDispositionRequest,
+    headers: CreateIssueDispositionHeaders, options?: RequestInit): Promise<createIssueDispositionResponse> => {
+
+  const res = await fetch(getCreateIssueDispositionUrl(issueId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp5IssueDispositionRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createIssueDispositionResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createIssueDispositionResponse
+}
+
+
+
 export type setEffectiveImplementationPlanVersionResponse200 = {
   data: Mvp3ImplementationPlanResponse
   status: 200
@@ -3050,6 +3398,151 @@ export const createProjectVersionImplementationPlan = async (versionId: string,
 
   const data: createProjectVersionImplementationPlanResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as createProjectVersionImplementationPlanResponse
+}
+
+
+
+export type listProjectVersionIssuesResponse200 = {
+  data: Mvp5IssueListResponse
+  status: 200
+}
+
+export type listProjectVersionIssuesResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type listProjectVersionIssuesResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type listProjectVersionIssuesResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type listProjectVersionIssuesResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type listProjectVersionIssuesResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type listProjectVersionIssuesResponseSuccess = (listProjectVersionIssuesResponse200) & {
+  headers: Headers;
+};
+export type listProjectVersionIssuesResponseError = (listProjectVersionIssuesResponse401 | listProjectVersionIssuesResponse403 | listProjectVersionIssuesResponse404 | listProjectVersionIssuesResponse409 | listProjectVersionIssuesResponse422) & {
+  headers: Headers;
+};
+
+export type listProjectVersionIssuesResponse = (listProjectVersionIssuesResponseSuccess | listProjectVersionIssuesResponseError)
+
+export const getListProjectVersionIssuesUrl = (versionId: string,
+    params?: ListProjectVersionIssuesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/api/v1/project-versions/${versionId}/issues?${stringifiedParams}` : `${apiBaseUrl}/api/v1/project-versions/${versionId}/issues`
+}
+
+export const listProjectVersionIssues = async (versionId: string,
+    params?: ListProjectVersionIssuesParams, options?: RequestInit): Promise<listProjectVersionIssuesResponse> => {
+
+  const res = await fetch(getListProjectVersionIssuesUrl(versionId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listProjectVersionIssuesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProjectVersionIssuesResponse
+}
+
+
+
+export type createProjectVersionIssueResponse201 = {
+  data: Mvp5IssueResponse
+  status: 201
+}
+
+export type createProjectVersionIssueResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type createProjectVersionIssueResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type createProjectVersionIssueResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type createProjectVersionIssueResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type createProjectVersionIssueResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type createProjectVersionIssueResponseSuccess = (createProjectVersionIssueResponse201) & {
+  headers: Headers;
+};
+export type createProjectVersionIssueResponseError = (createProjectVersionIssueResponse401 | createProjectVersionIssueResponse403 | createProjectVersionIssueResponse404 | createProjectVersionIssueResponse409 | createProjectVersionIssueResponse422) & {
+  headers: Headers;
+};
+
+export type createProjectVersionIssueResponse = (createProjectVersionIssueResponseSuccess | createProjectVersionIssueResponseError)
+
+export const getCreateProjectVersionIssueUrl = (versionId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/project-versions/${versionId}/issues`
+}
+
+export const createProjectVersionIssue = async (versionId: string,
+    mvp5IssueCreateRequest: Mvp5IssueCreateRequest,
+    headers: CreateProjectVersionIssueHeaders, options?: RequestInit): Promise<createProjectVersionIssueResponse> => {
+
+  const res = await fetch(getCreateProjectVersionIssueUrl(versionId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(mvp5IssueCreateRequest)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: createProjectVersionIssueResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as createProjectVersionIssueResponse
 }
 
 
@@ -4964,138 +5457,6 @@ export const getSession = async ( options?: RequestInit): Promise<getSessionResp
 
 
 
-export type listConfirmationRoundTestRecordsResponse200 = {
-  data: Mvp4TestRecordListResponse
-  status: 200
-}
-
-export type listConfirmationRoundTestRecordsResponse401 = {
-  data: StandardErrorResponse
-  status: 401
-}
-
-export type listConfirmationRoundTestRecordsResponse403 = {
-  data: StandardErrorResponse
-  status: 403
-}
-
-export type listConfirmationRoundTestRecordsResponse404 = {
-  data: StandardErrorResponse
-  status: 404
-}
-
-export type listConfirmationRoundTestRecordsResponseSuccess = (listConfirmationRoundTestRecordsResponse200) & {
-  headers: Headers;
-};
-export type listConfirmationRoundTestRecordsResponseError = (listConfirmationRoundTestRecordsResponse401 | listConfirmationRoundTestRecordsResponse403 | listConfirmationRoundTestRecordsResponse404) & {
-  headers: Headers;
-};
-
-export type listConfirmationRoundTestRecordsResponse = (listConfirmationRoundTestRecordsResponseSuccess | listConfirmationRoundTestRecordsResponseError)
-
-export const getListConfirmationRoundTestRecordsUrl = (roundId: string,) => {
-
-
-
-
-  return `${apiBaseUrl}/api/v1/confirmation-rounds/${roundId}/test-records`
-}
-
-/**
- * @summary List Test Records for a Confirmation Round
- */
-export const listConfirmationRoundTestRecords = async (roundId: string, options?: RequestInit): Promise<listConfirmationRoundTestRecordsResponse> => {
-
-  const res = await fetch(getListConfirmationRoundTestRecordsUrl(roundId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: listConfirmationRoundTestRecordsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as listConfirmationRoundTestRecordsResponse
-}
-
-
-
-export type createConfirmationRoundTestRecordResponse201 = {
-  data: Mvp4TestRecordResponse
-  status: 201
-}
-
-export type createConfirmationRoundTestRecordResponse401 = {
-  data: StandardErrorResponse
-  status: 401
-}
-
-export type createConfirmationRoundTestRecordResponse403 = {
-  data: StandardErrorResponse
-  status: 403
-}
-
-export type createConfirmationRoundTestRecordResponse404 = {
-  data: StandardErrorResponse
-  status: 404
-}
-
-export type createConfirmationRoundTestRecordResponse409 = {
-  data: StandardErrorResponse
-  status: 409
-}
-
-export type createConfirmationRoundTestRecordResponse422 = {
-  data: StandardErrorResponse
-  status: 422
-}
-
-export type createConfirmationRoundTestRecordResponseSuccess = (createConfirmationRoundTestRecordResponse201) & {
-  headers: Headers;
-};
-export type createConfirmationRoundTestRecordResponseError = (createConfirmationRoundTestRecordResponse401 | createConfirmationRoundTestRecordResponse403 | createConfirmationRoundTestRecordResponse404 | createConfirmationRoundTestRecordResponse409 | createConfirmationRoundTestRecordResponse422) & {
-  headers: Headers;
-};
-
-export type createConfirmationRoundTestRecordResponse = (createConfirmationRoundTestRecordResponseSuccess | createConfirmationRoundTestRecordResponseError)
-
-export const getCreateConfirmationRoundTestRecordUrl = (roundId: string,) => {
-
-
-
-
-  return `${apiBaseUrl}/api/v1/confirmation-rounds/${roundId}/test-records`
-}
-
-/**
- * @summary Create a draft Test Record for a Confirmation Round
- */
-export const createConfirmationRoundTestRecord = async (roundId: string,
-    mvp4CreateTestRecordRequest: Mvp4CreateTestRecordRequest,
-    headers: CreateConfirmationRoundTestRecordHeaders, options?: RequestInit): Promise<createConfirmationRoundTestRecordResponse> => {
-
-  const res = await fetch(getCreateConfirmationRoundTestRecordUrl(roundId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
-    body: JSON.stringify(mvp4CreateTestRecordRequest)
-  }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: createConfirmationRoundTestRecordResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createConfirmationRoundTestRecordResponse
-}
-
-
-
 export type getTestRecordResponse200 = {
   data: Mvp4TestRecordResponse
   status: 200
@@ -5223,6 +5584,75 @@ export const updateTestRecordDraft = async (id: string,
 
   const data: updateTestRecordDraftResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as updateTestRecordDraftResponse
+}
+
+
+
+export type concludeTestRecordNoIssueResponse200 = {
+  data: Mvp4TestRecordResponse
+  status: 200
+}
+
+export type concludeTestRecordNoIssueResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type concludeTestRecordNoIssueResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type concludeTestRecordNoIssueResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type concludeTestRecordNoIssueResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type concludeTestRecordNoIssueResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type concludeTestRecordNoIssueResponseSuccess = (concludeTestRecordNoIssueResponse200) & {
+  headers: Headers;
+};
+export type concludeTestRecordNoIssueResponseError = (concludeTestRecordNoIssueResponse401 | concludeTestRecordNoIssueResponse403 | concludeTestRecordNoIssueResponse404 | concludeTestRecordNoIssueResponse409 | concludeTestRecordNoIssueResponse422) & {
+  headers: Headers;
+};
+
+export type concludeTestRecordNoIssueResponse = (concludeTestRecordNoIssueResponseSuccess | concludeTestRecordNoIssueResponseError)
+
+export const getConcludeTestRecordNoIssueUrl = (id: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/test-records/${id}:conclude-no-issue`
+}
+
+export const concludeTestRecordNoIssue = async (id: string,
+    versionedCommand: VersionedCommand,
+    headers: ConcludeTestRecordNoIssueHeaders, options?: RequestInit): Promise<concludeTestRecordNoIssueResponse> => {
+
+  const res = await fetch(getConcludeTestRecordNoIssueUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',...headers, ...options?.headers },
+    body: JSON.stringify(versionedCommand)
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: concludeTestRecordNoIssueResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as concludeTestRecordNoIssueResponse
 }
 
 

@@ -58,6 +58,14 @@ export const mockApi: FrontendApi = {
     async get() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Test Record 真实 API 尚未在 mock 模式提供。" ); },
     async update() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Test Record 真实 API 尚未在 mock 模式提供。" ); },
     async submit() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Test Record 真实 API 尚未在 mock 模式提供。" ); },
+    async concludeNoIssue() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Validation Feedback 仅在真实 API 模式提供。" ); },
+  },
+  issues: {
+    async list() { await wait(); return []; },
+    async create() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Issue 闭环仅在真实 API 模式提供。" ); },
+    async get() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Issue 闭环仅在真实 API 模式提供。" ); },
+    async update() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Issue 闭环仅在真实 API 模式提供。" ); },
+    async dispose() { await wait(); throw new PortError("CONTRACT_UNAVAILABLE", "Issue 闭环仅在真实 API 模式提供。" ); },
   },
   requirements: {
     async list() { await wait(); return [mockRequirement.requirement]; },

@@ -98,7 +98,7 @@ class InMemoryTaskRepository:
         transition(TaskStatus(task.status), TaskStatus(status))
         self.tasks[task_public_id] = replace(task, status=status, failure_code=failure_code)
         self.record_task_event(self.tasks[task_public_id], event_name=event_name or f"ai.task.{status}", status=status, failure_code=failure_code)
-    def resolve_bundle(self, cursor: Any | None = None) -> dict[str, Any]:
+    def resolve_bundle(self, cursor: Any | None = None, **_: Any) -> dict[str, Any]:
         if self.bundle is None:
             raise RuntimeError("FORMAL_MOCK bundle missing from unit-test double")
         return dict(self.bundle)
@@ -113,6 +113,9 @@ class InMemoryTaskRepository:
     def persist_success(self, task: TaskRecord, call_id: int, context: Any, execution: Any, key: str, fingerprint: str) -> None:
         self.update_status(task.task_public_id, "ready")
         self.calls[call_id - 1]["status"] = "succeeded"
+        provider_response = getattr(execution, "provider_response", None)
+        if provider_response:
+            self.calls[call_id - 1]["provider_response"] = dict(provider_response)
         self.contexts.extend(dict(item) for item in execution.context_snapshot["sources"])
         self.record_result({"task_public_id": task.task_public_id, "ai_call_id": call_id, "result_no": 1, "status": "ready", "target_snapshot_hash": task.target_snapshot_hash, "content_ref": key, "content_fingerprint": fingerprint})
         self.tasks[task.task_public_id] = replace(self.tasks[task.task_public_id], result_ref=key)
@@ -152,7 +155,15 @@ class MySQLTaskRepository:
             raise
         finally: cur.close(); conn.close()
 
-    def resolve_bundle(self, cursor: Any | None = None) -> dict[str, Any]:
+    def resolve_bundle(
+        self,
+        cursor: Any | None = None,
+        *,
+        provider_code: str = "formal_mock",
+        model_code: str = "requirement-clarifier-v1",
+        profile_name: str = "portfolio-p1-formal-mock",
+        prompt_name: str = "requirement.clarify.formal_mock",
+    ) -> dict[str, Any]:
         own = cursor is None
         conn = self.connection_factory() if own else None
         if own: cursor = conn.cursor()
@@ -176,25 +187,25 @@ class MySQLTaskRepository:
             "JOIN context_strategy_version csv ON csv.context_strategy_id=cs.id AND csv.skill_version_id=sv.id AND csv.version_no=%s AND csv.is_current=1 AND cs.current_version_id=csv.id "
             "WHERE m.provider_code=%s AND m.model_code=%s AND m.status='active' "
             "AND m.archived_at IS NULL AND pp.profile_name=%s AND pp.status='active' AND pp.archived_at IS NULL AND pp.user_id IS NULL",
-            ("requirement.clarify", "0.2.0", "requirement.clarify.formal_mock", "0.2.0",
+            ("requirement.clarify", "0.2.0", prompt_name, "0.2.0",
              "requirement.clarify.result.0.2", "0.2.0", "requirement.clarify.raw-input-only",
-             "requirement.clarify", "0.2.0", "formal_mock", "requirement-clarifier-v1",
-             "portfolio-p1-formal-mock"),
+             "requirement.clarify", "0.2.0", provider_code, model_code,
+             profile_name),
         )
         rows = cursor.fetchall()
         if len(rows) != 1:
             if own: cursor.close(); conn.close()
-            raise RuntimeError("FORMAL_MOCK bundle missing, duplicate or inactive")
+            raise RuntimeError("AI capability bundle missing, duplicate or inactive")
         names = ("model_id", "provider_code", "model_code", "profile_id", "profile_name", "runtime_config_version", "skill_version_id", "skill_content_hash", "skill_rule_text", "prompt_version_id", "prompt_content_hash", "template_version_id", "system_prompt", "user_template", "prompt_variables_json", "template_content_hash", "template_content", "context_strategy_version_id", "context_strategy_content_hash", "required_context_json", "optional_context_json", "limit_config_json", "compression_policy_json")
         row = rows[0] if isinstance(rows[0], dict) else dict(zip(names, rows[0]))
         hashes = [row.get(name) for name in ("skill_content_hash", "prompt_content_hash", "template_content_hash", "context_strategy_content_hash")]
         if any(not isinstance(value, str) or not _HEX64.fullmatch(value) for value in hashes):
             if own: cursor.close(); conn.close()
-            raise RuntimeError("FORMAL_MOCK bundle content hash invalid")
+            raise RuntimeError("AI capability bundle content hash invalid")
         ids = ("model_id", "profile_id", "skill_version_id", "prompt_version_id", "template_version_id", "context_strategy_version_id")
         if any(not isinstance(row.get(name), int) or row[name] <= 0 for name in ids):
             if own: cursor.close(); conn.close()
-            raise RuntimeError("FORMAL_MOCK bundle foreign keys incomplete")
+            raise RuntimeError("AI capability bundle foreign keys incomplete")
         recomputed = (
             _content_hash(row.get("skill_rule_text")),
             _content_hash({"system_prompt":row.get("system_prompt"),"user_template":row.get("user_template"),"variables_json":_json_value(row.get("prompt_variables_json"))}),
@@ -203,7 +214,7 @@ class MySQLTaskRepository:
         )
         if tuple(hashes) != recomputed:
             if own: cursor.close(); conn.close()
-            raise RuntimeError("FORMAL_MOCK bundle content hash drift")
+            raise RuntimeError("AI capability bundle content hash drift")
         payload = {key: row.get(key) for key in ("provider_code", "model_code", "profile_name", "skill_version_id", "prompt_version_id", "template_version_id", "context_strategy_version_id", "skill_content_hash", "prompt_content_hash", "template_content_hash", "context_strategy_content_hash", "runtime_config_version")}
         row.update({"provider_id": row["provider_code"], "fingerprint": hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest(), "content_hashes": tuple(hashes), "runtime_config_version": row.get("runtime_config_version") or "0.2.0"})
         if own: cursor.close(); conn.close()
@@ -243,7 +254,13 @@ class MySQLTaskRepository:
             cur.execute("SELECT status FROM ai_task WHERE id=%s FOR UPDATE", (task.db_id,))
             current_row = cur.fetchone(); current = current_row["status"] if isinstance(current_row, dict) else current_row[0]
             transition(TaskStatus(current), TaskStatus.READY)
-            cur.execute("INSERT INTO ai_result (created_at,retention_class,expires_at,ai_call_id,result_no,target_snapshot_hash,content_ref,content_summary,content_fingerprint,format_status,required_items_total,required_items_met,traceability_status,safety_status,major_error,status) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (now, RETENTION_CLASS, EXPIRES_AT, call_id, 1, task.target_snapshot_hash, key, "FORMAL_MOCK result", fingerprint, quality.get("format_status", "passed"), quality.get("required_items_total", 0), quality.get("required_items_met", 0), quality.get("traceability_status", "passed"), quality.get("safety_status", "passed"), bool(quality.get("major_error", False)), "ready"))
+            provider_response = getattr(execution, "provider_response", None) or {}
+            content_summary = (
+                f"{provider_response.get('provider')}/{provider_response.get('model')} candidate"
+                if provider_response
+                else "FORMAL_MOCK candidate"
+            )
+            cur.execute("INSERT INTO ai_result (created_at,retention_class,expires_at,ai_call_id,result_no,target_snapshot_hash,content_ref,content_summary,content_fingerprint,format_status,required_items_total,required_items_met,traceability_status,safety_status,major_error,status) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (now, RETENTION_CLASS, EXPIRES_AT, call_id, 1, task.target_snapshot_hash, key, content_summary, fingerprint, quality.get("format_status", "passed"), quality.get("required_items_total", 0), quality.get("required_items_met", 0), quality.get("traceability_status", "passed"), quality.get("safety_status", "passed"), bool(quality.get("major_error", False)), "ready"))
             result_id = cur.lastrowid
             for index, source in enumerate(execution.context_snapshot["sources"], 1):
                 source_id = str(source["source_id"])
@@ -253,7 +270,25 @@ class MySQLTaskRepository:
                 if source_version_id is not None and (not str(source_version_id).isdigit() or int(source_version_id) <= 0):
                     raise ValueError("P1 source_version_id is not persistence-compatible")
                 cur.execute("INSERT INTO ai_context_usage (created_at,retention_class,expires_at,ai_call_id,sequence_no,source_type,source_id,source_version_id,retrieval_method,candidate_rank,relevance_score,was_injected,exclusion_reason,content_fingerprint,content_summary,token_count) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (now, RETENTION_CLASS, EXPIRES_AT, call_id, index, source["source_type"], int(source_id), int(source_version_id) if source_version_id is not None else None, "direct", None, None, bool(source["was_injected"]), source.get("exclusion_reason"), source["content_fingerprint"], None, source.get("token_count")))
-            cur.execute("UPDATE ai_call SET status=%s,finished_at=%s,updated_at=%s,row_version=row_version+1 WHERE id=%s", ("succeeded", now, now, call_id))
+            usage = provider_response.get("usage", {}) if provider_response else {}
+            cur.execute(
+                "UPDATE ai_call SET status=%s,provider_request_id=%s,input_tokens=%s,output_tokens=%s,"
+                "billed_tokens=%s,estimated_cost=%s,currency_code=%s,cost_source=%s,finished_at=%s,"
+                "updated_at=%s,row_version=row_version+1 WHERE id=%s",
+                (
+                    "succeeded",
+                    provider_response.get("provider_request_id"),
+                    usage.get("input_tokens"),
+                    usage.get("output_tokens"),
+                    usage.get("billed_tokens"),
+                    usage.get("estimated_cost"),
+                    usage.get("currency_code"),
+                    usage.get("cost_source", "unavailable"),
+                    now,
+                    now,
+                    call_id,
+                ),
+            )
             cur.execute("UPDATE ai_task SET status=%s,finished_at=%s,updated_at=%s,row_version=row_version+1 WHERE id=%s", ("ready", now, now, task.db_id))
             self._insert_outbox(cur, task, event_name="ai.task.ready", result_status="success", task_status="ready", now=now, ai_call_id=call_id, ai_result_id=result_id)
             self._insert_outbox(cur, task, event_name="ai.result.generated", result_status="success", now=now, ai_call_id=call_id, ai_result_id=result_id, result_payload={"candidate_only": True, "result_id": str(result_id), "content_fingerprint": fingerprint, "target_snapshot_hash": task.target_snapshot_hash})
