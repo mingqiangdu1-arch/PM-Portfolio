@@ -273,7 +273,7 @@ class MySQLTaskRepository:
             usage = provider_response.get("usage", {}) if provider_response else {}
             cur.execute(
                 "UPDATE ai_call SET status=%s,provider_request_id=%s,input_tokens=%s,output_tokens=%s,"
-                "billed_tokens=%s,estimated_cost=%s,currency_code=%s,cost_source=%s,finished_at=%s,"
+                "billed_tokens=%s,estimated_cost=%s,currency_code=%s,cost_source=%s,pricing_version=%s,finished_at=%s,"
                 "updated_at=%s,row_version=row_version+1 WHERE id=%s",
                 (
                     "succeeded",
@@ -284,6 +284,7 @@ class MySQLTaskRepository:
                     usage.get("estimated_cost"),
                     usage.get("currency_code"),
                     usage.get("cost_source", "unavailable"),
+                    usage.get("pricing_version"),
                     now,
                     now,
                     call_id,

@@ -316,6 +316,15 @@ def test_repository_four_facts_share_retention_and_legal_call_context_mapping():
     context_insert=next(item for item in statements if item[0].startswith("INSERT INTO ai_context_usage")); assert context_insert[1][5:9]==("manual",4,None,"direct")
 
 
+def test_repository_persists_pricing_version_with_profile_calculated_cost():
+    connection=SqlConnection(); repo=MySQLTaskRepository(lambda:connection)
+    value=execution(); value.provider_response={"provider":"deepseek","model":"deepseek-v4-flash","provider_request_id":"request-1","usage":{"input_tokens":10,"output_tokens":5,"billed_tokens":15,"estimated_cost":"0.000001","currency_code":"USD","cost_source":"profile_calculated","pricing_version":"2026-07-29"}}
+    repo.persist_success(task_record(status="checking"),2,None,value,"key","b"*64)
+    sql,params=next(item for item in connection.cursor_value.statements if item[0].startswith("UPDATE ai_call SET status"))
+    assert "pricing_version=%s" in sql
+    assert params[7:9]==("profile_calculated","2026-07-29")
+
+
 def test_result_transaction_rolls_back_if_outbox_fails_and_non_numeric_source_fails_closed():
     connection=SqlConnection(fail_on_outbox=True); repo=MySQLTaskRepository(lambda:connection)
     with pytest.raises(RuntimeError,match="outbox insert failed"): repo.persist_success(task_record(status="checking"),2,None,execution(),"key","b"*64)
