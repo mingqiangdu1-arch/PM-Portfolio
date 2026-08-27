@@ -42,3 +42,20 @@ def test_formatter_uses_trace_fields_without_secrets() -> None:
     payload = json.loads(JsonFormatter().format(record))
     assert payload["trace_id"] == "trace-1"
     assert "secret" not in payload
+
+
+def test_formatter_emits_only_safe_malformed_response_diagnostics() -> None:
+    record = logging.LogRecord(
+        "test", logging.WARNING, __file__, 1,
+        "provider response rejected by frozen result contract", (), None
+    )
+    record.task_id = "task-1"
+    record.validation_subtype = "INVALID_QUESTION_COUNT"
+    record.validation_field = "questions"
+    record.validation_rule = "min_1_max_3"
+    payload = json.loads(JsonFormatter().format(record))
+    assert payload["validation_subtype"] == "INVALID_QUESTION_COUNT"
+    assert payload["validation_field"] == "questions"
+    assert payload["validation_rule"] == "min_1_max_3"
+    assert "content" not in payload
+    assert "prompt" not in payload

@@ -4,7 +4,12 @@ import json
 
 import unittest
 
-from app.providers.base import ProviderMalformedResponse, ProviderResponse, ProviderUsage
+from app.providers.base import (
+    MalformedResponseSubtype,
+    ProviderMalformedResponse,
+    ProviderResponse,
+    ProviderUsage,
+)
 from app.requirement_clarification.formal_mock import DIMENSIONS
 from app.requirement_clarification.models import ClarificationSource, RequirementClarifyTask
 from app.requirement_clarification.real_provider import RealRequirementClarifier
@@ -53,8 +58,9 @@ def dimensions() -> dict:
 
 
 class JsonProvider:
-    def __init__(self, content: object) -> None:
+    def __init__(self, content: object, *, raw: bool = False) -> None:
         self.content = content
+        self.raw = raw
         self.request = None
 
     def generate(self, request):
@@ -63,7 +69,7 @@ class JsonProvider:
             provider="deepseek",
             model=request.model,
             provider_request_id="provider-request-1",
-            content=json.dumps(self.content),
+            content=self.content if self.raw else json.dumps(self.content),
             finish_reason="stop",
             usage=ProviderUsage(
                 input_tokens=120,
@@ -78,6 +84,26 @@ class JsonProvider:
 
 
 class RealRequirementClarificationTests(unittest.TestCase):
+    @staticmethod
+    def questions_candidate(questions: object) -> dict:
+        return {
+            "result_kind": "questions",
+            "dimensions": dimensions(),
+            "assessment": None,
+            "questions": questions,
+            "baseline": None,
+            "convergence": {"should_finish": False, "finish_reason": None, "next_round_no": 2},
+        }
+
+    def assert_malformed(self, candidate: object, subtype: MalformedResponseSubtype, *, raw: bool = False) -> None:
+        with self.assertRaises(ProviderMalformedResponse) as caught:
+            RealRequirementClarifier(JsonProvider(candidate, raw=raw)).run(
+                task(mode="standard", round_no=1),
+                (source(),),
+                requirement_content={"raw_input": "fixture"},
+            )
+        self.assertEqual(caught.exception.subtype, subtype)
+
     def test_real_provider_result_is_candidate_only_traceable_and_human_gated(self) -> None:
         provider = JsonProvider(
             {
@@ -118,6 +144,8 @@ class RealRequirementClarificationTests(unittest.TestCase):
             {
                 "result_kind": "baseline",
                 "dimensions": dimensions(),
+                "assessment": None,
+                "questions": [],
                 "baseline": None,
                 "convergence": {},
             }
@@ -131,10 +159,12 @@ class RealRequirementClarificationTests(unittest.TestCase):
             {
                 "result_kind": "questions",
                 "dimensions": dimensions(),
+                "assessment": None,
                 "questions": [
                     {"question_id": f"q-{index}", "dimension": "goal", "question_text": "question", "reason": "reason"}
                     for index in range(1, 5)
                 ],
+                "baseline": None,
                 "convergence": {},
             }
         )
@@ -169,6 +199,106 @@ class RealRequirementClarificationTests(unittest.TestCase):
         self.assertEqual(baseline["result_kind"], "baseline")
         self.assertIsNone(baseline["assessment"])
         self.assertEqual(baseline["questions"], [])
+
+    def test_valid_standard_questions_response_passes_and_prompt_is_hardened(self) -> None:
+        provider = JsonProvider(
+            self.questions_candidate(
+                [
+                    {
+                        "question_id": "q-1",
+                        "dimension": "goal",
+                        "question_text": "需要达成什么结果？",
+                        "reason": "目标需要明确。",
+                    }
+                ]
+            )
+        )
+        execution = RealRequirementClarifier(provider).run(
+            task(mode="standard", round_no=1),
+            (source(),),
+            requirement_content={"raw_input": "fixture"},
+        )
+        self.assertEqual(execution.result["result_kind"], "questions")
+        self.assertEqual(execution.result["questions"][0]["question_id"], "q-1")
+        instruction = json.loads(provider.request.input_text)["instruction"]
+        self.assertIn("without Markdown fences", instruction)
+        self.assertIn("1 to 3 questions", instruction)
+        self.assertIn("q-[1-9][0-9]*", instruction)
+
+    def test_standard_questions_validation_subtypes_cover_frozen_contract(self) -> None:
+        valid = {
+            "question_id": "q-1",
+            "dimension": "goal",
+            "question_text": "question",
+            "reason": "reason",
+        }
+        cases = (
+            ("not json", MalformedResponseSubtype.INVALID_JSON, True),
+            (
+                {**self.questions_candidate([valid]), "result_kind": "assessment"},
+                MalformedResponseSubtype.WRONG_RESULT_KIND,
+                False,
+            ),
+            (
+                {key: value for key, value in self.questions_candidate([valid]).items() if key != "questions"},
+                MalformedResponseSubtype.MISSING_QUESTIONS,
+                False,
+            ),
+            (self.questions_candidate([]), MalformedResponseSubtype.INVALID_QUESTION_COUNT, False),
+            (self.questions_candidate([valid] * 4), MalformedResponseSubtype.INVALID_QUESTION_COUNT, False),
+            (
+                self.questions_candidate([{key: value for key, value in valid.items() if key != "question_id"}]),
+                MalformedResponseSubtype.MISSING_QUESTION_ID,
+                False,
+            ),
+            (
+                self.questions_candidate([valid, valid]),
+                MalformedResponseSubtype.DUPLICATE_QUESTION_ID,
+                False,
+            ),
+            (
+                self.questions_candidate([{**valid, "dimension": "unknown"}]),
+                MalformedResponseSubtype.INVALID_DIMENSION,
+                False,
+            ),
+            (
+                self.questions_candidate([{**valid, "question_text": 42}]),
+                MalformedResponseSubtype.INVALID_FIELD_TYPE,
+                False,
+            ),
+            (
+                self.questions_candidate([{**valid, "extra": "not allowed"}]),
+                MalformedResponseSubtype.INVALID_QUESTION_SHAPE,
+                False,
+            ),
+        )
+        for candidate, subtype, raw in cases:
+            with self.subTest(subtype=subtype):
+                self.assert_malformed(candidate, subtype, raw=raw)
+
+    def test_standard_questions_accepts_only_structurally_equivalent_json_normalization(self) -> None:
+        candidate = self.questions_candidate(
+            [
+                {
+                    "question_id": " q-1 ",
+                    "dimension": "goal",
+                    "question_text": " question ",
+                    "reason": " reason ",
+                }
+            ]
+        )
+        raw = f"  \n{json.dumps(candidate)}\n  "
+        execution = RealRequirementClarifier(JsonProvider(raw, raw=True)).run(
+            task(mode="standard", round_no=1),
+            (source(),),
+            requirement_content={"raw_input": "fixture"},
+        )
+        self.assertEqual(execution.result["questions"][0]["question_id"], "q-1")
+        self.assert_malformed(
+            f"```json\n{json.dumps(candidate)}\n```",
+            MalformedResponseSubtype.INVALID_JSON,
+            raw=True,
+        )
 
 
 if __name__ == "__main__":

@@ -1,11 +1,15 @@
 from __future__ import annotations
 from datetime import UTC, datetime
+import logging
 from typing import Any
 from app.context.runtime import validate_freshness_response, validate_runtime_context
 from app.requirement_clarification.formal_mock import FormalMockRequirementClarifier
-from app.providers.base import ProviderError
+from app.providers.base import ProviderError, ProviderMalformedResponse
 from app.requirement_clarification.models import RequirementClarifyTask, ClarificationSource
 from app.requirement_clarification.result import validate_context_snapshot, validate_result_content
+
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_context_source_binding(source: dict[str, Any], raw_ref: dict[str, Any]) -> None:
@@ -56,6 +60,8 @@ class TaskRuntime:
         self.repository.update_status(task_public_id, "preparing")
         call_id = None
         provider_returned = False
+        mode = None
+        round_no = None
         try:
             freshness = validate_freshness_response(
                 self.context_client.target_freshness(task_public_id, trace_id=trace_id, target_snapshot_hash=task.target_snapshot_hash),
@@ -74,6 +80,8 @@ class TaskRuntime:
                 return
             payload = self.context_client.context_snapshot(task_public_id, trace_id=trace_id, token_budget=self.token_budget)
             context = validate_runtime_context(payload, task_public_id=task_public_id, target_snapshot_hash=task.target_snapshot_hash, target_object_type=task.target_object_type, target_object_id=task.target_object_id, target_object_version_id=task.target_object_version_id)
+            mode = context.input.mode
+            round_no = context.input.round_no
             raw_ref = context.requirement_content["raw_input_ref"]
             source = ClarificationSource(
                 source_type=raw_ref["source_type"],
@@ -117,6 +125,27 @@ class TaskRuntime:
             self.repository.persist_success(task, call_id, context, execution, key, fingerprint)
         except ProviderError as exc:
             failure_code = f"PROVIDER_{exc.error_class.upper()}"
+            if isinstance(exc, ProviderMalformedResponse):
+                logger.warning(
+                    "provider response rejected by frozen result contract",
+                    extra={
+                        "event": "ai.provider.response_rejected",
+                        "trace_id": trace_id,
+                        "command_id": task.command_id,
+                        "task_id": task_public_id,
+                        "call_id": str(call_id) if call_id is not None else None,
+                        "capability": task.task_type,
+                        "mode": mode,
+                        "round_no": round_no,
+                        "provider": getattr(self.provider, "provider_id", None),
+                        "model": getattr(self.provider, "model", None),
+                        "validation_subtype": exc.subtype.value,
+                        "validation_field": exc.field,
+                        "validation_rule": exc.rule,
+                        "error_code": failure_code,
+                        "retryable": exc.retryable,
+                    },
+                )
             if call_id is not None:
                 self.repository.persist_failure(
                     task,

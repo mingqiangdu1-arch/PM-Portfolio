@@ -4,6 +4,7 @@ import httpx
 import pytest
 
 from app.providers.base import (
+    MalformedResponseSubtype,
     ProviderAuthenticationFailed,
     ProviderBadRequest,
     ProviderMalformedResponse,
@@ -125,13 +126,15 @@ def test_adapter_classifies_server_and_malformed_responses() -> None:
         api_key="test-only-key",
         client=client(lambda request: httpx.Response(200, json={"choices": []})),
     )
-    with pytest.raises(ProviderMalformedResponse):
+    with pytest.raises(ProviderMalformedResponse) as malformed_error:
         malformed.generate(provider_request())
+    assert malformed_error.value.subtype == MalformedResponseSubtype.PROVIDER_RESPONSE_SCHEMA
 
     incomplete = OpenAICompatibleAdapter(
         deepseek_profile(),
         api_key="test-only-key",
         client=client(lambda request: httpx.Response(200, json={"choices": [{"message": {"content": "{}"}, "finish_reason": "length"}]})),
     )
-    with pytest.raises(ProviderMalformedResponse, match="truncated"):
+    with pytest.raises(ProviderMalformedResponse, match="truncated") as truncated_error:
         incomplete.generate(provider_request())
+    assert truncated_error.value.subtype == MalformedResponseSubtype.TRUNCATED_RESPONSE

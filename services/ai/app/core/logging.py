@@ -46,6 +46,8 @@ class JsonFormatter(logging.Formatter):
         for field in (
             "trace_id", "request_id", "command_id", "task_id", "call_id",
             "duration_ms", "result_status", "error_code", "retryable",
+            "capability", "mode", "round_no", "provider", "model",
+            "validation_subtype", "validation_field", "validation_rule",
         ):
             item = getattr(record, field, None)
             if item is not None:

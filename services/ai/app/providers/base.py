@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -65,9 +66,49 @@ class ProviderBadRequest(ProviderError):
     retryable = False
 
 
+class MalformedResponseSubtype(StrEnum):
+    PROVIDER_RESPONSE_SCHEMA = "PROVIDER_RESPONSE_SCHEMA"
+    UNSUPPORTED_FINISH_REASON = "UNSUPPORTED_FINISH_REASON"
+    TRUNCATED_RESPONSE = "TRUNCATED_RESPONSE"
+    FILTERED_RESPONSE = "FILTERED_RESPONSE"
+    EMPTY_CONTENT = "EMPTY_CONTENT"
+    INVALID_JSON = "INVALID_JSON"
+    NON_OBJECT_ROOT = "NON_OBJECT_ROOT"
+    UNEXPECTED_ROOT_FIELDS = "UNEXPECTED_ROOT_FIELDS"
+    WRONG_RESULT_KIND = "WRONG_RESULT_KIND"
+    INVALID_DIMENSIONS = "INVALID_DIMENSIONS"
+    INVALID_DIMENSION_SHAPE = "INVALID_DIMENSION_SHAPE"
+    INVALID_FIELD_TYPE = "INVALID_FIELD_TYPE"
+    MISSING_QUESTIONS = "MISSING_QUESTIONS"
+    INVALID_QUESTION_COUNT = "INVALID_QUESTION_COUNT"
+    INVALID_QUESTION_SHAPE = "INVALID_QUESTION_SHAPE"
+    MISSING_QUESTION_ID = "MISSING_QUESTION_ID"
+    INVALID_QUESTION_ID = "INVALID_QUESTION_ID"
+    DUPLICATE_QUESTION_ID = "DUPLICATE_QUESTION_ID"
+    INVALID_DIMENSION = "INVALID_DIMENSION"
+    MISSING_QUESTION_TEXT = "MISSING_QUESTION_TEXT"
+    MISSING_REASON = "MISSING_REASON"
+    INVALID_CONVERGENCE = "INVALID_CONVERGENCE"
+    CANONICAL_SOURCE_UNAVAILABLE = "CANONICAL_SOURCE_UNAVAILABLE"
+    UNEXPECTED_SCHEMA = "UNEXPECTED_SCHEMA"
+
+
 class ProviderMalformedResponse(ProviderError):
     error_class = "malformed_response"
     retryable = False
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        subtype: MalformedResponseSubtype = MalformedResponseSubtype.UNEXPECTED_SCHEMA,
+        field: str | None = None,
+        rule: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.subtype = subtype
+        self.field = field
+        self.rule = rule
 
 
 class Provider(Protocol):

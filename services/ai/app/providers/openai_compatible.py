@@ -7,6 +7,7 @@ from typing import Any
 import httpx
 
 from app.providers.base import (
+    MalformedResponseSubtype,
     ProviderAuthenticationFailed,
     ProviderBadRequest,
     ProviderMalformedResponse,
@@ -101,15 +102,34 @@ class OpenAICompatibleAdapter:
             finish_reason = payload["choices"][0].get("finish_reason", "stop")
             usage = payload.get("usage", {})
         except (KeyError, IndexError, TypeError, ValueError) as exc:
-            raise ProviderMalformedResponse("provider response schema mismatch") from exc
+            raise ProviderMalformedResponse(
+                "provider response schema mismatch",
+                subtype=MalformedResponseSubtype.PROVIDER_RESPONSE_SCHEMA,
+            ) from exc
         if finish_reason not in {"stop", "length", "content_filter"}:
-            raise ProviderMalformedResponse("unsupported provider finish_reason")
+            raise ProviderMalformedResponse(
+                "unsupported provider finish_reason",
+                subtype=MalformedResponseSubtype.UNSUPPORTED_FINISH_REASON,
+                field="finish_reason",
+            )
         if finish_reason == "length":
-            raise ProviderMalformedResponse("provider structured output was truncated")
+            raise ProviderMalformedResponse(
+                "provider structured output was truncated",
+                subtype=MalformedResponseSubtype.TRUNCATED_RESPONSE,
+                field="finish_reason",
+            )
         if finish_reason == "content_filter":
-            raise ProviderMalformedResponse("provider structured output was filtered")
+            raise ProviderMalformedResponse(
+                "provider structured output was filtered",
+                subtype=MalformedResponseSubtype.FILTERED_RESPONSE,
+                field="finish_reason",
+            )
         if not isinstance(content, str) or not content.strip():
-            raise ProviderMalformedResponse("provider returned empty structured output")
+            raise ProviderMalformedResponse(
+                "provider returned empty structured output",
+                subtype=MalformedResponseSubtype.EMPTY_CONTENT,
+                field="content",
+            )
 
         estimated_cost = self._estimate_cost(request.model, usage)
         return ProviderResponse(
