@@ -12,7 +12,7 @@ export function AppShell({ children, projectId, showLogout = true }: { children:
         <div className="mx-auto flex min-h-control-lg max-w-content flex-wrap items-center justify-between gap-token-md px-token-md py-token-sm sm:px-token-xl">
           <div>
             <p className="text-sm font-semibold">AI 产品设计与验证平台</p>
-            <p className="text-xs text-muted">MVP5 · 账户、项目与版本</p>
+            <p className="text-xs text-muted">MVP5 · AI 产品设计与验证闭环</p>
           </div>
           <nav aria-label="主导航" className="flex flex-wrap items-center gap-token-sm text-sm">
             <Link className="rounded-token-md px-token-sm py-token-xs text-primary-action hover:bg-primary-subtle" href="/projects">项目</Link>

@@ -6,12 +6,12 @@ export default function FoundationPage() {
   return (
     <AppShell>
       <section aria-labelledby="foundation-title" className="max-w-3xl">
-        <p className="mb-token-sm text-sm font-medium text-ai">Sprint 1 · 第一波</p>
+        <p className="mb-token-sm text-sm font-medium text-ai">MVP5 · 生产主流程</p>
         <h1 id="foundation-title" className="text-3xl font-semibold tracking-tight">
-          Identity、Project 与 Version
+          AI 产品设计与验证闭环
         </h1>
         <p className="mt-token-md text-secondary">
-          路由、页面状态、共享 Client 边界与 Mock Adapter 已进入实现；真实 API Client 等待 OpenAPI 冻结。
+          从 Requirement 与真实 AI 澄清开始，经人工确认形成 Baseline，并持续推进 PRD、Design Review、Implementation Plan、Confirmation、Validation、Issue 处置与版本迭代。
         </p>
         <div className="mt-token-2xl rounded-token-lg border border-default bg-surface p-token-2xl">
           <div className="mt-token-lg flex flex-wrap gap-token-sm">

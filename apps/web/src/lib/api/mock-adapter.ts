@@ -1,7 +1,7 @@
 import type { AiResultView, AiTaskView, ClarificationModeValue, CreateConfirmationRoundInput, CreateImplementationPlanInput, CreateProjectInput, CreatePrdInput, DecidePrdReviewInput, DeriveVersionInput, DesignReviewView, FrontendApi, ImplementationPlanView, PrdVersionView, PrdView, ProjectOverviewView, ProjectSummaryView, RequirementAssessmentView, RequirementBaselineView, RequirementContentView, RequirementView, SaveImplementationPlanVersionInput, SavePrdVersionInput, Scenario, SessionView, SubmitPrdReviewInput, UpdateConfirmationRoundDraftInput, VersionView } from "./ports";
 import { capabilitiesForRoles, PortError } from "./ports";
 
-export const MOCK_ADAPTER_NOTICE = "Sprint 1 first-wave mock: replace only after the frozen OpenAPI client is generated.";
+export const MOCK_ADAPTER_NOTICE = "Local deterministic test data is active; production must use the real API client.";
 const projects: ProjectSummaryView[] = [
   { id: "atlas", name: "Atlas 产品验证", goal: "验证核心需求并形成可审计版本", workingVersionId: "atlas-v2", workingVersionNo: "V2", projectVersion: 2, stage: "需求澄清", updatedAt: "2026-07-29T09:30:00Z" },
   { id: "nova", name: "Nova 工作台", goal: "整理项目上下文", workingVersionId: "nova-v1", workingVersionNo: "V1", projectVersion: 1, stage: "项目初始化", updatedAt: "2026-07-28T10:00:00Z" },
