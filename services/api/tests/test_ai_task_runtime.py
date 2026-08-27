@@ -4,6 +4,7 @@ import hashlib
 import inspect
 import unittest
 import json
+from contextlib import contextmanager
 from unittest.mock import patch
 
 from app.modules.ai_tasks.service import (
@@ -35,7 +36,82 @@ class _UrlResponse:
         return json.dumps(self.payload).encode("utf-8")
 
 
+class _CandidateRows:
+    def __init__(self, ids: list[int]) -> None:
+        self.ids = ids
+
+    def mappings(self):
+        return self
+
+    def all(self):
+        return [{"id": item} for item in self.ids]
+
+
+class _CandidateConnection:
+    def __init__(self, ids: list[int]) -> None:
+        self.ids = ids
+        self.calls = []
+
+    def execute(self, statement, params):
+        self.calls.append((str(statement), params))
+        return _CandidateRows(self.ids)
+
+
 class AiTaskRuntimeTests(unittest.TestCase):
+    def test_authoritative_questions_lookup_requires_one_exact_verified_result(self) -> None:
+        target_hash = "a" * 64
+        valid = {
+            "id": "4",
+            "task_public_id": "task-1",
+            "task_type": "requirement.clarify",
+            "status": "ready",
+            "result_kind": "questions",
+            "mode": "standard",
+            "round_no": 1,
+            "target_snapshot_hash": target_hash,
+            "content_json": {"result_kind": "questions", "mode": "standard", "round_no": 1, "questions": [{"question_id": "q-1"}]},
+        }
+
+        def run(ids, results):
+            connection = _CandidateConnection(ids)
+
+            @contextmanager
+            def read_scope():
+                yield connection
+
+            service = AiTaskService()
+            service.get_result = lambda *, user_id, result_id: results[result_id]
+            with patch("app.modules.ai_tasks.service.readonly", read_scope):
+                return service.find_authoritative_questions_result(
+                    user_id=10,
+                    project_id=8,
+                    project_version_id=9,
+                    requirement_id=6,
+                    requirement_version_id=29,
+                    target_snapshot_hash=target_hash,
+                    mode="standard",
+                    round_no=1,
+                ), connection
+
+        result, connection = run([4], {"4": valid})
+        self.assertEqual(result["id"], "4")
+        sql, params = connection.calls[0]
+        self.assertIn("at.task_type='requirement.clarify'", sql)
+        self.assertIn("at.status='ready'", sql)
+        self.assertIn("ac.status='succeeded'", sql)
+        self.assertIn("ar.status='ready'", sql)
+        self.assertEqual(params["requirement_version_id"], 29)
+        self.assertEqual(params["target_snapshot_hash"], target_hash)
+
+        for ids, results in (([], {}), ([4, 5], {"4": valid, "5": {**valid, "id": "5"}})):
+            with self.subTest(ids=ids), self.assertRaises(ApiError) as raised:
+                run(ids, results)
+            self.assertEqual((raised.exception.code, raised.exception.http_status), ("CLARIFICATION_ROUND_INVALID", 409))
+
+        mismatched = {**valid, "mode": "deep", "content_json": {**valid["content_json"], "mode": "deep"}}
+        with self.assertRaises(ApiError):
+            run([4], {"4": mismatched})
+
     def test_production_ai_http_tokens_bind_post_and_get_task_trace(self) -> None:
         settings = Settings(internal_service_jwt_secret="service-secret", ai_api_url="http://ai-api")
         captured = []

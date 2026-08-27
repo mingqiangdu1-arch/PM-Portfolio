@@ -161,6 +161,32 @@ class _ScriptedDB:
         raise AssertionError(f"Unhandled SQL: {sql}")
 
 
+class _QuestionsAuthority:
+    def __init__(self, *, result_count: int = 1):
+        self.result_count = result_count
+        self.calls: list[dict] = []
+
+    def find_authoritative_questions_result(self, **kwargs):
+        self.calls.append(kwargs)
+        if self.result_count != 1:
+            raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+        return {
+            "id": "result-1",
+            "task_public_id": "task-1",
+            "content_json": {
+                "questions": [
+                    {
+                        "question_id": "q-1",
+                        "dimension": "goal",
+                        "question_text": "What outcome is required?",
+                        "reason": "Confirm the outcome",
+                        "source_refs": [],
+                    }
+                ]
+            },
+        }
+
+
 class RequirementImplementationTests(unittest.TestCase):
     def setUp(self):
         self.db = _ScriptedDB()
@@ -179,6 +205,121 @@ class RequirementImplementationTests(unittest.TestCase):
                 trace_id="trace-confirm-seed",
             )
         return int(created["requirement"]["id"]), int(created["current_version"]["id"])
+
+    def _create_unmaterialized_standard_version(self) -> tuple[int, int]:
+        with patch("app.modules.requirements.service.transaction", self.db.transaction):
+            created = self.service.create(
+                version_id=7,
+                user_id=10,
+                payload={"title": "clarify", "raw_input": "raw", "source_refs": []},
+                key="clarify-seed",
+                trace_id="trace-clarify-seed",
+            )
+            version = self.service.set_clarification_mode(
+                version_id=int(created["current_version"]["id"]),
+                user_id=10,
+                payload={"mode": "standard", "expected_version": 1},
+                key="clarify-mode",
+                trace_id="trace-clarify-mode",
+            )
+        return int(created["requirement"]["id"]), int(version["id"])
+
+    def test_answer_save_late_binds_one_authoritative_questions_result(self):
+        requirement_id, version_id = self._create_unmaterialized_standard_version()
+        authority = _QuestionsAuthority()
+        service = RequirementService(ai_result_authority=authority)
+        payload = {
+            "round_no": 1,
+            "answers": [{"question_id": "q-1", "answer": "A confirmed outcome"}],
+            "finish_now": False,
+            "continue_deep_confirmed": False,
+            "expected_version": 2,
+        }
+        with patch("app.modules.requirements.service.transaction", self.db.transaction):
+            result = service.submit_clarification_answers(
+                version_id=version_id,
+                user_id=10,
+                payload=payload,
+                key="clarify-answers",
+                trace_id="trace-clarify-answers",
+            )
+            replay = service.submit_clarification_answers(
+                version_id=version_id,
+                user_id=10,
+                payload=payload,
+                key="clarify-answers",
+                trace_id="trace-clarify-answers",
+            )
+            version_count = len(self.db.tables["requirement_version"])
+            with self.assertRaises(ApiError) as competing:
+                service.submit_clarification_answers(
+                    version_id=version_id,
+                    user_id=10,
+                    payload=payload,
+                    key="clarify-answers-competing",
+                    trace_id="trace-clarify-answers-competing",
+                )
+        self.assertEqual((competing.exception.code, competing.exception.http_status), ("VERSION_CONFLICT", 409))
+        self.assertEqual(len(self.db.tables["requirement_version"]), version_count)
+        self.assertEqual(len(authority.calls), 2)
+        self.assertEqual(authority.calls[0]["requirement_id"], requirement_id)
+        self.assertEqual(authority.calls[0]["requirement_version_id"], version_id)
+        self.assertEqual(authority.calls[0]["mode"], "standard")
+        self.assertEqual(authority.calls[0]["round_no"], 1)
+        self.assertNotEqual(result["requirement_version"]["id"], str(version_id))
+        self.assertEqual(replay["requirement_version"]["id"], result["requirement_version"]["id"])
+        stored_round = result["requirement_version"]["content_json"]["clarification"]["rounds"][0]
+        self.assertEqual(stored_round["ai_task_id"], "task-1")
+        self.assertEqual(stored_round["ai_result_id"], "result-1")
+        self.assertEqual(stored_round["questions"][0]["question_id"], "q-1")
+        self.assertEqual(stored_round["answers"], payload["answers"])
+        source = next(row for row in self.db.tables["requirement_version"] if row["id"] == version_id)
+        self.assertEqual(source["content_json"]["clarification"]["rounds"], [])
+
+    def test_answer_save_fails_closed_without_exactly_one_authoritative_result(self):
+        _, version_id = self._create_unmaterialized_standard_version()
+        for count in (0, 2):
+            with self.subTest(result_count=count):
+                service = RequirementService(ai_result_authority=_QuestionsAuthority(result_count=count))
+                before = copy.deepcopy(self.db.tables)
+                with self.assertRaises(ApiError) as raised:
+                    service.submit_clarification_answers(
+                        version_id=version_id,
+                        user_id=10,
+                        payload={"round_no": 1, "answers": [{"question_id": "q-1", "answer": "answer"}], "finish_now": False, "continue_deep_confirmed": False, "expected_version": 2},
+                        key=f"answers-{count}",
+                        trace_id="trace",
+                    )
+                self.assertEqual((raised.exception.code, raised.exception.http_status), ("CLARIFICATION_ROUND_INVALID", 409))
+                self.assertEqual(self.db.tables, before)
+
+    def test_answer_save_rejects_missing_unknown_and_duplicate_question_ids(self):
+        _, version_id = self._create_unmaterialized_standard_version()
+        invalid_answers = (
+            [],
+            [{"question_id": "q-2", "answer": "unknown"}],
+            [{"question_id": "q-1", "answer": "one"}, {"question_id": "q-1", "answer": "two"}],
+        )
+        for index, answers in enumerate(invalid_answers):
+            with self.subTest(answers=answers):
+                service = RequirementService(ai_result_authority=_QuestionsAuthority())
+                payload = {"round_no": 1, "answers": answers, "finish_now": False, "continue_deep_confirmed": False, "expected_version": 2}
+                with self.assertRaises(ApiError):
+                    service.submit_clarification_answers(version_id=version_id, user_id=10, payload=payload, key=f"invalid-{index}", trace_id="trace")
+
+    def test_answer_save_rejects_stale_requirement_version(self):
+        _, version_id = self._create_unmaterialized_standard_version()
+        stale_id = int(next(row["source_version_id"] for row in self.db.tables["requirement_version"] if row["id"] == version_id))
+        service = RequirementService(ai_result_authority=_QuestionsAuthority())
+        with self.assertRaises(ApiError) as raised:
+            service.submit_clarification_answers(
+                version_id=stale_id,
+                user_id=10,
+                payload={"round_no": 1, "answers": [{"question_id": "q-1", "answer": "answer"}], "finish_now": False, "continue_deep_confirmed": False, "expected_version": 2},
+                key="stale-version",
+                trace_id="trace",
+            )
+        self.assertEqual((raised.exception.code, raised.exception.http_status), ("VERSION_CONFLICT", 409))
 
     def test_create_route_is_registered_and_idempotency_dependency_is_422(self):
         paths: set[tuple[str, str, bool]] = set()

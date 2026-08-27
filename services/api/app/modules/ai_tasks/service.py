@@ -476,6 +476,75 @@ class AiTaskService:
             raise ApiError(code="TRACEABILITY_INCOMPLETE", message="AI result status is inconsistent", http_status=409)
         return _result_view({**result, "id": result_id}, content)
 
+    def find_authoritative_questions_result(
+        self,
+        *,
+        user_id: int,
+        project_id: int,
+        project_version_id: int,
+        requirement_id: int,
+        requirement_version_id: int,
+        target_snapshot_hash: str,
+        mode: str,
+        round_no: int,
+    ) -> dict[str, Any]:
+        """Return the one verified ready questions result for an exact target.
+
+        Candidate discovery stays inside the AI application boundary.  Each
+        candidate is then read through ``get_result`` so object storage,
+        fingerprint, schema, permission, source, and target checks cannot be
+        bypassed by Requirement answer submission.
+        """
+        with readonly() as connection:
+            rows = connection.execute(
+                _sql(
+                    "SELECT ar.id FROM ai_result ar "
+                    "JOIN ai_call ac ON ac.id=ar.ai_call_id "
+                    "JOIN ai_task at ON at.id=ac.ai_task_id "
+                    "WHERE at.project_id=:project_id "
+                    "AND at.project_version_id=:project_version_id "
+                    "AND at.target_object_type='requirement' "
+                    "AND at.target_object_id=:requirement_id "
+                    "AND at.target_object_version_id=:requirement_version_id "
+                    "AND at.target_snapshot_hash=:target_snapshot_hash "
+                    "AND at.task_type='requirement.clarify' "
+                    "AND at.status='ready' AND ac.status='succeeded' AND ar.status='ready'"
+                ),
+                {
+                    "project_id": project_id,
+                    "project_version_id": project_version_id,
+                    "requirement_id": requirement_id,
+                    "requirement_version_id": requirement_version_id,
+                    "target_snapshot_hash": target_snapshot_hash,
+                },
+            ).mappings().all()
+
+        matches: list[dict[str, Any]] = []
+        for row in rows:
+            candidate = self.get_result(user_id=user_id, result_id=str(row["id"]))
+            content = candidate.get("content_json")
+            if (
+                candidate.get("task_type") == "requirement.clarify"
+                and candidate.get("status") == "ready"
+                and candidate.get("result_kind") == "questions"
+                and candidate.get("mode") == mode
+                and candidate.get("round_no") == round_no
+                and candidate.get("target_snapshot_hash") == target_snapshot_hash
+                and isinstance(content, dict)
+                and content.get("result_kind") == "questions"
+                and content.get("mode") == mode
+                and content.get("round_no") == round_no
+            ):
+                matches.append(candidate)
+
+        if len(matches) != 1:
+            raise ApiError(
+                code="CLARIFICATION_ROUND_INVALID",
+                message="Clarification round is invalid",
+                http_status=409,
+            )
+        return matches[0]
+
     def formalize(self, *, user_id: int, result_id: str, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
         _safe_validation(payload, _FORMALIZE, "Formalize request is invalid")
         adoption = payload.get("adoption")

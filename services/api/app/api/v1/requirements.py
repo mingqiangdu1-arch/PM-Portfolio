@@ -4,6 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, Header, Request
 
+from app.modules.ai_tasks.service import AiTaskService
 from app.modules.requirements.service import RequirementService
 from app.modules.sprint1.service import Sprint1Service
 from app.platform.errors import ApiError
@@ -18,7 +19,7 @@ async def require_requirement_idempotency_key(
 
 
 router = APIRouter(include_in_schema=False)
-service = RequirementService()
+service = RequirementService(ai_result_authority=AiTaskService())
 auth_service = Sprint1Service()
 
 

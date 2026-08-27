@@ -117,6 +117,23 @@ def _idempotency_complete(connection: Any, *, user_id: int, endpoint: str, key: 
         raise ApiError(code="DEPENDENCY_UNAVAILABLE", message="Idempotency record could not be completed", http_status=503)
 
 
+def _idempotency_is_completed(connection: Any, *, user_id: int, endpoint: str, key: str, payload: dict[str, Any]) -> bool:
+    row = _mapping(
+        connection.execute(
+            _sql(
+                "SELECT request_hash,status,response_ref FROM idempotency_record "
+                "WHERE user_id=:user_id AND endpoint_key=:endpoint AND idempotency_key=:key"
+            ),
+            {"user_id": user_id, "endpoint": endpoint, "key": key},
+        )
+    )
+    if not row:
+        return False
+    if row["request_hash"] != _request_hash(payload):
+        raise ApiError(code="IDEMPOTENCY_CONFLICT", message="Key was used with another request", http_status=409)
+    return row["status"] == "completed" and row.get("response_ref") is not None
+
+
 def _audit(connection: Any, *, user_id: int, requirement_id: int, version_id: int, trace_id: str, command_id: str, operation: str = "requirement.create") -> None:
     connection.execute(
         _sql(
@@ -397,10 +414,29 @@ def _summary(row: dict[str, Any]) -> dict[str, Any]:
 
 
 class RequirementService:
-    def __init__(self, *, content_reader: Any | None = None) -> None:
+    def __init__(self, *, content_reader: Any | None = None, ai_result_authority: Any | None = None) -> None:
         # Tests and alternate storage implementations can inject this narrow
         # dependency; production uses the existing S3-compatible boundary.
         self.content_reader = content_reader or _AiResultContentReader()
+        self.ai_result_authority = ai_result_authority
+
+    @staticmethod
+    def _bind_answers(round_data: dict[str, Any], answers: Any) -> dict[str, Any]:
+        questions = round_data.get("questions")
+        if not isinstance(questions, list) or not questions:
+            raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+        question_ids = [item.get("question_id") for item in questions if isinstance(item, dict)]
+        if len(question_ids) != len(questions) or any(not isinstance(item, str) for item in question_ids) or len(question_ids) != len(set(question_ids)):
+            raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+        if not isinstance(answers, list):
+            raise ApiError(code="VALIDATION_ERROR", message="Invalid clarification answers request", http_status=422)
+        answer_ids = [item.get("question_id") for item in answers if isinstance(item, dict)]
+        if len(answer_ids) != len(answers) or len(answer_ids) != len(set(answer_ids)) or set(answer_ids) != set(question_ids):
+            raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification answers do not match the authoritative questions", http_status=409)
+        by_id = {item["question_id"]: item for item in answers}
+        bound = dict(round_data)
+        bound["answers"] = [by_id[question_id] for question_id in question_ids]
+        return bound
 
     @staticmethod
     def _risk_rows(row: dict[str, Any]) -> list[dict[str, Any]]:
@@ -862,6 +898,21 @@ class RequirementService:
             requirement = _mapping(connection.execute(_sql("SELECT * FROM requirement WHERE id=:id"), {"id": addressed["requirement_id"]})) if addressed else None
             if not addressed or not requirement:
                 raise ApiError(code="RESOURCE_NOT_FOUND", message="Resource not found", http_status=404)
+            endpoint = f"POST:/api/v1/requirement-versions/{version_id}/clarification-answers"
+            if str(requirement.get("current_version_id")) != str(addressed.get("id")) and (
+                not key
+                or not _idempotency_is_completed(
+                    connection,
+                    user_id=user_id,
+                    endpoint=endpoint,
+                    key=key,
+                    payload=payload,
+                )
+            ):
+                raise ApiError(code="VERSION_CONFLICT", message="Requirement version is not current", http_status=409)
+            project_version = _mapping(connection.execute(_sql("SELECT id,project_id FROM project_version WHERE id=:id"), {"id": requirement["project_version_id"]}))
+            if not project_version:
+                raise ApiError(code="RESOURCE_NOT_FOUND", message="Resource not found", http_status=404)
             content = addressed["content_json"]
             if isinstance(content, str):
                 content = json.loads(content)
@@ -871,7 +922,7 @@ class RequirementService:
             mode = clarification.get("mode", "auto")
             confirmed = bool(clarification.get("continue_deep_confirmed", False))
             rounds = clarification.get("rounds") or []
-            if clarification.get("finish_reason") is not None or not rounds or int(rounds[-1].get("round_no", 0)) != round_no:
+            if clarification.get("finish_reason") is not None:
                 raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
             if mode in {"auto", "skip"}:
                 raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
@@ -887,16 +938,37 @@ class RequirementService:
                 if confirmed or len(rounds) != 3:
                     raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Deep confirmation requires exactly three completed rounds", http_status=409)
                 clarification["continue_deep_confirmed"] = True
-            rounds = clarification.get("rounds") or []
-            if rounds:
-                latest = dict(rounds[-1])
-                latest["round_no"] = round_no
-                latest["answers"] = payload.get("answers") or latest.get("answers", [])
-                rounds = [*rounds[:-1], latest]
-            clarification["rounds"] = rounds
-            if payload.get("finish_now"):
-                clarification["finish_reason"] = "user_finished"
-        version = self.revise(version_id=version_id, user_id=user_id, payload={"expected_version": expected, "content_json": content}, trace_id=trace_id, endpoint=f"POST:/api/v1/requirement-versions/{version_id}/clarification-answers" if key else None, key=key, idempotency_payload=payload)
+        if rounds:
+            if int(rounds[-1].get("round_no", 0)) != round_no:
+                raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+            latest = dict(rounds[-1])
+        else:
+            if self.ai_result_authority is None:
+                raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+            result = self.ai_result_authority.find_authoritative_questions_result(
+                user_id=user_id,
+                project_id=int(project_version["project_id"]),
+                project_version_id=int(project_version["id"]),
+                requirement_id=int(requirement["id"]),
+                requirement_version_id=int(addressed["id"]),
+                target_snapshot_hash=str(addressed["content_hash"]),
+                mode=str(mode),
+                round_no=round_no,
+            )
+            result_content = result.get("content_json")
+            questions = result_content.get("questions") if isinstance(result_content, dict) else None
+            latest = {
+                "round_no": round_no,
+                "ai_task_id": result.get("task_public_id"),
+                "ai_result_id": result.get("id"),
+                "questions": questions,
+                "answers": [],
+            }
+        latest = self._bind_answers(latest, payload.get("answers"))
+        clarification["rounds"] = [*rounds[:-1], latest] if rounds else [latest]
+        if payload.get("finish_now"):
+            clarification["finish_reason"] = "user_finished"
+        version = self.revise(version_id=version_id, user_id=user_id, payload={"expected_version": expected, "content_json": content}, trace_id=trace_id, endpoint=endpoint if key else None, key=key, idempotency_payload=payload)
         return {"requirement_version": version, "task_creation": {"decoupled": True, "create_operation": "POST /api/v1/ai/tasks"}, "baseline_candidate_ref": None}
     def create_requirement(self, *, version_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
         """Explicit command alias retained for callers that use resource verbs."""
@@ -946,6 +1018,8 @@ class RequirementService:
                         if isinstance(replay_content, str): replay_content = json.loads(replay_content)
                         return _version(replay_row, replay_content)
                     raise ApiError(code="DEPENDENCY_UNAVAILABLE", message="Idempotency version is unavailable", http_status=503)
+            if str(requirement.get("current_version_id")) != str(addressed.get("id")):
+                raise ApiError(code="VERSION_CONFLICT", message="Requirement version is not current", http_status=409)
             if int(requirement["row_version"]) != expected:
                 raise ApiError(code="VERSION_CONFLICT", message="Requirement has changed", http_status=409)
             old_content = addressed["content_json"]
