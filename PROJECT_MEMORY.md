@@ -1,5 +1,15 @@
 # PROJECT MEMORY
 
+## 2026-08-27 — Deployment V2 completed in production
+
+- `DEPLOYMENT_V2_STATUS=COMPLETED_IN_PRODUCTION`; `PRODUCTION_PUBLIC_URL=https://bywill.xyz`; HTTPS, fresh login, Real AI, Public Smoke, and stability PASS.
+- Production source head is `8d17693f87f9e5f2f44e02d749db0630c920284b`, while artifact identity is service-specific: Web `fe62a8f8743e...` and Business API `94cb4af945c4...` retain revision `7cd0c3a44c8b1bc39ffff26d66fdcceeb71e3140`; AI API/Worker `41b1dd2578b2...` uses revision `8d17693f87f9e5f2f44e02d749db0630c920284b`.
+- Production contract identity is OpenAPI SHA256 `cc4c77cfa8d1d9937969ddaeacdfe24283cbb3283e9f43dd6e01c77ab5cee6f3`; Alembic head is `20260823_0006`; MySQL stays on persistent volume `aipdv-mysql-data`.
+- The production MVP5 DeepSeek capability bundle was explicitly materialized from commit `7cd0c3a44c8b1bc39ffff26d66fdcceeb71e3140`. Real AI provider, Worker, MinIO, hash, `content_ref`, pricing, persistence, and Business API readback passed. The AI candidate remained proposal-only; a quality-blocked candidate was not adopted, and the owner confirmed a manually edited Baseline.
+- Deployment V2 backup reference is `/var/backups/aipdv/deployment-v2-20260825T084536Z`. The pre-V2 Web/API image identities remain rollback references `9777a02bc060...` and `b7d7255118e2...`.
+- Resolved incidents: production build resource saturation; legacy Secret disclosure and credential rotation; first Web image rejected for browser API origin `localhost`; AI success persistence omitted `pricing_version`, fixed by `8d17693f`. No Secret value is stored here.
+- Permanent operational policy: build application images off-host only; never print environment values during Secret audits; inspect key names only; rotate disclosed credentials; validate production browser configuration from built bundles; explicitly precheck the AI capability catalog before enabling Real AI.
+
 ## MVP5 Current Governance Memory
 
 - `MVP5_STATUS=COMPLETED_IN_MAIN`; current Gate is `MVP5-COMPLETE`; accepted scope is Option C: submitted Test Record → No-Issue/Validation Complete or Issue → defect/optimization classification → disposition.

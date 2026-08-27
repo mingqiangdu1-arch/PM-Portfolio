@@ -1,6 +1,18 @@
 # PROJECT STATUS
 
-> 最后更新：2026-08-25
+> 最后更新：2026-08-27
+
+## Deployment V2 Production Closeout
+
+- `DEPLOYMENT_V2_STATUS=COMPLETED_IN_PRODUCTION`; public URL `https://bywill.xyz`; Domain, HTTPS, fresh login, Real DeepSeek, Public Smoke, and post-deployment stability all PASS.
+- Production source head: `8d17693f87f9e5f2f44e02d749db0630c920284b`. Per-service runtime identity remains explicit: Web `sha256:fe62a8f8743e06678a7fdb58aca6e101f0d5e7262cfef9f735f2bad3dac133a4` at revision `7cd0c3a44c8b1bc39ffff26d66fdcceeb71e3140`; Business API `sha256:94cb4af945c4f5e01cdc0611e9e40583b8e7840d94cf03eb9e7632d5d8f17b30` at revision `7cd0c3a44c8b1bc39ffff26d66fdcceeb71e3140`; AI API/Worker `sha256:41b1dd2578b285dbecc184700d9ea19afb9dd0058d5ebe2b6c35c7e50d12337a` at revision `8d17693f87f9e5f2f44e02d749db0630c920284b`.
+- Production OpenAPI SHA256: `cc4c77cfa8d1d9937969ddaeacdfe24283cbb3283e9f43dd6e01c77ab5cee6f3`; production Alembic head: `20260823_0006`; MySQL image `sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb`; persistent volume `aipdv-mysql-data`.
+- Production AI capability catalog was explicitly bootstrapped from the authoritative MVP5 bundle at `7cd0c3a44c8b1bc39ffff26d66fdcceeb71e3140`. Real DeepSeek validation reached the provider and persisted provider response, `pricing_version`, MinIO object, object hash, `content_ref`, AI result, and Business API readback. Human confirmation remained authoritative and the quality-blocked candidate was not adopted; the confirmed Baseline used the manual fallback.
+- Public smoke passed Requirement, manual Human Confirmation, PRD, Design Review, Implementation Plan, Confirmation Round, Test Record, No-Issue, defect/optimization Issue, `current_version_fix`, and `derive_new_version` paths using dedicated Demo data.
+- Backup and rollback reference: `/var/backups/aipdv/deployment-v2-20260825T084536Z`; rollback Web image `sha256:9777a02bc06074ba656dd4e9b0b1176c1bbe18e0ee7469a65d85bd1ed8a07bf5`; rollback API image `sha256:b7d7255118e27f2fdfd1df97dfe4d0ce0590910f04da03a45b189ea03c8cc7f6`.
+- Deployment incidents are resolved: production-host build resource saturation, legacy production Secret disclosure followed by credential rotation, the rejected Web artifact with localhost client API origin, and the AI persistence mapping defect fixed by `8d17693f87f9e5f2f44e02d749db0630c920284b`. The exact orphan object from the failed AI validation was verified unreferenced and removed.
+- Permanent rules: `PRODUCTION_BUILD_POLICY=OFF_HOST_ONLY`; `PRODUCTION_SERVER_BUILD=PROHIBITED`; `PRODUCTION_SECRET_AUDIT_POLICY=KEY_NAMES_ONLY_NEVER_VALUES`; production `NEXT_PUBLIC_*` behavior must be validated from built client artifacts; production AI capability catalog precheck is required.
+- `SECRET_LEAK_ACTIVE=NO`; no Secret value is recorded in project governance.
 
 ## Current Phase
 
