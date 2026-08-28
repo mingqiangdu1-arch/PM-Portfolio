@@ -172,6 +172,11 @@ class RealRequirementClarifier:
             {
                 "instruction": (
                     "Analyze the Chinese or English product requirement. Return only JSON matching output_schema. "
+                    "The platform language is Simplified Chinese. Write every human-visible generated string "
+                    "in Simplified Chinese, including reasons, missing_items, question_text, question reason, "
+                    "baseline facts, assumptions, and unresolved_items. Preserve identifiers, acronyms, product "
+                    "names, and channel names such as SKU, SPU, API, JD, and MinIO when needed, but never return "
+                    "an English-only question or reason. "
                     f"The only permitted result_kind is {target_kind}; do not choose another stage. "
                     "Copy the exact output_schema shape and replace placeholder strings with concrete content. "
                     "Use all eight dimensions exactly once. "
@@ -250,8 +255,18 @@ class RealRequirementClarifier:
             "properties": {
                 "question_id": {"type": "string", "pattern": r"^q-[1-9][0-9]*$"},
                 "dimension": {"type": "string", "enum": list(DIMENSIONS)},
-                "question_text": {"type": "string", "minLength": 1, "maxLength": 1000},
-                "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+                "question_text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000,
+                    "description": "A human-facing clarification question written in Simplified Chinese.",
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000,
+                    "description": "A human-facing explanation written in Simplified Chinese.",
+                },
             },
         }
         baseline_dimension = {
@@ -293,6 +308,10 @@ class RealRequirementClarifier:
         )
         return {
             "type": "object",
+            "description": (
+                "All human-visible generated strings must use Simplified Chinese; technical identifiers and "
+                "acronyms may remain in their canonical form."
+            ),
             "additionalProperties": False,
             "required": [
                 "result_kind",
@@ -544,6 +563,14 @@ class RealRequirementClarifier:
                         subtype=MalformedResponseSubtype.MISSING_REASON,
                         field="questions[].reason",
                     )
+                for field in ("question_text", "reason"):
+                    if re.search(r"[\u3400-\u4dbf\u4e00-\u9fff]", raw[field]) is None:
+                        raise ProviderMalformedResponse(
+                            "human-visible clarification text must use Simplified Chinese",
+                            subtype=MalformedResponseSubtype.INVALID_OUTPUT_LANGUAGE,
+                            field=f"questions[].{field}",
+                            rule="contains_cjk_text",
+                        )
                 result["questions"].append(
                     {
                         "question_id": question_id,

@@ -309,13 +309,42 @@ class RealRequirementClarificationTests(unittest.TestCase):
         self.assertIn("without Markdown fences", instruction)
         self.assertIn("1 to 3 questions", instruction)
         self.assertIn("q-[1-9][0-9]*", instruction)
+        self.assertIn("Simplified Chinese", instruction)
+        self.assertIn("never return an English-only question or reason", instruction)
+        self.assertIn(
+            "Simplified Chinese",
+            provider.request.response_schema["description"],
+        )
+
+    def test_standard_questions_reject_english_only_human_visible_text(self) -> None:
+        english_question = self.questions_candidate(
+            [
+                {
+                    "question_id": "q-1",
+                    "dimension": "goal",
+                    "question_text": "What measurable outcome should this workflow achieve?",
+                    "reason": "The success criteria must be explicit.",
+                }
+            ]
+        )
+        with self.assertRaises(ProviderMalformedResponse) as caught:
+            RealRequirementClarifier(JsonProvider(english_question)).run(
+                task(mode="standard", round_no=1),
+                (source(),),
+                requirement_content={"raw_input": "fixture"},
+            )
+        self.assertEqual(
+            caught.exception.subtype,
+            MalformedResponseSubtype.INVALID_OUTPUT_LANGUAGE,
+        )
+        self.assertEqual(caught.exception.field, "questions[].question_text")
 
     def test_standard_questions_validation_subtypes_cover_frozen_contract(self) -> None:
         valid = {
             "question_id": "q-1",
             "dimension": "goal",
-            "question_text": "question",
-            "reason": "reason",
+            "question_text": "需要确认什么目标？",
+            "reason": "目标需要明确。",
         }
         cases = (
             ("not json", MalformedResponseSubtype.INVALID_JSON, True),
@@ -367,8 +396,8 @@ class RealRequirementClarificationTests(unittest.TestCase):
                 {
                     "question_id": " q-1 ",
                     "dimension": "goal",
-                    "question_text": " question ",
-                    "reason": " reason ",
+                    "question_text": " 需要确认什么目标？ ",
+                    "reason": " 目标需要明确。 ",
                 }
             ]
         )
