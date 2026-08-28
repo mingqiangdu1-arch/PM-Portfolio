@@ -4,6 +4,8 @@ import json
 
 import unittest
 
+from jsonschema import Draft202012Validator
+
 from app.providers.base import (
     MalformedResponseSubtype,
     ProviderMalformedResponse,
@@ -133,11 +135,19 @@ class RealRequirementClarificationTests(unittest.TestCase):
         self.assertEqual(execution.provider_response["provider_request_id"], "provider-request-1")
         self.assertEqual(execution.provider_response["usage"]["estimated_cost"], "0.000100")
         self.assertEqual(provider.request.model, "deepseek-v4-flash")
+        self.assertEqual(
+            provider.request.response_schema_name,
+            "requirement_clarification_candidate",
+        )
         self.assertIn("Return only JSON", provider.request.input_text)
         prompt = json.loads(provider.request.input_text)
         self.assertEqual(prompt["output_schema"]["result_kind"], "assessment")
         self.assertEqual(prompt["output_schema"]["questions"], [])
         self.assertIsNone(prompt["output_schema"]["baseline"])
+        Draft202012Validator.check_schema(provider.request.response_schema)
+        Draft202012Validator(provider.request.response_schema).validate(
+            json.loads(provider.content if provider.raw else json.dumps(provider.content))
+        )
 
     def test_real_provider_rejects_stage_mismatch_and_more_than_three_questions(self) -> None:
         mismatch = JsonProvider(
@@ -199,6 +209,81 @@ class RealRequirementClarificationTests(unittest.TestCase):
         self.assertEqual(baseline["result_kind"], "baseline")
         self.assertIsNone(baseline["assessment"])
         self.assertEqual(baseline["questions"], [])
+
+    def test_response_schema_is_stage_specific_and_exact(self) -> None:
+        assessment = RealRequirementClarifier._response_schema(task())
+        questions = RealRequirementClarifier._response_schema(
+            task(mode="standard", round_no=1)
+        )
+        baseline = RealRequirementClarifier._response_schema(
+            task(mode="standard", round_no=3)
+        )
+        for schema in (assessment, questions, baseline):
+            Draft202012Validator.check_schema(schema)
+            self.assertFalse(schema["additionalProperties"])
+            self.assertEqual(
+                set(schema["required"]),
+                {"result_kind", "dimensions", "assessment", "questions", "baseline", "convergence"},
+            )
+        self.assertEqual(assessment["properties"]["result_kind"], {"const": "assessment"})
+        self.assertEqual(questions["properties"]["questions"]["minItems"], 1)
+        self.assertEqual(questions["properties"]["questions"]["maxItems"], 3)
+        self.assertEqual(baseline["properties"]["result_kind"], {"const": "baseline"})
+        self.assertEqual(
+            baseline["properties"]["convergence"]["properties"]["next_round_no"],
+            {"const": None},
+        )
+        assessment_candidate = {
+            "result_kind": "assessment",
+            "dimensions": dimensions(),
+            "assessment": {
+                "complexity_band": "medium",
+                "reasons": ["cross-module workflow"],
+                "recommended_mode": "standard",
+                "missing_items": [],
+            },
+            "questions": [],
+            "baseline": None,
+            "convergence": {"should_finish": False, "finish_reason": None, "next_round_no": 1},
+        }
+        question_candidate = self.questions_candidate(
+            [
+                {
+                    "question_id": "q-1",
+                    "dimension": "goal",
+                    "question_text": "需要达成什么结果？",
+                    "reason": "目标需要明确。",
+                }
+            ]
+        )
+        baseline_candidate = {
+            "result_kind": "baseline",
+            "dimensions": dimensions(),
+            "assessment": None,
+            "questions": [],
+            "baseline": {
+                "dimensions": {
+                    key: {
+                        "confirmed_facts": [f"{key} is confirmed"],
+                        "deferred_items": [],
+                        "not_applicable_items": [],
+                    }
+                    for key in DIMENSIONS
+                },
+                "assumptions": [],
+                "unresolved_items": [],
+            },
+            "convergence": {
+                "should_finish": True,
+                "finish_reason": "round_limit",
+                "next_round_no": None,
+            },
+        }
+        Draft202012Validator(assessment).validate(assessment_candidate)
+        Draft202012Validator(questions).validate(question_candidate)
+        Draft202012Validator(baseline).validate(baseline_candidate)
+        assessment_candidate["unexpected"] = "blocked"
+        self.assertTrue(list(Draft202012Validator(assessment).iter_errors(assessment_candidate)))
 
     def test_valid_standard_questions_response_passes_and_prompt_is_hardened(self) -> None:
         provider = JsonProvider(

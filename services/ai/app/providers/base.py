@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +13,12 @@ class ProviderRequest(BaseModel):
     model: str = Field(min_length=1, max_length=128)
     prompt_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
     input_text: str = Field(min_length=1, max_length=100_000)
+    response_schema_name: str | None = Field(
+        default=None,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        max_length=128,
+    )
+    response_schema: dict[str, Any] | None = None
 
 
 class ProviderUsage(BaseModel):

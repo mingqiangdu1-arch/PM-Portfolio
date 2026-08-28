@@ -7,6 +7,7 @@ import hashlib
 import inspect
 import io
 import json
+import logging
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,6 +18,7 @@ import pytest
 from app.context.runtime import BusinessContextClient, P1RuntimeContextResponse, validate_freshness_response, validate_runtime_context
 from app.integrations.result_storage import ObjectWriteError, S3ResultObjectStore, build_result_key, canonical_json
 from app.requirement_clarification.formal_mock import FormalMockRequirementClarifier
+from app.providers.base import MalformedResponseSubtype, ProviderMalformedResponse
 from app.tasking.repository import EXPIRES_AT, RETENTION_CLASS, InMemoryTaskRepository, MySQLTaskRepository, TaskRecord
 from app.workers.runtime import TaskRuntime
 
@@ -252,6 +254,37 @@ def test_call_fails_only_when_provider_invocation_raises():
     storage_failed=TrackingRepository(); storage_failed.create_task(task_record())
     with pytest.raises(ObjectWriteError,match="storage failed"): make_runtime(storage_failed,store=StorageFailure()).execute(task_public_id="t-runtime",trace_id="trace")
     assert storage_failed.calls[0]["status"]=="succeeded" and storage_failed.tasks["t-runtime"].status=="failed"
+
+
+def test_malformed_provider_log_is_visible_and_contains_no_provider_content(caplog):
+    class MalformedProvider(FormalMockRequirementClarifier):
+        provider_id = "deepseek"
+        model = "deepseek-v4-flash"
+
+        def run(self, task, sources):
+            raise ProviderMalformedResponse(
+                "safe fixture",
+                subtype=MalformedResponseSubtype.INVALID_QUESTION_COUNT,
+                field="questions",
+                rule="min_1_max_3",
+            )
+
+    repo = TrackingRepository()
+    repo.create_task(task_record())
+    with caplog.at_level(logging.WARNING, logger="app.workers.runtime"):
+        make_runtime(repo, provider=MalformedProvider()).execute(
+            task_public_id="t-runtime", trace_id="trace"
+        )
+    message = next(
+        record.getMessage()
+        for record in caplog.records
+        if "provider response rejected" in record.getMessage()
+    )
+    assert "subtype=INVALID_QUESTION_COUNT" in message
+    assert "field=questions" in message
+    assert "rule=min_1_max_3" in message
+    assert "safe fixture" not in message
+    assert repo.tasks["t-runtime"].failure_code == "PROVIDER_MALFORMED_RESPONSE"
 
 
 class SqlCursor:

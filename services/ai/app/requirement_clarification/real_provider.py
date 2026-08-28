@@ -63,6 +63,8 @@ class RealRequirementClarifier:
                 model=self.model,
                 prompt_fingerprint=prompt_fingerprint,
                 input_text=prompt,
+                response_schema_name="requirement_clarification_candidate",
+                response_schema=self._response_schema(task),
             )
         )
         try:
@@ -105,7 +107,7 @@ class RealRequirementClarifier:
         schema: dict[str, Any] = {
             "result_kind": target_kind,
             "dimensions": {
-                key: {"status": "complete | partial | missing", "reasons": ["..."], "missing_items": ["..."]}
+                key: {"status": "complete | partial | missing | not_applicable", "reasons": ["..."], "missing_items": ["..."]}
                 for key in DIMENSIONS
             },
             "assessment": {
@@ -192,6 +194,136 @@ class RealRequirementClarifier:
             sort_keys=True,
             separators=(",", ":"),
         )
+
+    @staticmethod
+    def _response_schema(task: RequirementClarifyTask) -> dict[str, Any]:
+        target_kind = (
+            "assessment"
+            if task.input.mode == "auto"
+            else "baseline"
+            if task.input.mode == "skip"
+            or (task.input.mode == "standard" and task.input.round_no == 3)
+            or (task.input.mode == "deep" and task.input.round_no == 5)
+            else "questions"
+        )
+
+        def string_array(*, minimum: int = 0, maximum_length: int | None = None) -> dict[str, Any]:
+            item: dict[str, Any] = {"type": "string", "minLength": 1}
+            if maximum_length is not None:
+                item["maxLength"] = maximum_length
+            return {"type": "array", "minItems": minimum, "items": item}
+
+        dimension = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["status", "reasons", "missing_items"],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["complete", "partial", "missing", "not_applicable"],
+                },
+                "reasons": string_array(minimum=1),
+                "missing_items": string_array(),
+            },
+        }
+        dimensions = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": list(DIMENSIONS),
+            "properties": {key: deepcopy(dimension) for key in DIMENSIONS},
+        }
+        assessment = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["complexity_band", "reasons", "recommended_mode", "missing_items"],
+            "properties": {
+                "complexity_band": {"type": "string", "enum": ["low", "medium", "high"]},
+                "reasons": string_array(minimum=1),
+                "recommended_mode": {"type": "string", "enum": ["standard", "deep", "skip"]},
+                "missing_items": string_array(),
+            },
+        }
+        question = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["question_id", "dimension", "question_text", "reason"],
+            "properties": {
+                "question_id": {"type": "string", "pattern": r"^q-[1-9][0-9]*$"},
+                "dimension": {"type": "string", "enum": list(DIMENSIONS)},
+                "question_text": {"type": "string", "minLength": 1, "maxLength": 1000},
+                "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+            },
+        }
+        baseline_dimension = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["confirmed_facts", "deferred_items", "not_applicable_items"],
+            "properties": {
+                "confirmed_facts": string_array(minimum=1),
+                "deferred_items": string_array(),
+                "not_applicable_items": string_array(),
+            },
+        }
+        baseline = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["dimensions", "assumptions", "unresolved_items"],
+            "properties": {
+                "dimensions": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": list(DIMENSIONS),
+                    "properties": {
+                        key: deepcopy(baseline_dimension) for key in DIMENSIONS
+                    },
+                },
+                "assumptions": string_array(),
+                "unresolved_items": string_array(),
+            },
+        }
+        finish_reason = (
+            "mode_skipped" if task.input.mode == "skip" else "round_limit"
+        ) if target_kind == "baseline" else None
+        next_round_no = (
+            None
+            if target_kind == "baseline"
+            else 1
+            if target_kind == "assessment"
+            else task.input.round_no + 1
+        )
+        return {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "result_kind",
+                "dimensions",
+                "assessment",
+                "questions",
+                "baseline",
+                "convergence",
+            ],
+            "properties": {
+                "result_kind": {"const": target_kind},
+                "dimensions": dimensions,
+                "assessment": assessment if target_kind == "assessment" else {"type": "null"},
+                "questions": (
+                    {"type": "array", "minItems": 1, "maxItems": 3, "items": question}
+                    if target_kind == "questions"
+                    else {"type": "array", "maxItems": 0}
+                ),
+                "baseline": baseline if target_kind == "baseline" else {"type": "null"},
+                "convergence": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["should_finish", "finish_reason", "next_round_no"],
+                    "properties": {
+                        "should_finish": {"const": target_kind == "baseline"},
+                        "finish_reason": {"const": finish_reason},
+                        "next_round_no": {"const": next_round_no},
+                    },
+                },
+            },
+        }
 
     @staticmethod
     def _strings(

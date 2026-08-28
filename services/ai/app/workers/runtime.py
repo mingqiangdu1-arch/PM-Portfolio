@@ -127,7 +127,13 @@ class TaskRuntime:
             failure_code = f"PROVIDER_{exc.error_class.upper()}"
             if isinstance(exc, ProviderMalformedResponse):
                 logger.warning(
-                    "provider response rejected by frozen result contract",
+                    (
+                        "provider response rejected by frozen result contract "
+                        "subtype=%s field=%s rule=%s"
+                    ),
+                    exc.subtype.value,
+                    exc.field or "none",
+                    exc.rule or "none",
                     extra={
                         "event": "ai.provider.response_rejected",
                         "trace_id": trace_id,

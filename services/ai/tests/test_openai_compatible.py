@@ -69,6 +69,98 @@ def test_deepseek_profile_uses_current_models_and_calculates_available_cost() ->
     assert "test-only-key" not in repr(adapter)
 
 
+def test_schema_request_uses_responses_api_and_parses_structured_output() -> None:
+    schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["result_kind"],
+        "properties": {"result_kind": {"const": "questions"}},
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url == "https://api.deepseek.com/responses"
+        body = json.loads(request.content)
+        assert body["reasoning"] == {"effort": "none"}
+        assert body["text"]["format"] == {
+            "type": "json_schema",
+            "name": "requirement_candidate",
+            "schema": schema,
+        }
+        assert body["stream"] is False
+        assert "store" not in body
+        return httpx.Response(
+            200,
+            json={
+                "id": "response-1",
+                "status": "completed",
+                "output": [
+                    {
+                        "type": "message",
+                        "status": "completed",
+                        "role": "assistant",
+                        "content": [
+                            {"type": "output_text", "text": '{"result_kind":"questions"}'}
+                        ],
+                    }
+                ],
+                "usage": {
+                    "input_tokens": 1000,
+                    "input_tokens_details": {"cached_tokens": 100},
+                    "output_tokens": 100,
+                    "total_tokens": 1100,
+                },
+            },
+        )
+
+    request = provider_request().model_copy(
+        update={
+            "response_schema_name": "requirement_candidate",
+            "response_schema": schema,
+        }
+    )
+    adapter = OpenAICompatibleAdapter(
+        deepseek_profile(), api_key="test-only-key", client=client(handler)
+    )
+    response = adapter.generate(request)
+    assert response.content == '{"result_kind":"questions"}'
+    assert response.finish_reason == "stop"
+    assert response.usage.input_tokens == 1000
+    assert response.usage.output_tokens == 100
+    assert response.usage.estimated_cost == "0.000154"
+
+
+@pytest.mark.parametrize(
+    ("reason", "subtype"),
+    [
+        ("max_output_tokens", MalformedResponseSubtype.TRUNCATED_RESPONSE),
+        ("content_filter", MalformedResponseSubtype.FILTERED_RESPONSE),
+    ],
+)
+def test_responses_api_incomplete_status_is_fail_closed(reason, subtype) -> None:
+    request = provider_request().model_copy(
+        update={"response_schema_name": "candidate", "response_schema": {"type": "object"}}
+    )
+    adapter = OpenAICompatibleAdapter(
+        deepseek_profile(),
+        api_key="test-only-key",
+        client=client(
+            lambda request: httpx.Response(
+                200,
+                json={
+                    "id": "response-1",
+                    "status": "incomplete",
+                    "incomplete_details": {"reason": reason},
+                    "output": [],
+                    "usage": {},
+                },
+            )
+        ),
+    )
+    with pytest.raises(ProviderMalformedResponse) as caught:
+        adapter.generate(request)
+    assert caught.value.subtype == subtype
+
+
 @pytest.mark.parametrize(
     ("status_code", "error_type"),
     [(401, ProviderAuthenticationFailed), (429, ProviderRateLimited)],
