@@ -8,6 +8,7 @@ import {
   formalizeAiResult,
   getAiResult,
   getAiTask,
+  getRequirementVersionClarificationResult,
   getApiHealth,
   getFile,
   getProject,
@@ -1303,6 +1304,19 @@ export const realApi: FrontendApi = {
     async getResult(resultId: string) {
       const result = await protectedRequest<AiResult>(() => getAiResult(resultId, requestOptions()));
       return mapResult(result.data);
+    },
+    async findClarificationResult(versionId: string, mode, roundNo: number) {
+      try {
+        const result = await protectedRequest<AiResult>(() => getRequirementVersionClarificationResult(
+          versionId,
+          { mode: mode as "standard" | "deep", round_no: roundNo },
+          requestOptions(),
+        ));
+        return mapResult(result.data);
+      } catch (error) {
+        if (isPortError(error) && error.status === 404) return null;
+        throw error;
+      }
     },
     async formalizeBaseline(resultId: string, input: FormalizeAiResultInput) {
       const modifiedContent = input.adoption === "modified_adopt" && input.modificationIntensity === "minor" ? input.modifiedContent : undefined;

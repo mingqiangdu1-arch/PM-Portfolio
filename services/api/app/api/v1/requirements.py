@@ -19,7 +19,8 @@ async def require_requirement_idempotency_key(
 
 
 router = APIRouter(include_in_schema=False)
-service = RequirementService(ai_result_authority=AiTaskService())
+ai_result_service = AiTaskService()
+service = RequirementService(ai_result_authority=ai_result_service)
 auth_service = Sprint1Service()
 
 
@@ -84,6 +85,26 @@ def set_clarification_mode(version_id: int, request: Request, body: Annotated[di
 def submit_clarification_answers(version_id: int, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, Depends(require_requirement_idempotency_key)], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = auth_service.authenticate(authorization)
     return _ok(request, service.submit_clarification_answers(version_id=version_id, user_id=int(user["id"]), payload=body, key=key, trace_id=request.state.trace_id))
+
+
+@router.get("/api/v1/requirement-versions/{version_id}/clarification-result")
+def get_requirement_version_clarification_result(
+    version_id: int,
+    request: Request,
+    mode: str,
+    round_no: int,
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    user = auth_service.authenticate(authorization)
+    return _ok(
+        request,
+        ai_result_service.get_authoritative_questions_result_for_version(
+            user_id=int(user["id"]),
+            requirement_version_id=version_id,
+            mode=mode,
+            round_no=round_no,
+        ),
+    )
 
 
 @router.post("/api/v1/requirement-versions/{version_id}:confirm")

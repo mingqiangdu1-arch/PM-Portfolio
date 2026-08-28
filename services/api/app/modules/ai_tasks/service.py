@@ -487,6 +487,7 @@ class AiTaskService:
         target_snapshot_hash: str,
         mode: str,
         round_no: int,
+        zero_is_not_found: bool = False,
     ) -> dict[str, Any]:
         """Return the one verified ready questions result for an exact target.
 
@@ -537,6 +538,12 @@ class AiTaskService:
             ):
                 matches.append(candidate)
 
+        if not matches and zero_is_not_found:
+            raise ApiError(
+                code="RESOURCE_NOT_FOUND",
+                message="No authoritative clarification result exists for this Requirement Version and round",
+                http_status=404,
+            )
         if len(matches) != 1:
             raise ApiError(
                 code="CLARIFICATION_ROUND_INVALID",
@@ -544,6 +551,77 @@ class AiTaskService:
                 http_status=409,
             )
         return matches[0]
+
+    def get_authoritative_questions_result_for_version(
+        self,
+        *,
+        user_id: int,
+        requirement_version_id: int,
+        mode: str,
+        round_no: int,
+    ) -> dict[str, Any]:
+        """Read one canonical questions result without creating a Task or calling a Provider."""
+        if mode not in {"standard", "deep"} or not isinstance(round_no, int) or isinstance(round_no, bool):
+            raise ApiError(code="VALIDATION_ERROR", message="Invalid clarification result lookup", http_status=422)
+        limit = 3 if mode == "standard" else 5
+        if not 1 <= round_no <= limit:
+            raise ApiError(code="VALIDATION_ERROR", message="Invalid clarification result lookup", http_status=422)
+
+        with readonly() as connection:
+            addressed = _mapping(
+                connection.execute(
+                    _sql("SELECT * FROM requirement_version WHERE id=:version_id"),
+                    {"version_id": requirement_version_id},
+                )
+            )
+            if not addressed:
+                raise ApiError(code="RESOURCE_NOT_FOUND", message="Resource not found", http_status=404)
+            requirement, version, _ = self._target(
+                connection,
+                {
+                    "object_type": "requirement",
+                    "object_id": addressed.get("requirement_id"),
+                    "object_version_id": requirement_version_id,
+                },
+                user_id,
+            )
+            project_version = _mapping(
+                connection.execute(
+                    _sql("SELECT id,project_id FROM project_version WHERE id=:id"),
+                    {"id": requirement["project_version_id"]},
+                )
+            )
+            if not project_version:
+                raise ApiError(code="RESOURCE_NOT_FOUND", message="Resource not found", http_status=404)
+
+        content = _json(version.get("content_json"))
+        _safe_validation(content, _REQ_CONTENT, "Requirement content is invalid")
+        raw_ref = content.get("raw_input_ref") if isinstance(content, dict) else None
+        if (
+            not isinstance(raw_ref, dict)
+            or raw_ref.get("content_hash") != hashlib.sha256(content["raw_input"].encode("utf-8")).hexdigest()
+            or _canonical_hash(content) != str(version.get("content_hash"))
+        ):
+            raise ApiError(code="TRACEABILITY_INCOMPLETE", message="Requirement content hash is invalid", http_status=409)
+
+        clarification = content["clarification"]
+        if clarification.get("finish_reason") is not None:
+            raise ApiError(code="RESOURCE_NOT_FOUND", message="No recoverable clarification result exists", http_status=404)
+        expected = _clarification_input(content)
+        if expected.get("mode") != mode or expected.get("round_no") != round_no:
+            raise ApiError(code="RESOURCE_NOT_FOUND", message="No recoverable clarification result exists", http_status=404)
+
+        return self.find_authoritative_questions_result(
+            user_id=user_id,
+            project_id=int(project_version["project_id"]),
+            project_version_id=int(project_version["id"]),
+            requirement_id=int(requirement["id"]),
+            requirement_version_id=int(version["id"]),
+            target_snapshot_hash=str(version["content_hash"]),
+            mode=mode,
+            round_no=round_no,
+            zero_is_not_found=True,
+        )
 
     def formalize(self, *, user_id: int, result_id: str, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
         _safe_validation(payload, _FORMALIZE, "Formalize request is invalid")

@@ -18,7 +18,8 @@ RESULT_STATES = ["ready", "partial_result", "quality_blocked", "failed", "expire
 S2_PATHS = {
     "/api/v1/project-versions/{version_id}/requirements", "/api/v1/requirements/{requirement_id}",
     "/api/v1/requirement-versions/{version_id}", "/api/v1/requirement-versions/{version_id}:set-clarification-mode",
-    "/api/v1/requirement-versions/{version_id}/clarification-answers", "/api/v1/requirements/{requirement_id}/versions",
+    "/api/v1/requirement-versions/{version_id}/clarification-answers", "/api/v1/requirement-versions/{version_id}/clarification-result",
+    "/api/v1/requirements/{requirement_id}/versions",
     "/api/v1/requirement-versions/{version_id}:confirm", "/api/v1/ai/tasks", "/api/v1/ai/tasks/{task_id}",
     "/api/v1/ai/tasks/{task_id}/events", "/api/v1/ai/tasks/{task_id}:cancel", "/api/v1/ai/tasks/{task_id}:retry",
     "/api/v1/ai/results/{result_id}", "/api/v1/ai/results/{result_id}:formalize",
@@ -186,6 +187,17 @@ class Sprint2OpenApiCandidateTests(unittest.TestCase):
             self.assertEqual(op["x-permission"]["additional_actor_predicate"], "task_initiator")
         formalize = self.schema["paths"]["/api/v1/ai/results/{result_id}:formalize"]["post"]
         self.assertFalse(formalize["x-formalize-branches"]["reject"]["creates_requirement_version"])
+
+        recovery = self.schema["paths"]["/api/v1/requirement-versions/{version_id}/clarification-result"]["get"]
+        self.assertEqual(recovery["operationId"], "getRequirementVersionClarificationResult")
+        self.assertEqual(recovery["responses"]["200"]["content"]["application/json"]["schema"]["$ref"], "#/components/schemas/AiResultResponse")
+        self.assertTrue(recovery["x-read-only"])
+        self.assertEqual(recovery["x-side-effects"], {
+            "task_creation": False,
+            "provider_call": False,
+            "requirement_mutation": False,
+            "result_mutation": False,
+        })
 
     def test_error_mapping_and_events_are_explicit(self) -> None:
         mapping = self.schema["x-error-http-mapping"]

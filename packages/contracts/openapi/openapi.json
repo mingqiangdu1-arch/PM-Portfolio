@@ -14313,6 +14313,145 @@
         "x-transaction-boundary": "answer_version+audit+business_outbox; ai_task_creation_decoupled"
       }
     },
+    "/api/v1/requirement-versions/{version_id}/clarification-result": {
+      "get": {
+        "description": "Returns the one authoritative ready questions result for the addressed immutable Requirement Version, clarification mode, and round. This read creates no AI Task, performs no Provider call, and mutates no Requirement or AI result.",
+        "operationId": "getRequirementVersionClarificationResult",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "required": true,
+            "schema": {
+              "enum": [
+                "standard",
+                "deep"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "round_no",
+            "required": true,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiResultResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "$ref": "#/components/responses/Sprint2Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Sprint2Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Sprint2Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Sprint2Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Sprint2Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Sprint2Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Sprint2Error503"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "requirements"
+        ],
+        "x-command-semantics": {
+          "actor": "project_member_with_target_read_permission",
+          "admin_bypass": false,
+          "queue_unavailable_no_false_queued": false
+        },
+        "x-contract-phase": "sprint-2-p1-runtime-r4-candidate",
+        "x-error-http-mapping": {
+          "AI_QUOTA_EXCEEDED": 429,
+          "AI_TASK_NOT_CANCELLABLE": 409,
+          "AI_TASK_NOT_RETRYABLE": 409,
+          "AUTH_REQUIRED": 401,
+          "CLARIFICATION_MODE_REASON_REQUIRED": 422,
+          "CLARIFICATION_ROUND_INVALID": 409,
+          "CLARIFICATION_ROUND_LIMIT_REACHED": 409,
+          "DEEP_CONFIRMATION_REQUIRED": 409,
+          "DEPENDENCY_UNAVAILABLE": 503,
+          "FORBIDDEN": 403,
+          "IDEMPOTENCY_CONFLICT": 409,
+          "PERMISSION_CHANGED": 403,
+          "QUEUE_UNAVAILABLE": 503,
+          "RESOURCE_NOT_FOUND": 404,
+          "RESULT_NOT_READY": 409,
+          "RESULT_QUALITY_BLOCKED": 409,
+          "RISK_ACCEPTANCE_INVALID": 422,
+          "STALE_TARGET": 409,
+          "TRACEABILITY_INCOMPLETE": 409,
+          "VALIDATION_ERROR": 422,
+          "VERSION_CONFLICT": 409
+        },
+        "x-implementation-status": "implemented-p1-runtime-r4-candidate",
+        "x-permission": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        },
+        "x-permissions": {
+          "admin_bypass": false,
+          "allowed_project_roles": [
+            "owner",
+            "reviewer",
+            "implementer",
+            "tester"
+          ]
+        },
+        "x-r4-decisions": [
+          "permission",
+          "exact_target",
+          "authoritative_result_validation"
+        ],
+        "x-read-only": true,
+        "x-side-effects": {
+          "provider_call": false,
+          "requirement_mutation": false,
+          "result_mutation": false,
+          "task_creation": false
+        }
+      }
+    },
     "/api/v1/requirement-versions/{version_id}:confirm": {
       "post": {
         "operationId": "confirmRequirementVersion",

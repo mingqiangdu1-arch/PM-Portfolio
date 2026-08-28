@@ -22,6 +22,27 @@ const copyBaseline = (baseline: RequirementBaselineView): RequirementBaselineVie
   }])) as RequirementBaselineView["dimensions"],
 });
 const terminalTaskStatuses = new Set(["ready", "partial_result", "quality_blocked", "cancelled", "failed", "expired", "stale_target"]);
+type ClarificationTaskState = Pick<AiTaskView, "taskPublicId" | "taskType" | "status" | "targetSnapshotHash" | "resultRefs">;
+
+function clarificationRecoveryTarget(value: RequirementView): { mode: "standard" | "deep"; roundNo: number } | null {
+  const clarification = value.currentVersion?.content.clarification;
+  if (!clarification || clarification.finishReason !== null || !["standard", "deep"].includes(clarification.mode)) return null;
+  const mode = clarification.mode as "standard" | "deep";
+  const completedRound = clarification.rounds.reduce((highest, round) => Math.max(highest, round.roundNo), 0);
+  const roundNo = Math.min(completedRound + 1, mode === "standard" ? 3 : 5);
+  if (mode === "deep" && roundNo >= 4 && !clarification.continueDeepConfirmed) return null;
+  return { mode, roundNo };
+}
+
+function isExactRecoveryResult(value: AiResultView, requirement: RequirementView, mode: "standard" | "deep", roundNo: number): boolean {
+  return value.taskType === "requirement.clarify"
+    && value.status === "ready"
+    && value.resultKind === "questions"
+    && value.mode === mode
+    && value.roundNo === roundNo
+    && value.targetSnapshotHash === requirement.currentVersion?.contentHash
+    && Boolean(value.content?.questions.length);
+}
 
 function advanceRequirement(value: RequirementView, version: NonNullable<RequirementView["currentVersion"]>, aggregateVersion: number): RequirementView {
   return {
@@ -43,10 +64,12 @@ async function settleTask(api: FrontendApi, initial: AiTaskView): Promise<AiTask
 export function RequirementWorkspace({ projectVersionId, projectId, requirementId, api = frontendApi }: { projectVersionId: string; projectId?: string; requirementId?: string; api?: FrontendApi }) {
   const [requirement, setRequirement] = useState<RequirementView | null>(null);
   const [title, setTitle] = useState(""); const [rawInput, setRawInput] = useState("");
-  const [mode, setMode] = useState<ClarificationModeValue>("auto"); const [task, setTask] = useState<AiTaskView | null>(null); const [result, setResult] = useState<AiResultView | null>(null);
+  const [mode, setMode] = useState<ClarificationModeValue>("auto"); const [task, setTask] = useState<ClarificationTaskState | null>(null); const [result, setResult] = useState<AiResultView | null>(null);
   const [baseline, setBaseline] = useState<RequirementBaselineView>(blankBaseline()); const [candidateBaseline, setCandidateBaseline] = useState<RequirementBaselineView | null>(null); const [answers, setAnswers] = useState<Record<string, string>>({}); const [deepContinueConfirmed, setDeepContinueConfirmed] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState("");
   const [recoveryState, setRecoveryState] = useState<"loading" | "ready" | "empty" | "multiple" | "failure">("loading");
   const [recoveryError, setRecoveryError] = useState("");
+  const [resultRecoveryState, setResultRecoveryState] = useState<"idle" | "loading" | "ready" | "not-found" | "error">("idle");
+  const [resultRecoveryError, setResultRecoveryError] = useState("");
   const [requirementOptions, setRequirementOptions] = useState<RequirementSummaryView[]>([]);
   const currentVersion = requirement?.currentVersion;
 
@@ -62,7 +85,7 @@ export function RequirementWorkspace({ projectVersionId, projectId, requirementI
   }, []);
 
   const loadRequirement = useCallback(async (selectedRequirementId?: string) => {
-    setBusy(true); setError(""); setRecoveryError(""); setRequirement(null); setRequirementOptions([]); setRecoveryState("loading");
+    setBusy(true); setError(""); setNotice(""); setRecoveryError(""); setResultRecoveryError(""); setRequirement(null); setRequirementOptions([]); setTask(null); setResult(null); setAnswers({}); setCandidateBaseline(null); setResultRecoveryState("idle"); setRecoveryState("loading");
     try {
       let resolvedRequirementId = requirementId ?? selectedRequirementId;
       if (!resolvedRequirementId) {
@@ -71,7 +94,39 @@ export function RequirementWorkspace({ projectVersionId, projectId, requirementI
         if (requirements.length > 1) { setRequirementOptions(requirements); setRecoveryState("multiple"); return; }
         resolvedRequirementId = requirements[0].id;
       }
-      applyRequirement(await api.requirements.get(resolvedRequirementId));
+      const loaded = await api.requirements.get(resolvedRequirementId);
+      applyRequirement(loaded);
+      const target = clarificationRecoveryTarget(loaded);
+      if (!target || !loaded.currentVersion) {
+        setResultRecoveryState("not-found");
+        return;
+      }
+      setResultRecoveryState("loading");
+      try {
+        const recovered = await api.ai.findClarificationResult(loaded.currentVersion.id, target.mode, target.roundNo);
+        if (!recovered) {
+          setResultRecoveryState("not-found");
+          return;
+        }
+        if (!isExactRecoveryResult(recovered, loaded, target.mode, target.roundNo)) {
+          throw new Error("已读取的 AI 澄清结果与当前 Requirement Version 不一致。");
+        }
+        setTask({
+          taskPublicId: recovered.taskPublicId,
+          taskType: recovered.taskType,
+          status: "ready",
+          targetSnapshotHash: recovered.targetSnapshotHash,
+          resultRefs: [{ resultId: recovered.id, status: recovered.status, targetSnapshotHash: recovered.targetSnapshotHash }],
+        });
+        setResult(recovered);
+        setMode(recovered.mode);
+        setAnswers({});
+        setResultRecoveryState("ready");
+        setNotice("已恢复当前版本的 AI 澄清问题，请重新填写回答。");
+      } catch (reason) {
+        setResultRecoveryError(reason instanceof Error ? reason.message : "AI 澄清结果读取失败。");
+        setResultRecoveryState("error");
+      }
     } catch (reason) {
       setRecoveryError(reason instanceof Error ? reason.message : "需求读取失败。");
       setRecoveryState("failure");
@@ -159,10 +214,11 @@ export function RequirementWorkspace({ projectVersionId, projectId, requirementI
     {error ? <StatusPanel tone="error" title="操作未完成">{error}</StatusPanel> : null}{notice ? <StatusPanel tone="success" title="状态更新">{notice}</StatusPanel> : null}
     {recoveryState === "loading" ? <div role="status" className="panel animate-pulse text-muted">正在读取当前查看版本的 Requirement…</div> : null}
     {recoveryState === "failure" ? <StatusPanel tone="error" title="Requirement 读取失败" action={<Button variant="secondary" onClick={() => void loadRequirement()}>重新读取当前查看版本</Button>}>{recoveryError}</StatusPanel> : null}
+    {resultRecoveryState === "error" ? <StatusPanel tone="error" title="AI 澄清结果读取失败" action={<Button variant="secondary" onClick={() => void loadRequirement(requirement?.requirement.id)}>重新读取已有结果</Button>}>{resultRecoveryError}</StatusPanel> : null}
     {recoveryState === "multiple" ? <article className="panel space-y-token-md"><h2 className="font-semibold">选择 Requirement</h2><p className="text-sm text-secondary">当前查看版本包含多个 Requirement，请选择要继续的对象。</p><div className="space-y-token-sm">{requirementOptions.map((candidate) => <Button key={candidate.id} variant="secondary" className="w-full justify-start" onClick={() => void loadRequirement(candidate.id)}>{candidate.title}</Button>)}</div></article> : null}
     {recoveryState === "empty" ? <article className="panel space-y-token-md"><h2 className="font-semibold">1. 手工输入 Requirement</h2><label className="field-label" htmlFor="requirement-title-input">标题</label><Input id="requirement-title-input" value={title} onChange={(event) => setTitle(event.target.value)} /><label className="field-label" htmlFor="requirement-raw-input">原始需求</label><textarea id="requirement-raw-input" className="textarea-field min-h-36" value={rawInput} onChange={(event) => setRawInput(event.target.value)} /><Button onClick={createRequirement} loading={busy} disabled={!title.trim() || !rawInput.trim()}>保存需求草稿</Button></article> : null}
     {requirement ? <>
-      <article className="panel"><div className="flex flex-wrap items-center justify-between gap-token-md"><div><h2 className="font-semibold">{requirement.requirement.title}</h2><p className="mt-token-xs text-sm text-secondary">版本 {currentVersion?.versionNo ?? "—"} · {currentVersion?.confirmationStatus ?? "draft"}{currentVersion?.isEffective ? " · 当前 Baseline" : ""}</p></div><div className="flex flex-wrap gap-token-sm"><select aria-label="澄清模式" className="select-field w-auto" value={mode} onChange={(event) => setMode(event.target.value as ClarificationModeValue)}><option value="auto">auto · 先预检</option><option value="standard">standard · 最多 3 轮</option><option value="deep">deep · 最多 5 轮</option><option value="skip">skip · 直接形成候选</option></select><Button onClick={startClarification} loading={busy}>{assessment ? "按所选模式继续" : "开始预检 / 澄清"}</Button></div></div><div className="mt-token-md rounded-token-md bg-subtle p-token-sm"><p className="text-xs font-medium text-muted">原始输入（保留）</p><p className="mt-token-xs whitespace-pre-wrap text-sm">{currentVersion?.content.rawInput}</p></div></article>
+      <article className="panel"><div className="flex flex-wrap items-center justify-between gap-token-md"><div><h2 className="font-semibold">{requirement.requirement.title}</h2><p className="mt-token-xs text-sm text-secondary">版本 {currentVersion?.versionNo ?? "—"} · {currentVersion?.confirmationStatus ?? "draft"}{currentVersion?.isEffective ? " · 当前 Baseline" : ""}</p></div>{resultRecoveryState === "ready" ? <span className="rounded-token-md bg-subtle px-token-sm py-token-xs text-xs text-muted">已恢复第 {result?.roundNo} 轮澄清结果</span> : resultRecoveryState === "error" || resultRecoveryState === "loading" ? <span className="text-xs text-muted">{resultRecoveryState === "loading" ? "正在恢复已有澄清结果…" : "已有结果读取待重试"}</span> : <div className="flex flex-wrap gap-token-sm"><select aria-label="澄清模式" className="select-field w-auto" value={mode} onChange={(event) => setMode(event.target.value as ClarificationModeValue)}><option value="auto">auto · 先预检</option><option value="standard">standard · 最多 3 轮</option><option value="deep">deep · 最多 5 轮</option><option value="skip">skip · 直接形成候选</option></select><Button onClick={startClarification} loading={busy}>{assessment ? "按所选模式继续" : "开始预检 / 澄清"}</Button></div>}</div><div className="mt-token-md rounded-token-md bg-subtle p-token-sm"><p className="text-xs font-medium text-muted">原始输入（保留）</p><p className="mt-token-xs whitespace-pre-wrap text-sm">{currentVersion?.content.rawInput}</p></div></article>
       <article className="panel"><div className="flex flex-wrap items-center justify-between gap-token-sm"><h2 className="font-semibold">2. 八类预检</h2>{assessment ? <span className="text-xs text-muted">复杂度 {assessment.complexityBand} · 建议 {assessment.recommendedMode}</span> : null}</div>{assessment?.reasons.length ? <p className="mt-token-sm text-sm text-secondary">{assessment.reasons.join("；")}</p> : null}<div className="mt-token-md grid gap-token-sm sm:grid-cols-2 lg:grid-cols-4">{dimensions.map(([key, label]) => { const item = assessment?.dimensions[key]; return <div key={key} className="rounded-token-md border border-default p-token-sm"><p className="text-sm font-medium">{label}</p><p className="mt-token-xs text-xs text-muted">{item?.status ?? "待检查"}</p>{item?.missingItems.length ? <p className="mt-token-xs text-xs text-warning">缺少：{item.missingItems.join("、")}</p> : null}{item?.reasons.length ? <p className="mt-token-xs text-xs text-secondary">{item.reasons.join("；")}</p> : null}{item?.sourceRefs.length ? <p className="mt-token-xs text-xs text-muted">来源 {item.sourceRefs.length} 条</p> : null}</div>; })}</div></article>
       {isRequirementComplete ? <StatusPanel tone="success" title="Requirement 已完成"><p>Baseline 已确认，版本 {requirement.effectiveVersion?.versionNo ?? "—"} 已设为当前 Baseline。</p><p className="mt-token-xs text-sm text-secondary">{isAiSourcedEffectiveBaseline ? "来源：AI 候选采用。" : "来源：人工 Baseline 确认。"} 当前 Requirement / Baseline 阶段已完成；PRD 为后续阶段，当前在线 Demo 未启用。</p>{projectId ? <Link className="mt-token-md inline-flex" href={`/projects/${projectId}/versions/${projectVersionId}/prd`}><Button>进入 Structured PRD Workbench</Button></Link> : null}</StatusPanel> : null}
       {aiFailed && !isRequirementComplete ? <StatusPanel tone="warning" title="AI 暂不可用">候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。</StatusPanel> : null}

@@ -162,6 +162,8 @@ export * from './getImplementationPlan403';
 export * from './getImplementationPlan403Code';
 export * from './getImplementationPlan404';
 export * from './getImplementationPlan404Code';
+export * from './getRequirementVersionClarificationResultMode';
+export * from './getRequirementVersionClarificationResultParams';
 export * from './healthData';
 export * from './idempotencyKeyParameter';
 export * from './initFileUploadHeaders';

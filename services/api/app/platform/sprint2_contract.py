@@ -1023,6 +1023,43 @@ SPRINT2_PATHS: dict[str, dict[str, Any]] = {
             blockers=["permission", "error_codes", "transaction", "event", "ai_task_acceptance"],
         )
     },
+    "/api/v1/requirement-versions/{version_id}/clarification-result": {
+        "get": {
+            **_operation(
+                "getRequirementVersionClarificationResult",
+                "requirements",
+                "AiResultResponse",
+                parameters=[
+                    VERSION_ID,
+                    {
+                        "name": "mode",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "string", "enum": ["standard", "deep"]},
+                    },
+                    {
+                        "name": "round_no",
+                        "in": "query",
+                        "required": True,
+                        "schema": {"type": "integer", "minimum": 1, "maximum": 5},
+                    },
+                ],
+                description=(
+                    "Returns the one authoritative ready questions result for the addressed immutable "
+                    "Requirement Version, clarification mode, and round. This read creates no AI Task, "
+                    "performs no Provider call, and mutates no Requirement or AI result."
+                ),
+                blockers=["permission", "exact_target", "authoritative_result_validation"],
+            ),
+            "x-read-only": True,
+            "x-side-effects": {
+                "task_creation": False,
+                "provider_call": False,
+                "requirement_mutation": False,
+                "result_mutation": False,
+            },
+        }
+    },
     "/api/v1/requirements/{requirement_id}/versions": {
         "post": _operation(
             "createRequirementVersion",

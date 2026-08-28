@@ -81,6 +81,7 @@ import type {
   GetConfirmationRound404,
   GetImplementationPlan403,
   GetImplementationPlan404,
+  GetRequirementVersionClarificationResultParams,
   InitFileUploadHeaders,
   InternalHealthResponse,
   ListAiTasksParams,
@@ -5059,6 +5060,95 @@ export const submitRequirementClarificationAnswers = async (versionId: string,
 
   const data: submitRequirementClarificationAnswersResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as submitRequirementClarificationAnswersResponse
+}
+
+
+
+export type getRequirementVersionClarificationResultResponse200 = {
+  data: AiResultResponse
+  status: 200
+}
+
+export type getRequirementVersionClarificationResultResponse401 = {
+  data: Sprint2Error401Response
+  status: 401
+}
+
+export type getRequirementVersionClarificationResultResponse403 = {
+  data: Sprint2Error403Response
+  status: 403
+}
+
+export type getRequirementVersionClarificationResultResponse404 = {
+  data: Sprint2Error404Response
+  status: 404
+}
+
+export type getRequirementVersionClarificationResultResponse409 = {
+  data: Sprint2Error409Response
+  status: 409
+}
+
+export type getRequirementVersionClarificationResultResponse422 = {
+  data: Sprint2Error422Response
+  status: 422
+}
+
+export type getRequirementVersionClarificationResultResponse429 = {
+  data: Sprint2Error429Response
+  status: 429
+}
+
+export type getRequirementVersionClarificationResultResponse503 = {
+  data: Sprint2Error503Response
+  status: 503
+}
+
+export type getRequirementVersionClarificationResultResponseSuccess = (getRequirementVersionClarificationResultResponse200) & {
+  headers: Headers;
+};
+export type getRequirementVersionClarificationResultResponseError = (getRequirementVersionClarificationResultResponse401 | getRequirementVersionClarificationResultResponse403 | getRequirementVersionClarificationResultResponse404 | getRequirementVersionClarificationResultResponse409 | getRequirementVersionClarificationResultResponse422 | getRequirementVersionClarificationResultResponse429 | getRequirementVersionClarificationResultResponse503) & {
+  headers: Headers;
+};
+
+export type getRequirementVersionClarificationResultResponse = (getRequirementVersionClarificationResultResponseSuccess | getRequirementVersionClarificationResultResponseError)
+
+export const getGetRequirementVersionClarificationResultUrl = (versionId: string,
+    params: GetRequirementVersionClarificationResultParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/api/v1/requirement-versions/${versionId}/clarification-result?${stringifiedParams}` : `${apiBaseUrl}/api/v1/requirement-versions/${versionId}/clarification-result`
+}
+
+/**
+ * Returns the one authoritative ready questions result for the addressed immutable Requirement Version, clarification mode, and round. This read creates no AI Task, performs no Provider call, and mutates no Requirement or AI result.
+ */
+export const getRequirementVersionClarificationResult = async (versionId: string,
+    params: GetRequirementVersionClarificationResultParams, options?: RequestInit): Promise<getRequirementVersionClarificationResultResponse> => {
+
+  const res = await fetch(getGetRequirementVersionClarificationResultUrl(versionId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: getRequirementVersionClarificationResultResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as getRequirementVersionClarificationResultResponse
 }
 
 

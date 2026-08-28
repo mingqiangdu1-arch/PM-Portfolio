@@ -426,6 +426,7 @@ export interface AiPort {
   createTask(input: CreateAiTaskInput): Promise<AiTaskView>;
   getTask(taskId: string): Promise<AiTaskView>;
   getResult(resultId: string): Promise<AiResultView>;
+  findClarificationResult(versionId: string, mode: ClarificationModeValue, roundNo: number): Promise<AiResultView | null>;
   formalizeBaseline(resultId: string, input: FormalizeAiResultInput): Promise<FormalizedVersionView>;
 }
 

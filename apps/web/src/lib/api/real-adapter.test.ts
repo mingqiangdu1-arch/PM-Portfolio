@@ -10,6 +10,7 @@ const client = vi.hoisted(() => ({
   formalizeAiResult: vi.fn(),
   getAiResult: vi.fn(),
   getAiTask: vi.fn(),
+  getRequirementVersionClarificationResult: vi.fn(),
   getApiHealth: vi.fn(),
   getFile: vi.fn(),
   getProject: vi.fn(),
@@ -451,6 +452,26 @@ describe("realApi", () => {
     expect(result.quality).toEqual({ formatStatus: "passed", traceabilityStatus: "passed", safetyStatus: "passed", requiredItemsMet: 3, requiredItemsTotal: 3, majorError: false, blockerCodes: [] });
     expect(result.capabilitySummary).toEqual({ truthLabel: "FORMAL_MOCK", providerCode: "formal_mock", modelCode: "fixture-v1" });
     expect(result.capabilitySummary).not.toHaveProperty("api_key");
+  });
+
+  it("discovers the canonical clarification result and treats 404 only as no result", async () => {
+    const sourceWire = { source_id: "src-1", source_version_id: null, source_type: "manual", label: "原始输入", content_hash: "e".repeat(64) };
+    const wireResult = {
+      id: "result-4", task_public_id: "task-public-1", task_type: "requirement.clarify", target_snapshot_hash: "f".repeat(64), schema_version: "0.2.0", mode: "standard", round_no: 1, result_kind: "questions", status: "ready",
+      source_refs: [sourceWire], capability_summary: { truth_label: "REAL_PROVIDER", provider_code: "deepseek", model_code: "model" }, content_summary: null,
+      content_json: { assessment: null, baseline: null, questions: [{ question_id: "q-1", dimension: "goal", question_text: "目标是什么？", reason: "补足目标", source_refs: [sourceWire] }], result_kind: "questions" },
+      convergence: { should_finish: false, finish_reason: null, next_round_no: 2 },
+      quality_summary: { format_status: "passed", traceability_status: "passed", safety_status: "passed", required_items_met: 3, required_items_total: 3, major_error: false, blocker_codes: [] },
+    };
+    client.getRequirementVersionClarificationResult.mockResolvedValueOnce(success(wireResult));
+    await expect(realApi.ai.findClarificationResult("29", "standard", 1)).resolves.toMatchObject({ id: "result-4", taskPublicId: "task-public-1", roundNo: 1, resultKind: "questions" });
+    expect(client.getRequirementVersionClarificationResult.mock.calls[0].slice(0, 2)).toEqual(["29", { mode: "standard", round_no: 1 }]);
+
+    client.getRequirementVersionClarificationResult.mockResolvedValueOnce(failure("RESOURCE_NOT_FOUND", 404));
+    await expect(realApi.ai.findClarificationResult("29", "standard", 1)).resolves.toBeNull();
+
+    client.getRequirementVersionClarificationResult.mockResolvedValueOnce(failure("CLARIFICATION_ROUND_INVALID", 409));
+    await expect(realApi.ai.findClarificationResult("29", "standard", 1)).rejects.toMatchObject({ category: "CONFLICT", status: 409 });
   });
 
   it("maps aligned assessment dimensions, reasons and missing items", async () => {

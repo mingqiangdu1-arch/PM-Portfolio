@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mockApi } from "@/lib/api/mock-adapter";
-import type { ConfirmRequirementVersionInput, FormalizeAiResultInput, FrontendApi, SetClarificationModeInput } from "@/lib/api/ports";
+import { PortError } from "@/lib/api/ports";
+import type { AiResultView, ConfirmRequirementVersionInput, FormalizeAiResultInput, FrontendApi, SetClarificationModeInput } from "@/lib/api/ports";
 import { RequirementWorkspace } from "./requirement-workspace";
 
 afterEach(() => vi.restoreAllMocks());
@@ -125,6 +126,61 @@ async function persistedRequirement(isEffective: boolean, isAiSourced = true) {
   };
 }
 
+async function clarificationRecoveryFixture(completedRounds: number[] = []) {
+  const value = await persistedRequirement(false, false);
+  if (!value.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
+  const sourceRef = value.currentVersion.content.rawInputRef;
+  const contentHash = "9".repeat(64);
+  const currentVersion = {
+    ...value.currentVersion,
+    id: "recovery-version-29",
+    contentHash,
+    content: {
+      ...value.currentVersion.content,
+      clarification: {
+        ...value.currentVersion.content.clarification,
+        mode: "standard" as const,
+        rounds: completedRounds.map((roundNo) => ({ roundNo, aiTaskId: `old-task-${roundNo}`, aiResultId: `old-result-${roundNo}`, questions: [], answers: [] })),
+        finishReason: null,
+      },
+    },
+  };
+  const requirement = {
+    ...value,
+    requirement: { ...value.requirement, currentVersionId: currentVersion.id },
+    currentVersion,
+  };
+  const result: AiResultView = {
+    id: "result-4",
+    taskPublicId: "2169067d-1f72-e6d5-6ace-58e25f2c8dbd",
+    taskType: "requirement.clarify",
+    targetSnapshotHash: contentHash,
+    mode: "standard",
+    roundNo: completedRounds.length + 1,
+    resultKind: "questions",
+    status: "ready",
+    content: {
+      assessment: null,
+      baseline: null,
+      questions: ["q-1", "q-2", "q-3"].map((questionId, index) => ({
+        questionId,
+        dimension: (["goal", "functional_scope", "acceptance_criteria"] as const)[index],
+        questionText: `恢复问题 ${questionId}`,
+        reason: "补足需求",
+        sourceRefs: [sourceRef],
+      })),
+    },
+    convergence: { shouldFinish: false, finishReason: null, nextRoundNo: resultRoundAfter(completedRounds.length + 1) },
+    quality: { formatStatus: "passed", traceabilityStatus: "passed", safetyStatus: "passed", requiredItemsMet: 3, requiredItemsTotal: 3, majorError: false, blockerCodes: [] },
+    capabilitySummary: { truthLabel: "REAL_PROVIDER", providerCode: "deepseek", modelCode: "model" },
+  };
+  return { requirement, result };
+}
+
+function resultRoundAfter(roundNo: number) {
+  return roundNo >= 3 ? null : roundNo + 1;
+}
+
 async function reachSkipBaseline(api: FrontendApi) {
   render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
   await screen.findByLabelText("标题");
@@ -138,6 +194,103 @@ async function reachSkipBaseline(api: FrontendApi) {
 }
 
 describe("RequirementWorkspace", () => {
+  it("hydrates the exact ready questions on reload with empty answers and creates no AI task", async () => {
+    const { requirement, result } = await clarificationRecoveryFixture();
+    const findClarificationResult = vi.fn(async () => result);
+    const createTask = vi.fn(mockApi.ai.createTask);
+    const api: FrontendApi = {
+      ...mockApi,
+      requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement },
+      ai: { ...mockApi.ai, findClarificationResult, createTask },
+    };
+
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+
+    await screen.findByRole("heading", { name: "3. 第 1 轮问题（3/3）" });
+    expect(findClarificationResult).toHaveBeenCalledWith("recovery-version-29", "standard", 1);
+    expect(createTask).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "开始预检 / 澄清" })).not.toBeInTheDocument();
+    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。")).not.toBeInTheDocument();
+    for (const questionId of ["q-1", "q-2", "q-3"]) {
+      expect(screen.getByLabelText(`恢复问题 ${questionId}`)).toHaveValue("");
+    }
+  });
+
+  it("submits hydrated answers against the current Version, recovered round and exact question IDs", async () => {
+    const { requirement, result } = await clarificationRecoveryFixture([1]);
+    const submitClarificationAnswers = vi.fn(async () => ({ version: requirement.currentVersion!, baselineCandidateRef: null }));
+    const api: FrontendApi = {
+      ...mockApi,
+      requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement, submitClarificationAnswers },
+      ai: { ...mockApi.ai, findClarificationResult: async () => result },
+    };
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+    await screen.findByRole("heading", { name: "3. 第 2 轮问题（3/3）" });
+    fireEvent.change(screen.getByLabelText("恢复问题 q-1"), { target: { value: "回答一" } });
+    fireEvent.change(screen.getByLabelText("恢复问题 q-2"), { target: { value: "回答二" } });
+    fireEvent.change(screen.getByLabelText("恢复问题 q-3"), { target: { value: "回答三" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存回答" }));
+    await waitFor(() => expect(submitClarificationAnswers).toHaveBeenCalledWith("recovery-version-29", {
+      expectedVersion: requirement.requirement.version,
+      roundNo: 2,
+      answers: [
+        { questionId: "q-1", answer: "回答一" },
+        { questionId: "q-2", answer: "回答二" },
+        { questionId: "q-3", answer: "回答三" },
+      ],
+      continueDeepConfirmed: true,
+      finishNow: false,
+    }));
+  });
+
+  it("keeps the normal start and manual paths when no ready result exists", async () => {
+    const { requirement } = await clarificationRecoveryFixture();
+    const createTask = vi.fn(mockApi.ai.createTask);
+    const api: FrontendApi = {
+      ...mockApi,
+      requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement },
+      ai: { ...mockApi.ai, findClarificationResult: async () => null, createTask },
+    };
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+    await screen.findByRole("button", { name: "开始预检 / 澄清" });
+    expect(screen.getByRole("button", { name: "人工确认 Baseline" })).toBeEnabled();
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
+  it("shows a read-only retry on lookup conflict and never falls back to Provider task creation", async () => {
+    const { requirement } = await clarificationRecoveryFixture();
+    const findClarificationResult = vi.fn(async () => { throw new PortError("CONFLICT", "存在多个权威结果。", 409); });
+    const createTask = vi.fn(mockApi.ai.createTask);
+    const api: FrontendApi = {
+      ...mockApi,
+      requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement },
+      ai: { ...mockApi.ai, findClarificationResult, createTask },
+    };
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+    await screen.findByText("存在多个权威结果。");
+    expect(screen.queryByRole("button", { name: "开始预检 / 澄清" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "重新读取已有结果" }));
+    await waitFor(() => expect(findClarificationResult).toHaveBeenCalledTimes(2));
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["an old target Version", { targetSnapshotHash: "8".repeat(64) }],
+    ["a wrong round", { roundNo: 2 }],
+  ])("fails closed when recovery returns %s", async (_label, override) => {
+    const { requirement, result } = await clarificationRecoveryFixture();
+    const createTask = vi.fn(mockApi.ai.createTask);
+    const api: FrontendApi = {
+      ...mockApi,
+      requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement },
+      ai: { ...mockApi.ai, findClarificationResult: async () => ({ ...result, ...override }), createTask },
+    };
+    render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+    await screen.findByText("已读取的 AI 澄清结果与当前 Requirement Version 不一致。");
+    expect(screen.queryByText("恢复问题 q-1")).not.toBeInTheDocument();
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
   it("shows the existing empty state only after list confirms there are no Requirements", async () => {
     const list = vi.fn(async () => []);
     const get = vi.fn();
