@@ -126,11 +126,12 @@ async function persistedRequirement(isEffective: boolean, isAiSourced = true) {
   };
 }
 
-async function clarificationRecoveryFixture(completedRounds: number[] = []) {
+async function clarificationRecoveryFixture(completedRounds: number[] = [], options: { mode?: "standard" | "deep"; continueDeepConfirmed?: boolean } = {}) {
   const value = await persistedRequirement(false, false);
   if (!value.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
   const sourceRef = value.currentVersion.content.rawInputRef;
   const contentHash = "9".repeat(64);
+  const clarificationMode = options.mode ?? "standard";
   const currentVersion = {
     ...value.currentVersion,
     id: "recovery-version-29",
@@ -139,8 +140,15 @@ async function clarificationRecoveryFixture(completedRounds: number[] = []) {
       ...value.currentVersion.content,
       clarification: {
         ...value.currentVersion.content.clarification,
-        mode: "standard" as const,
-        rounds: completedRounds.map((roundNo) => ({ roundNo, aiTaskId: `old-task-${roundNo}`, aiResultId: `old-result-${roundNo}`, questions: [], answers: [] })),
+        mode: clarificationMode,
+        continueDeepConfirmed: options.continueDeepConfirmed ?? false,
+        rounds: completedRounds.map((roundNo) => ({
+          roundNo,
+          aiTaskId: `old-task-${roundNo}`,
+          aiResultId: `old-result-${roundNo}`,
+          questions: [{ questionId: `q-${roundNo}`, dimension: "goal" as const, questionText: `已完成问题 q-${roundNo}`, reason: "补足需求", sourceRefs: [sourceRef] }],
+          answers: [{ questionId: `q-${roundNo}`, answer: `已保存回答 ${roundNo}` }],
+        })),
         finishReason: null,
       },
     },
@@ -155,7 +163,7 @@ async function clarificationRecoveryFixture(completedRounds: number[] = []) {
     taskPublicId: "2169067d-1f72-e6d5-6ace-58e25f2c8dbd",
     taskType: "requirement.clarify",
     targetSnapshotHash: contentHash,
-    mode: "standard",
+    mode: clarificationMode,
     roundNo: completedRounds.length + 1,
     resultKind: "questions",
     status: "ready",
@@ -170,15 +178,34 @@ async function clarificationRecoveryFixture(completedRounds: number[] = []) {
         sourceRefs: [sourceRef],
       })),
     },
-    convergence: { shouldFinish: false, finishReason: null, nextRoundNo: resultRoundAfter(completedRounds.length + 1) },
+    convergence: { shouldFinish: false, finishReason: null, nextRoundNo: resultRoundAfter(completedRounds.length + 1, clarificationMode) },
     quality: { formatStatus: "passed", traceabilityStatus: "passed", safetyStatus: "passed", requiredItemsMet: 3, requiredItemsTotal: 3, majorError: false, blockerCodes: [] },
     capabilitySummary: { truthLabel: "REAL_PROVIDER", providerCode: "deepseek", modelCode: "model" },
   };
   return { requirement, result };
 }
 
-function resultRoundAfter(roundNo: number) {
-  return roundNo >= 3 ? null : roundNo + 1;
+function resultRoundAfter(roundNo: number, mode: "standard" | "deep") {
+  return roundNo >= (mode === "standard" ? 3 : 5) ? null : roundNo + 1;
+}
+
+async function submitRecoveredAnswers(completedRounds: number[], options: { mode: "standard" | "deep"; continueDeepConfirmed?: boolean }, finishNow = false) {
+  const { requirement, result } = await clarificationRecoveryFixture(completedRounds, options);
+  const submitClarificationAnswers = vi.fn(async () => ({ version: requirement.currentVersion!, baselineCandidateRef: null }));
+  const createTask = vi.fn(mockApi.ai.createTask);
+  const api: FrontendApi = {
+    ...mockApi,
+    requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement, submitClarificationAnswers },
+    ai: { ...mockApi.ai, findClarificationResult: async () => result, createTask },
+  };
+  render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
+  await screen.findByRole("heading", { name: `3. 第 ${result.roundNo} 轮问题（3/3）` });
+  for (const [index, questionId] of ["q-1", "q-2", "q-3"].entries()) {
+    fireEvent.change(screen.getByLabelText(`恢复问题 ${questionId}`), { target: { value: `回答${index + 1}` } });
+  }
+  fireEvent.click(screen.getByRole("button", { name: finishNow ? "结束并审核 Baseline" : "保存回答" }));
+  await waitFor(() => expect(submitClarificationAnswers).toHaveBeenCalledOnce());
+  return { requirement, result, submitClarificationAnswers, createTask };
 }
 
 async function reachSkipBaseline(api: FrontendApi) {
@@ -216,30 +243,90 @@ describe("RequirementWorkspace", () => {
     }
   });
 
-  it("submits hydrated answers against the current Version, recovered round and exact question IDs", async () => {
-    const { requirement, result } = await clarificationRecoveryFixture([1]);
-    const submitClarificationAnswers = vi.fn(async () => ({ version: requirement.currentVersion!, baselineCandidateRef: null }));
+  it.each([
+    [1, []],
+    [2, [1]],
+    [3, [1, 2]],
+  ])("submits recovered Standard round %i with false and exact question identities", async (roundNo, completedRounds) => {
+    const { requirement, submitClarificationAnswers, createTask } = await submitRecoveredAnswers(completedRounds, { mode: "standard" });
+    expect(submitClarificationAnswers).toHaveBeenCalledWith("recovery-version-29", {
+      expectedVersion: requirement.requirement.version,
+      roundNo,
+      answers: [
+        { questionId: "q-1", answer: "回答1" },
+        { questionId: "q-2", answer: "回答2" },
+        { questionId: "q-3", answer: "回答3" },
+      ],
+      continueDeepConfirmed: false,
+      finishNow: false,
+    });
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [1, [], false],
+    [2, [1], false],
+    [3, [1, 2], false],
+    [4, [1, 2, 3], true],
+    [5, [1, 2, 3, 4], true],
+  ])("keeps Deep round %i normal answer-save false", async (roundNo, completedRounds, continueDeepConfirmed) => {
+    const { submitClarificationAnswers } = await submitRecoveredAnswers(completedRounds, { mode: "deep", continueDeepConfirmed });
+    expect(submitClarificationAnswers).toHaveBeenCalledWith("recovery-version-29", expect.objectContaining({
+      roundNo,
+      continueDeepConfirmed: false,
+      finishNow: false,
+    }));
+    expect(screen.queryByRole("checkbox", { name: /继续深度澄清/ })).not.toBeInTheDocument();
+  });
+
+  it("shows continuation only for the authoritative completed-three-round state and sends explicit true", async () => {
+    const { requirement } = await clarificationRecoveryFixture([1, 2, 3], { mode: "deep" });
+    if (!requirement.currentVersion) throw new Error("Fixture requires a current Requirement Version.");
+    const confirmedVersion = {
+      ...requirement.currentVersion,
+      id: "deep-confirmed-version",
+      content: {
+        ...requirement.currentVersion.content,
+        clarification: { ...requirement.currentVersion.content.clarification, continueDeepConfirmed: true },
+      },
+    };
+    const submitClarificationAnswers = vi.fn(async () => ({ version: confirmedVersion, baselineCandidateRef: null }));
+    const findClarificationResult = vi.fn();
+    const createTask = vi.fn(mockApi.ai.createTask);
     const api: FrontendApi = {
       ...mockApi,
       requirements: { ...mockApi.requirements, list: async () => [requirement.requirement], get: async () => requirement, submitClarificationAnswers },
-      ai: { ...mockApi.ai, findClarificationResult: async () => result },
+      ai: { ...mockApi.ai, findClarificationResult, createTask },
     };
+
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
-    await screen.findByRole("heading", { name: "3. 第 2 轮问题（3/3）" });
-    fireEvent.change(screen.getByLabelText("恢复问题 q-1"), { target: { value: "回答一" } });
-    fireEvent.change(screen.getByLabelText("恢复问题 q-2"), { target: { value: "回答二" } });
-    fireEvent.change(screen.getByLabelText("恢复问题 q-3"), { target: { value: "回答三" } });
-    fireEvent.click(screen.getByRole("button", { name: "保存回答" }));
+    await screen.findByRole("heading", { name: "确认继续深度澄清" });
+    expect(screen.queryByRole("button", { name: "开始预检 / 澄清" })).not.toBeInTheDocument();
+    expect(findClarificationResult).not.toHaveBeenCalled();
+    expect(createTask).not.toHaveBeenCalled();
+    const confirmButton = screen.getByRole("button", { name: "确认继续深度澄清" });
+    expect(confirmButton).toBeDisabled();
+    expect(submitClarificationAnswers).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "我确认继续深度澄清第 4 轮" }));
+    fireEvent.click(confirmButton);
+
     await waitFor(() => expect(submitClarificationAnswers).toHaveBeenCalledWith("recovery-version-29", {
       expectedVersion: requirement.requirement.version,
-      roundNo: 2,
-      answers: [
-        { questionId: "q-1", answer: "回答一" },
-        { questionId: "q-2", answer: "回答二" },
-        { questionId: "q-3", answer: "回答三" },
-      ],
+      roundNo: 3,
+      answers: [{ questionId: "q-3", answer: "已保存回答 3" }],
       continueDeepConfirmed: true,
       finishNow: false,
+    }));
+    expect(createTask).not.toHaveBeenCalled();
+  });
+
+  it("forces finish-now to keep deep confirmation false", async () => {
+    const { submitClarificationAnswers } = await submitRecoveredAnswers([1, 2], { mode: "deep" }, true);
+    expect(submitClarificationAnswers).toHaveBeenCalledWith("recovery-version-29", expect.objectContaining({
+      roundNo: 3,
+      continueDeepConfirmed: false,
+      finishNow: true,
     }));
   });
 

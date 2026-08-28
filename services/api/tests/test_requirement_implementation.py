@@ -276,6 +276,31 @@ class RequirementImplementationTests(unittest.TestCase):
         source = next(row for row in self.db.tables["requirement_version"] if row["id"] == version_id)
         self.assertEqual(source["content_json"]["clarification"]["rounds"], [])
 
+    def test_standard_round_one_rejects_true_absent_and_null_deep_confirmation(self):
+        _, version_id = self._create_unmaterialized_standard_version()
+        service = RequirementService(ai_result_authority=_QuestionsAuthority())
+        base_payload = {
+            "round_no": 1,
+            "answers": [{"question_id": "q-1", "answer": "A confirmed outcome"}],
+            "finish_now": False,
+            "expected_version": 2,
+        }
+        cases = (
+            ("true", {**base_payload, "continue_deep_confirmed": True}, "CLARIFICATION_ROUND_INVALID", 409, "Deep confirmation is not valid for this round"),
+            ("absent", dict(base_payload), "VALIDATION_ERROR", 422, "Request does not match the frozen schema"),
+            ("null", {**base_payload, "continue_deep_confirmed": None}, "VALIDATION_ERROR", 422, "Request does not match the frozen schema"),
+        )
+        for label, payload, expected_code, expected_status, expected_message in cases:
+            with self.subTest(value=label), self.assertRaises(ApiError) as raised:
+                service.submit_clarification_answers(
+                    version_id=version_id,
+                    user_id=10,
+                    payload=payload,
+                    key=f"clarify-answers-{label}",
+                    trace_id=f"trace-clarify-answers-{label}",
+                )
+            self.assertEqual((raised.exception.code, raised.exception.http_status, raised.exception.message), (expected_code, expected_status, expected_message))
+
     def test_answer_save_fails_closed_without_exactly_one_authoritative_result(self):
         _, version_id = self._create_unmaterialized_standard_version()
         for count in (0, 2):

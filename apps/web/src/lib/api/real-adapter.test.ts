@@ -577,6 +577,26 @@ describe("realApi", () => {
     expect(getRandomValues).toHaveBeenCalledOnce();
   });
 
+  it("preserves false from the clarification answer port DTO into the generated request", async () => {
+    client.submitRequirementClarificationAnswers.mockResolvedValue(failure("DEPENDENCY_UNAVAILABLE", 503));
+
+    await expect(realApi.requirements.submitClarificationAnswers("version-1", {
+      expectedVersion: 4,
+      roundNo: 1,
+      answers: [{ questionId: "q-1", answer: "answer" }],
+      continueDeepConfirmed: false,
+      finishNow: false,
+    })).rejects.toBeInstanceOf(PortError);
+
+    expect(client.submitRequirementClarificationAnswers.mock.calls[0][1]).toEqual({
+      expected_version: 4,
+      round_no: 1,
+      answers: [{ question_id: "q-1", answer: "answer" }],
+      continue_deep_confirmed: false,
+      finish_now: false,
+    });
+  });
+
   it("maps Test Record CRUD/submit and keeps command idempotency headers", async () => {
     const record = { id: "record-1", confirmation_round_id: "round-1", title: "登录验证", scope: "登录流程", environment: { name: "local", preconditions: ["服务已启动"] }, steps: ["输入账号", "提交"], expected_result: "进入首页", actual_result: "进入首页", result_status: "success", tester_id: "tester-1", status: "draft", submitted_at: null, row_version: 1, test_type: "manual", created_at: "2026-08-24T00:00:00Z", updated_at: "2026-08-24T00:00:00Z" } as const;
     client.listConfirmationRoundTestRecords.mockResolvedValue(success({ items: [record] }));
