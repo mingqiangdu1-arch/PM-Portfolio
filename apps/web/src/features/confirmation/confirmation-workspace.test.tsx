@@ -50,9 +50,23 @@ describe("ConfirmationWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
     await waitFor(() => expect(screen.getByText(/VERSION_CONFLICT/)).toBeInTheDocument());
     expect(input).toHaveValue(local);
-    fireEvent.click(screen.getByRole("button", { name: "项目负责人最终确认" }));
-    await waitFor(() => expect(screen.getByText(/READINESS_INCOMPLETE/)).toBeInTheDocument());
+    const confirmButton = screen.getByRole("button", { name: "项目负责人最终确认" });
+    expect(confirmButton).toBeDisabled();
+    fireEvent.click(confirmButton);
+    expect(api.confirmationRounds.confirm).not.toHaveBeenCalled();
     expect(screen.queryByText("确认轮次已正式确认。")).not.toBeInTheDocument();
+  });
+
+  it("blocks Owner confirmation until persisted readiness is complete", async () => {
+    const draft = { ...priorRound, id: "round-incomplete", status: "draft" as const, confirmStatus: null, isEffective: false, rowVersion: 1, readiness: { ...priorRound.readiness, scopeStatus: "not_ready" as const, implementationStatus: "not_ready" as const } };
+    const confirm = vi.fn();
+    const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { get: vi.fn().mockResolvedValue({ ...plan, confirmationState: "needs_confirmation" }) }, confirmationRounds: { list: vi.fn().mockResolvedValue([draft]), create: vi.fn(), updateDraft: vi.fn(), confirm } } as unknown as FrontendApi;
+    render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
+    const button = await screen.findByRole("button", { name: "项目负责人最终确认" });
+    expect(button).toBeDisabled();
+    expect(screen.getByText(/scopeStatus 必须为 ready/)).toBeInTheDocument();
+    fireEvent.click(button);
+    expect(confirm).not.toHaveBeenCalled();
   });
 
   it.each([["owner", true], ["implementer", true], ["reviewer", false]] as const)("exposes frozen confirmation capability for %s", async (role, enabled) => {
