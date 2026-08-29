@@ -591,10 +591,13 @@ function mapAiQuestion(question: AiResultContentQuestionsItem): ClarificationQue
 }
 
 function mapCapabilitySummary(summary: AiResult["capability_summary"]): AiResultView["capabilitySummary"] {
+  const truthLabel = summary.truth_label === "FORMAL_MOCK" || summary.truth_label === "REAL_PROVIDER"
+    ? summary.truth_label
+    : null;
   return {
-    truthLabel: summary.truth_label === "FORMAL_MOCK" ? "FORMAL_MOCK" : null,
-    providerCode: typeof summary.provider_code === "string" ? summary.provider_code : null,
-    modelCode: typeof summary.model_code === "string" ? summary.model_code : null,
+    truthLabel,
+    providerCode: truthLabel && typeof summary.provider_code === "string" ? summary.provider_code : null,
+    modelCode: truthLabel && typeof summary.model_code === "string" ? summary.model_code : null,
   };
 }
 

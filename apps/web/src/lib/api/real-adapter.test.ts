@@ -465,7 +465,13 @@ describe("realApi", () => {
       quality_summary: { format_status: "passed", traceability_status: "passed", safety_status: "passed", required_items_met: 3, required_items_total: 3, major_error: false, blocker_codes: [] },
     };
     client.getRequirementVersionClarificationResult.mockResolvedValueOnce(success(wireResult));
-    await expect(realApi.ai.findClarificationResult("29", "standard", 1)).resolves.toMatchObject({ id: "result-4", taskPublicId: "task-public-1", roundNo: 1, resultKind: "questions" });
+    await expect(realApi.ai.findClarificationResult("29", "standard", 1)).resolves.toMatchObject({
+      id: "result-4",
+      taskPublicId: "task-public-1",
+      roundNo: 1,
+      resultKind: "questions",
+      capabilitySummary: { truthLabel: "REAL_PROVIDER", providerCode: "deepseek", modelCode: "model" },
+    });
     expect(client.getRequirementVersionClarificationResult.mock.calls[0].slice(0, 2)).toEqual(["29", { mode: "standard", round_no: 1 }]);
 
     client.getRequirementVersionClarificationResult.mockResolvedValueOnce(failure("RESOURCE_NOT_FOUND", 404));
