@@ -727,6 +727,35 @@ class RequirementImplementationTests(unittest.TestCase):
         self.assertNotIn("one", serialized)
         self.assertNotIn("two", serialized)
 
+    def test_confirm_ai_formalized_version_validates_result_against_source_version(self):
+        requirement_id, source_version_id = self._create_requirement_for_confirmation()
+        self._link_trusted_ai(source_version_id, unresolved=[])
+        source = next(row for row in self.db.tables["requirement_version"] if row["id"] == source_version_id)
+        formalized = copy.deepcopy(source)
+        formalized.update(
+            id=self.db.next_version,
+            source_version_id=source_version_id,
+            version_no="2",
+            content_hash="b" * 64,
+            created_from_ai_result_id=501,
+        )
+        self.db.next_version += 1
+        self.db.tables["requirement_version"].append(formalized)
+        requirement = next(row for row in self.db.tables["requirement"] if row["id"] == requirement_id)
+        requirement["current_version_id"] = formalized["id"]
+
+        with patch("app.modules.requirements.service.transaction", self.db.transaction):
+            result = self.service.confirm(
+                version_id=formalized["id"],
+                user_id=10,
+                payload={"expected_version": 1, "risk_acceptances": []},
+                key="confirm-formalized-ai",
+                trace_id="trace-formalized-ai",
+            )
+
+        self.assertEqual(result["effective_version"]["id"], str(formalized["id"]))
+        self.assertEqual(result["gate_result"], "passed")
+
     def test_confirm_rejects_blocker_quality_and_invalid_acceptance_shapes(self):
         _, version_id = self._create_requirement_for_confirmation()
         version = self.db.tables["requirement_version"][0]

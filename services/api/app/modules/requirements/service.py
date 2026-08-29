@@ -480,6 +480,16 @@ class RequirementService:
                     {"result_id": result_id},
                 )
             )
+            target_version = addressed
+            if addressed.get("source_version_id") is not None:
+                target_version = _mapping(
+                    connection.execute(
+                        _sql("SELECT * FROM requirement_version WHERE id=:id"),
+                        {"id": addressed["source_version_id"]},
+                    )
+                )
+                if not target_version or str(target_version.get("requirement_id")) != str(requirement.get("id")):
+                    raise ApiError(code="RISK_ACCEPTANCE_INVALID", message="Linked AI result target is inconsistent", http_status=422)
         if not metadata:
             raise ApiError(code="RISK_ACCEPTANCE_INVALID", message="Linked AI result is unavailable", http_status=422)
         content = metadata.get("content_json")
@@ -509,7 +519,7 @@ class RequirementService:
         fingerprint = metadata.get("content_fingerprint") or metadata.get("fingerprint")
         if not isinstance(fingerprint, str) or not re.fullmatch(r"[0-9a-f]{64}", fingerprint) or _canonical_hash(content) != fingerprint:
             raise ApiError(code="RISK_ACCEPTANCE_INVALID", message="Linked AI result fingerprint is invalid", http_status=422)
-        target_hash = str(addressed.get("content_hash"))
+        target_hash = str(target_version.get("content_hash"))
         if (
             content.get("status") != "ready"
             or metadata.get("status") != "ready"
@@ -518,7 +528,7 @@ class RequirementService:
             or str(metadata.get("task_target_snapshot_hash")) != target_hash
             or str(content.get("task_public_id")) != str(metadata.get("task_public_id"))
             or str(metadata.get("target_object_id")) != str(requirement.get("id"))
-            or str(metadata.get("target_object_version_id")) != str(addressed.get("id"))
+            or str(metadata.get("target_object_version_id")) != str(target_version.get("id"))
         ):
             raise ApiError(code="RISK_ACCEPTANCE_INVALID", message="Linked AI result target is inconsistent", http_status=422)
         quality = content.get("quality")
