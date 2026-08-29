@@ -44,6 +44,20 @@ describe("ImplementationPlanWorkspace", () => {
     expect(saveVersion).toHaveBeenCalledWith("plan-1", expect.objectContaining({ expectedVersion: 2, changeNote: "补充实现边界与验收说明" }));
   });
 
+  it("normalizes legacy string items before saving", async () => {
+    const plan: ImplementationPlanView = { id: "plan-legacy", projectVersionId: "atlas-v2", sourcePrdVersionId: "prd-v1", sourceDesignReviewId: "review-1", name: "Legacy Plan", status: "draft", currentVersionId: null, effectiveVersionId: null, rowVersion: 1, confirmationState: "not_ready", versions: [{ id: "plan-version-1", implementationPlanId: "plan-legacy", sourceVersionId: null, versionNo: "V1", reviewId: "review-1", content, contentHash: "p".repeat(64), changeNote: "first", isEffective: true, createdBy: "user-1", createdAt: "2026-08-24T00:00:00Z" }] };
+    const saveVersion = vi.fn().mockResolvedValue({ version: { ...plan.versions[0], id: "plan-version-2", versionNo: "V2" }, planRowVersion: 2 });
+    const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { list: vi.fn().mockResolvedValue([{ ...plan, versions: [] }]), get: vi.fn().mockResolvedValue(plan), saveVersion } } as unknown as FrontendApi;
+    render(<ImplementationPlanWorkspace projectId="atlas" projectVersionId="atlas-v2" api={api} />);
+    await waitFor(() => expect(screen.getByDisplayValue(/implementation_plan\.mvp3\.v1/)).toBeInTheDocument());
+    const legacyContent = JSON.parse(JSON.stringify({ ...content, features: ["支持字符串形式的历史计划项"], businessRules: ["保留业务规则"], acceptanceScope: ["完成保存验收"] })) as unknown;
+    fireEvent.change(screen.getByLabelText("Plan Content JSON"), { target: { value: JSON.stringify(legacyContent) } });
+    fireEvent.change(screen.getByLabelText("变更说明"), { target: { value: "兼容历史计划内容格式" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存不可变版本" }));
+    await waitFor(() => expect(screen.getByText(/已保存为不可变版本/)).toBeInTheDocument());
+    expect(saveVersion).toHaveBeenCalledWith("plan-legacy", expect.objectContaining({ content: expect.objectContaining({ features: [{ key: "features_1", description: "支持字符串形式的历史计划项" }], businessRules: [{ key: "business_rules_1", description: "保留业务规则" }] }) }));
+  });
+
   it("keeps local content and exposes retry after a detail conflict/failure", async () => {
     const plan: ImplementationPlanView = { id: "plan-2", projectVersionId: "atlas-v2", sourcePrdVersionId: "prd-v1", sourceDesignReviewId: "review-1", name: "Plan 2", status: "draft", currentVersionId: null, effectiveVersionId: null, rowVersion: 1, confirmationState: "not_ready", versions: [] };
     const get = vi.fn().mockRejectedValueOnce(new Error("VERSION_CONFLICT")).mockResolvedValue(plan);

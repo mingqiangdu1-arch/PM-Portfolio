@@ -9,6 +9,43 @@ import type { FrontendApi, ImplementationPlanView, PlanContentView, ProjectCapab
 
 const pretty = (value: unknown) => JSON.stringify(value, null, 2);
 
+const planSections = ["features", "businessRules", "stateRequirements", "exceptions", "interactions", "dependencies", "acceptanceScope"] as const;
+type PlanSection = (typeof planSections)[number];
+
+const generatedItemKey = (section: PlanSection, index: number) => `${section.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)}_${index + 1}`;
+
+function normalizePlanContent(raw: unknown): PlanContentView {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Plan Content JSON 必须是对象。");
+  const value = raw as Record<string, unknown>;
+  if (value.schemaVersion !== "implementation_plan.mvp3.v1") throw new Error("schemaVersion 必须是 implementation_plan.mvp3.v1。");
+  const usedKeys = new Set<string>();
+  const normalized = { schemaVersion: "implementation_plan.mvp3.v1" as const } as PlanContentView;
+  for (const section of planSections) {
+    const items = value[section];
+    if (!Array.isArray(items)) throw new Error(`${section} 必须是数组。`);
+    normalized[section] = items.map((item, index) => {
+      if (typeof item === "string") {
+        const description = item.trim();
+        if (!description) throw new Error(`${section}[${index}] 描述不能为空。`);
+        const key = generatedItemKey(section, index);
+        if (usedKeys.has(key)) throw new Error(`Plan item key 重复：${key}`);
+        usedKeys.add(key);
+        return { key, description };
+      }
+      if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error(`${section}[${index}] 必须包含 key 和 description。`);
+      const candidate = item as Record<string, unknown>;
+      if (typeof candidate.key !== "string" || typeof candidate.description !== "string") throw new Error(`${section}[${index}] 必须包含 key 和 description。`);
+      const key = candidate.key.trim();
+      const description = candidate.description.trim();
+      if (!key || !description) throw new Error(`${section}[${index}] 的 key 和 description 不能为空。`);
+      if (usedKeys.has(key)) throw new Error(`Plan item key 重复：${key}`);
+      usedKeys.add(key);
+      return { key, description };
+    });
+  }
+  return normalized;
+}
+
 export function ImplementationPlanWorkspace({ projectId, projectVersionId, scenario = "ready", api = frontendApi }: { projectId?: string; projectVersionId: string; scenario?: Scenario; api?: FrontendApi }) {
   const [plans, setPlans] = useState<ImplementationPlanView[]>([]);
   const [selected, setSelected] = useState<ImplementationPlanView | null>(null);
@@ -82,7 +119,7 @@ export function ImplementationPlanWorkspace({ projectId, projectVersionId, scena
   }
   async function saveVersion(event: FormEvent) {
     event.preventDefault(); if (!selected || detailReadyFor !== selected.id || !canWrite) return; setBusy(true); setError(""); setMessage("");
-    try { const content = JSON.parse(contentText) as PlanContentView; const result = await api.implementationPlans.saveVersion(selected.id, { expectedVersion: selected.rowVersion, content, changeNote: changeNote.trim() }); const next = { ...selected, currentVersionId: result.version.id, rowVersion: result.planRowVersion, versions: [...selected.versions, result.version] }; setSelected(next); setPlans((items) => items.map((item) => item.id === next.id ? next : item)); setChangeNote(""); setMessage(`${result.version.versionNo} 已保存为不可变版本。`); }
+    try { const content = normalizePlanContent(JSON.parse(contentText)); const result = await api.implementationPlans.saveVersion(selected.id, { expectedVersion: selected.rowVersion, content, changeNote: changeNote.trim() }); const next = { ...selected, currentVersionId: result.version.id, rowVersion: result.planRowVersion, versions: [...selected.versions, result.version] }; setSelected(next); setPlans((items) => items.map((item) => item.id === next.id ? next : item)); setContentText(pretty(result.version.content)); setChangeNote(""); setMessage(`${result.version.versionNo} 已保存为不可变版本。`); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "保存失败，当前编辑内容已保留。 "); }
     finally { setBusy(false); }
   }
