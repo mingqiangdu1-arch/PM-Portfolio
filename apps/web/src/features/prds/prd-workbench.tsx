@@ -33,7 +33,16 @@ const blankContent = (): PrdContentView => ({
   acceptanceCriteria: [],
 });
 
-const lines = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
+const lines = (value: string) => {
+  const seen = new Set<string>();
+  return value.split("\n").map((item) => item.trim()).filter((item) => {
+    if (!item) return false;
+    const normalized = item.normalize("NFC");
+    if (seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+};
 const errorCopy = (reason: unknown) => {
   if (reason instanceof PortError) {
     const code = reason.apiCode;

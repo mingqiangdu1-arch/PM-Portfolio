@@ -96,4 +96,23 @@ describe("PrdWorkbench", () => {
     expect(await screen.findByRole("heading", { name: /设计评审 · 第 1 轮/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "通过评审" })).toBeInTheDocument();
   });
+
+  it("removes normalized duplicate array entries before saving", async () => {
+    render(<PrdWorkbench projectVersionId="pv-1" api={createApi()} />);
+    const name = await screen.findByLabelText("PRD 名称");
+    fireEvent.change(name, { target: { value: "冻结 PRD" } });
+    fireEvent.click(screen.getByRole("button", { name: "创建 PRD identity" }));
+    await screen.findByText(/PRD identity 已创建/);
+
+    fireEvent.change(screen.getByLabelText("背景"), { target: { value: "背景" } });
+    fireEvent.change(screen.getByLabelText("目标"), { target: { value: "目标" } });
+    fireEvent.change(screen.getByLabelText("主要用户"), { target: { value: "用户" } });
+    fireEvent.change(screen.getByLabelText("范围内"), { target: { value: "范围内" } });
+    fireEvent.change(screen.getByLabelText("范围外"), { target: { value: "范围外" } });
+    fireEvent.change(screen.getByLabelText("核心工作流"), { target: { value: "工作流" } });
+    fireEvent.change(screen.getByLabelText("关键规则"), { target: { value: "重复\n 重复 \n唯一" } });
+    fireEvent.change(screen.getByLabelText("验收标准"), { target: { value: "验收" } });
+
+    expect(screen.getByLabelText("关键规则")).toHaveValue("重复\n唯一");
+  });
 });
