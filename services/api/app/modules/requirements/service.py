@@ -938,11 +938,11 @@ class RequirementService:
                 if confirmed or len(rounds) != 3:
                     raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Deep confirmation requires exactly three completed rounds", http_status=409)
                 clarification["continue_deep_confirmed"] = True
-        if rounds:
-            if int(rounds[-1].get("round_no", 0)) != round_no:
-                raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
+        latest_round_no = int(rounds[-1].get("round_no", 0)) if rounds else 0
+        if rounds and latest_round_no == round_no:
             latest = dict(rounds[-1])
-        else:
+            prior_rounds = rounds[:-1]
+        elif round_no == latest_round_no + 1:
             if self.ai_result_authority is None:
                 raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
             result = self.ai_result_authority.find_authoritative_questions_result(
@@ -964,8 +964,11 @@ class RequirementService:
                 "questions": questions,
                 "answers": [],
             }
+            prior_rounds = rounds
+        else:
+            raise ApiError(code="CLARIFICATION_ROUND_INVALID", message="Clarification round is invalid", http_status=409)
         latest = self._bind_answers(latest, payload.get("answers"))
-        clarification["rounds"] = [*rounds[:-1], latest] if rounds else [latest]
+        clarification["rounds"] = [*prior_rounds, latest]
         if payload.get("finish_now"):
             clarification["finish_reason"] = "user_finished"
         version = self.revise(version_id=version_id, user_id=user_id, payload={"expected_version": expected, "content_json": content}, trace_id=trace_id, endpoint=endpoint if key else None, key=key, idempotency_payload=payload)

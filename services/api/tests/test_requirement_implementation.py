@@ -276,6 +276,31 @@ class RequirementImplementationTests(unittest.TestCase):
         source = next(row for row in self.db.tables["requirement_version"] if row["id"] == version_id)
         self.assertEqual(source["content_json"]["clarification"]["rounds"], [])
 
+    def test_next_round_appends_its_exact_authoritative_questions_result(self):
+        _, version_id = self._create_unmaterialized_standard_version()
+        authority = _QuestionsAuthority()
+        service = RequirementService(ai_result_authority=authority)
+        with patch("app.modules.requirements.service.transaction", self.db.transaction):
+            first = service.submit_clarification_answers(
+                version_id=version_id,
+                user_id=10,
+                payload={"round_no": 1, "answers": [{"question_id": "q-1", "answer": "round one"}], "finish_now": False, "continue_deep_confirmed": False, "expected_version": 2},
+                key="round-one",
+                trace_id="trace-round-one",
+            )
+            second = service.submit_clarification_answers(
+                version_id=int(first["requirement_version"]["id"]),
+                user_id=10,
+                payload={"round_no": 2, "answers": [{"question_id": "q-1", "answer": "round two"}], "finish_now": False, "continue_deep_confirmed": False, "expected_version": 3},
+                key="round-two",
+                trace_id="trace-round-two",
+            )
+        rounds = second["requirement_version"]["content_json"]["clarification"]["rounds"]
+        self.assertEqual([item["round_no"] for item in rounds], [1, 2])
+        self.assertEqual(rounds[0]["answers"][0]["answer"], "round one")
+        self.assertEqual(rounds[1]["answers"][0]["answer"], "round two")
+        self.assertEqual([call["round_no"] for call in authority.calls], [1, 2])
+
     def test_standard_round_one_rejects_true_absent_and_null_deep_confirmation(self):
         _, version_id = self._create_unmaterialized_standard_version()
         service = RequirementService(ai_result_authority=_QuestionsAuthority())

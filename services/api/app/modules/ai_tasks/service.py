@@ -109,11 +109,11 @@ def _clarification_input(content: dict[str, Any]) -> dict[str, Any]:
     if mode in {"auto", "skip"}:
         return {"mode": mode, "round_no": 0, "continue_deep_confirmed": False}
     completed = max((int(item.get("round_no", 0)) for item in rounds), default=0)
-    next_round = completed + 1
     limit = 3 if mode == "standard" else 5
+    next_round = limit if clarification.get("finish_reason") == "user_finished" else completed + 1
     if next_round > limit:
         next_round = limit
-    if mode == "deep" and next_round >= 4 and not confirmed:
+    if mode == "deep" and next_round >= 4 and not confirmed and clarification.get("finish_reason") != "user_finished":
         raise ApiError(code="DEEP_CONFIRMATION_REQUIRED", message="Deep clarification requires explicit confirmation", http_status=409)
     return {"mode": mode, "round_no": next_round, "continue_deep_confirmed": confirmed}
 

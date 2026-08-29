@@ -205,6 +205,7 @@ async function submitRecoveredAnswers(completedRounds: number[], options: { mode
   }
   fireEvent.click(screen.getByRole("button", { name: finishNow ? "结束并审核 Baseline" : "保存回答" }));
   await waitFor(() => expect(submitClarificationAnswers).toHaveBeenCalledOnce());
+  await waitFor(() => expect(createTask).toHaveBeenCalledOnce());
   return { requirement, result, submitClarificationAnswers, createTask };
 }
 
@@ -260,7 +261,7 @@ describe("RequirementWorkspace", () => {
       continueDeepConfirmed: false,
       finishNow: false,
     });
-    expect(createTask).not.toHaveBeenCalled();
+    await waitFor(() => expect(createTask).toHaveBeenCalledOnce());
   });
 
   it.each([
@@ -318,7 +319,7 @@ describe("RequirementWorkspace", () => {
       continueDeepConfirmed: true,
       finishNow: false,
     }));
-    expect(createTask).not.toHaveBeenCalled();
+    await waitFor(() => expect(createTask).toHaveBeenCalledOnce());
   });
 
   it("forces finish-now to keep deep confirmation false", async () => {

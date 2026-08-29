@@ -366,7 +366,11 @@ class AiTaskRuntimeTests(unittest.TestCase):
 
     def test_legacy_content_normalizes_false_without_inference(self) -> None:
         content = {"clarification": {"mode": "standard", "rounds": [{"round_no": 1}], "finish_reason": "user_finished"}}
-        self.assertEqual(_clarification_input(content)["continue_deep_confirmed"], False)
+        self.assertEqual(_clarification_input(content), {"mode": "standard", "round_no": 3, "continue_deep_confirmed": False})
+
+    def test_user_finished_deep_clarification_goes_directly_to_terminal_baseline_round(self) -> None:
+        content = {"clarification": {"mode": "deep", "rounds": [{"round_no": 2}], "finish_reason": "user_finished", "continue_deep_confirmed": False}}
+        self.assertEqual(_clarification_input(content), {"mode": "deep", "round_no": 5, "continue_deep_confirmed": False})
 
     def test_result_view_does_not_expose_content_ref(self) -> None:
         result = _result_view({"id": 4, "task_public_id": "task-1", "content_ref": "secret/object-key", "status": "ready"}, {"result_kind": "baseline", "mode": "auto", "round_no": 0})

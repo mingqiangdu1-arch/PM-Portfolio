@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPanel } from "@/components/status-panel";
 import { frontendApi, frontendApiMode } from "@/lib/api/frontend-api";
-import type { AiResultView, AiTaskView, ClarificationModeValue, ClarificationRoundView, FrontendApi, RequirementBaselineView, RequirementSummaryView, RequirementView } from "@/lib/api/ports";
+import type { AiResultView, AiTaskView, ClarificationModeValue, ClarificationRoundView, FrontendApi, RequirementBaselineView, RequirementSummaryView, RequirementVersionView, RequirementView } from "@/lib/api/ports";
 
 const dimensions = [["goal", "目标"], ["users_and_roles", "用户与角色"], ["usage_scenarios", "使用场景"], ["functional_scope", "功能范围"], ["business_rules", "业务规则"], ["exception_cases", "异常情况"], ["permission_requirements", "权限要求"], ["acceptance_criteria", "验收标准"]] as const;
 const blankBaseline = (): RequirementBaselineView => ({ assumptions: [], unresolvedItems: [], dimensions: Object.fromEntries(dimensions.map(([key]) => [key, { confirmedFacts: [], sourceRefs: [], deferredItems: [], notApplicableItems: [] }])) as unknown as RequirementBaselineView["dimensions"] });
@@ -176,8 +176,26 @@ export function RequirementWorkspace({ projectVersionId, projectId, requirementI
       }
     } catch (reason) { setError(reason instanceof Error ? reason.message : "澄清任务创建失败。"); } finally { setBusy(false); }
   }
-  async function submitAnswers(finishNow: boolean) { if (!requirement || !currentVersion) return; setBusy(true); setError(""); try { const expectedVersion = requirement.requirement.version; const next = await api.requirements.submitClarificationAnswers(currentVersion.id, { expectedVersion, roundNo: result?.roundNo ?? 1, answers: (result?.content?.questions ?? []).map((question) => ({ questionId: question.questionId, answer: answers[question.questionId] ?? "" })), continueDeepConfirmed: false, finishNow }); setRequirement((old) => old ? advanceRequirement(old, next.version, expectedVersion + 1) : old); if (finishNow) setBaseline(next.version.content.baseline); setNotice("回答已保存；后续 AI 任务可单独创建。" ); } catch (reason) { setError(reason instanceof Error ? reason.message : "回答保存失败。"); } finally { setBusy(false); } }
-  async function confirmDeepContinuation() { if (!requirement || !currentVersion || !deepContinuationRound || !deepContinueConfirmed) return; setBusy(true); setError(""); try { const expectedVersion = requirement.requirement.version; const next = await api.requirements.submitClarificationAnswers(currentVersion.id, { expectedVersion, roundNo: 3, answers: deepContinuationRound.answers.map((answer) => ({ ...answer })), continueDeepConfirmed: true, finishNow: false }); setRequirement((old) => old ? advanceRequirement(old, next.version, expectedVersion + 1) : old); setDeepContinueConfirmed(false); setNotice("已确认继续深度澄清；后续第 4 轮 AI 任务仍需单独发起。" ); } catch (reason) { setError(reason instanceof Error ? reason.message : "深度澄清继续确认失败。"); } finally { setBusy(false); } }
+  async function loadTaskResult(version: RequirementVersionView) {
+    const createdTask = await api.ai.createTask({ requirementId: version.requirementId, versionId: version.id, sourceRefIds: [version.content.rawInputRef.sourceId] });
+    const settledTask = await settleTask(api, createdTask);
+    setTask(settledTask);
+    const durableResult = settledTask.resultRefs.find((reference) => reference.status === "ready");
+    if (settledTask.status !== "ready" || !durableResult) throw new Error("AI 暂不可用，回答已保存，可稍后从当前版本恢复。");
+    const nextResult = await api.ai.getResult(durableResult.resultId);
+    setResult(nextResult);
+    setAnswers({});
+    if (nextResult.resultKind === "baseline" && nextResult.content?.baseline) {
+      const nextCandidate = copyBaseline(nextResult.content.baseline);
+      setCandidateBaseline(nextCandidate);
+      setBaseline(nextCandidate);
+      setNotice("需求基线候选已就绪，请核对质量与来源后采用。");
+    } else {
+      setNotice("下一轮澄清问题已就绪，请继续回答。");
+    }
+  }
+  async function submitAnswers(finishNow: boolean) { if (!requirement || !currentVersion) return; setBusy(true); setError(""); try { const expectedVersion = requirement.requirement.version; const next = await api.requirements.submitClarificationAnswers(currentVersion.id, { expectedVersion, roundNo: result?.roundNo ?? 1, answers: (result?.content?.questions ?? []).map((question) => ({ questionId: question.questionId, answer: answers[question.questionId] ?? "" })), continueDeepConfirmed: false, finishNow }); setRequirement((old) => old ? advanceRequirement(old, next.version, expectedVersion + 1) : old); setResult(null); await loadTaskResult(next.version); } catch (reason) { setError(reason instanceof Error ? reason.message : "回答保存或后续 AI 生成失败。"); } finally { setBusy(false); } }
+  async function confirmDeepContinuation() { if (!requirement || !currentVersion || !deepContinuationRound || !deepContinueConfirmed) return; setBusy(true); setError(""); try { const expectedVersion = requirement.requirement.version; const next = await api.requirements.submitClarificationAnswers(currentVersion.id, { expectedVersion, roundNo: 3, answers: deepContinuationRound.answers.map((answer) => ({ ...answer })), continueDeepConfirmed: true, finishNow: false }); setRequirement((old) => old ? advanceRequirement(old, next.version, expectedVersion + 1) : old); setDeepContinueConfirmed(false); await loadTaskResult(next.version); } catch (reason) { setError(reason instanceof Error ? reason.message : "深度澄清继续确认失败。"); } finally { setBusy(false); } }
   async function confirmBaseline() { if (!requirement || !currentVersion) return; setBusy(true); setError(""); try { const expectedVersion = requirement.requirement.version; const revised = await api.requirements.revise(currentVersion.id, { expectedVersion, content: { ...currentVersion.content, baseline } }); const revisedAggregateVersion = expectedVersion + 1; setRequirement((old) => old ? advanceRequirement(old, revised, revisedAggregateVersion) : old); const confirmed = await api.requirements.confirm(revised.id, { expectedVersion: revisedAggregateVersion }); setRequirement((old) => old ? { ...advanceRequirement(old, confirmed.version, revisedAggregateVersion + 1), requirement: { ...old.requirement, status: "effective", currentVersionId: confirmed.version.id, effectiveVersionId: confirmed.version.id, version: revisedAggregateVersion + 1 }, effectiveVersion: confirmed.version } : old); setNotice(`需求基线已确认（${confirmed.gateResult}）。`); } catch (reason) { setError(reason instanceof Error ? reason.message : "需求基线确认失败。"); } finally { setBusy(false); } }
   async function formalizeBaseline() {
     if (!requirement || !currentVersion || !result || result.resultKind !== "baseline" || result.status !== "ready" || !result.content?.baseline) return;
