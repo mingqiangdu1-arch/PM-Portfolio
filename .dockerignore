@@ -1,0 +1,8 @@
+.git
+.worktrees
+.pnpm-store
+**/.next
+**/__pycache__
+**/coverage
+**/node_modules
+*.tar
