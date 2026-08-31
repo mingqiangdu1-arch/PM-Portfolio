@@ -162,6 +162,23 @@ class Sprint1ImplementationTests(unittest.TestCase):
         self.assertIn("The selected file is empty", source)
         self.assertLess(source.index("FILE_TOO_LARGE"), source.index("with transaction()"))
 
+        service = Sprint1Service()
+        with self.assertRaises(ApiError) as empty:
+            service.init_upload(
+                user_id=1,
+                payload={
+                    "project_id": "1",
+                    "logical_name": "empty.txt",
+                    "size_bytes": 0,
+                    "mime_type": "text/plain",
+                    "checksum_sha256": "0" * 64,
+                },
+                key="upload-empty-key",
+                trace_id="trace",
+            )
+        self.assertEqual(empty.exception.code, "VALIDATION_ERROR")
+        self.assertEqual(empty.exception.message, "The selected file is empty")
+
     def test_registration_accepts_eight_characters_and_rejects_seven(self) -> None:
         service = Sprint1Service()
         with self.assertRaises(ApiError) as weak:

@@ -28,6 +28,35 @@ from app.platform.storage import S3ObjectStorage, S3Signer, checksum_sha256_base
 _POSITIVE_ID = re.compile(r"^[1-9][0-9]*$")
 
 
+def _require_exact_keys(
+    payload: Any,
+    *,
+    required: set[str],
+    optional: set[str],
+    command: str,
+) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise ApiError(
+            code="VALIDATION_ERROR",
+            message=f"{command} payload must be an object",
+            http_status=422,
+        )
+    keys = set(payload)
+    if required - keys:
+        raise ApiError(
+            code="VALIDATION_ERROR",
+            message=f"{command} payload is missing required fields",
+            http_status=422,
+        )
+    if keys - required - optional:
+        raise ApiError(
+            code="VALIDATION_ERROR",
+            message=f"{command} payload contains unsupported fields",
+            http_status=422,
+        )
+    return payload
+
+
 def _id(value: Any, field: str) -> int:
     if isinstance(value, bool) or not isinstance(value, (str, int)) or not _POSITIVE_ID.fullmatch(str(value)):
         raise ApiError(code="VALIDATION_ERROR", message=f"{field} must be a positive ID", http_status=422)
