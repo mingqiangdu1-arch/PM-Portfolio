@@ -48,11 +48,22 @@ class OpenApiContractTests(unittest.TestCase):
             "/api/v1/project-versions/{left_id}:compare",
             "/api/v1/files/uploads",
             "/api/v1/files/uploads/{upload_id}:complete",
+            "/api/v1/projects/{project_id}/files",
             "/api/v1/file-versions/{version_id}:download",
             "/api/v1/file-versions/{version_id}/relations",
             "/internal/v1/health",
         }
         self.assertTrue(required.issubset(self.schema["paths"]))
+
+    def test_registration_password_and_project_file_recovery_contract(self) -> None:
+        register = self.schema["components"]["schemas"]["AuthRegisterRequest"]
+        self.assertEqual(register["properties"]["password"]["minLength"], 8)
+        file_list = self.schema["components"]["schemas"]["ProjectFileList"]
+        self.assertEqual(file_list["required"], ["items"])
+        self.assertEqual(
+            file_list["properties"]["items"]["items"]["$ref"],
+            "#/components/schemas/FileData",
+        )
 
     def test_internal_health_service_identity_is_frozen(self) -> None:
         operation = self.schema["paths"]["/internal/v1/health"]["get"]

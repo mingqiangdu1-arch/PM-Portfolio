@@ -217,6 +217,12 @@ def get_file(file_id: int, request: Request, authorization: Annotated[str | None
     return _ok(request, service.get_file(file_id=file_id, user_id=user["id"]))
 
 
+@router.get("/api/v1/projects/{project_id}/files")
+def list_project_files(project_id: int, request: Request, authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+    user = _user(authorization)
+    return _ok(request, service.list_project_files(project_id=project_id, user_id=user["id"]))
+
+
 @router.get("/api/v1/files/{file_id}/versions")
 def list_file_versions(file_id: int, request: Request, authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = _user(authorization)

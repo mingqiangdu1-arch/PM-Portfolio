@@ -3,6 +3,7 @@ services:
     environment:
       APP_ENV: production
       DOCS_ENABLED: "false"
+      OBJECT_STORAGE_PUBLIC_ENDPOINT: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:?set browser-accessible object storage endpoint}
     deploy:
       replicas: 3
       update_config:

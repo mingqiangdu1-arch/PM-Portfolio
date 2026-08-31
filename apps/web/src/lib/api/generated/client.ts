@@ -131,6 +131,7 @@ import type {
   Mvp5IssueUpdateRequest,
   ProjectCommandRequest,
   ProjectContextResponse,
+  ProjectFileListResponse,
   ProjectListResponse,
   ProjectMemberListResponse,
   ProjectMemberResponse,
@@ -4329,6 +4330,86 @@ export const updateProjectContext = async (projectId: string,
 
   const data: updateProjectContextResponse['data'] = body ? JSON.parse(body) : {}
   return { data, status: res.status, headers: res.headers } as updateProjectContextResponse
+}
+
+
+
+export type listProjectFilesResponse200 = {
+  data: ProjectFileListResponse
+  status: 200
+}
+
+export type listProjectFilesResponse400 = {
+  data: StandardErrorResponse
+  status: 400
+}
+
+export type listProjectFilesResponse401 = {
+  data: StandardErrorResponse
+  status: 401
+}
+
+export type listProjectFilesResponse403 = {
+  data: StandardErrorResponse
+  status: 403
+}
+
+export type listProjectFilesResponse404 = {
+  data: StandardErrorResponse
+  status: 404
+}
+
+export type listProjectFilesResponse409 = {
+  data: StandardErrorResponse
+  status: 409
+}
+
+export type listProjectFilesResponse422 = {
+  data: StandardErrorResponse
+  status: 422
+}
+
+export type listProjectFilesResponse500 = {
+  data: StandardErrorResponse
+  status: 500
+}
+
+export type listProjectFilesResponseSuccess = (listProjectFilesResponse200) & {
+  headers: Headers;
+};
+export type listProjectFilesResponseError = (listProjectFilesResponse400 | listProjectFilesResponse401 | listProjectFilesResponse403 | listProjectFilesResponse404 | listProjectFilesResponse409 | listProjectFilesResponse422 | listProjectFilesResponse500) & {
+  headers: Headers;
+};
+
+export type listProjectFilesResponse = (listProjectFilesResponseSuccess | listProjectFilesResponseError)
+
+export const getListProjectFilesUrl = (projectId: string,) => {
+
+
+
+
+  return `${apiBaseUrl}/api/v1/projects/${projectId}/files`
+}
+
+/**
+ * Lists only completed, available project files so the Public UI can recover after reload.
+ */
+export const listProjectFiles = async (projectId: string, options?: RequestInit): Promise<listProjectFilesResponse> => {
+
+  const res = await fetch(getListProjectFilesUrl(projectId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: listProjectFilesResponse['data'] = body ? JSON.parse(body) : {}
+  return { data, status: res.status, headers: res.headers } as listProjectFilesResponse
 }
 
 

@@ -36,6 +36,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
       interval: 10s
@@ -145,6 +147,24 @@ services:
       timeout: 5s
       retries: 20
     restart: unless-stopped
+    networks: [data]
+
+  minio-init:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        export MINIO_ROOT_USER="$$(cat /run/secrets/object_storage_access_key)";
+        export MINIO_ROOT_PASSWORD="$$(cat /run/secrets/object_storage_secret_key)";
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD";
+        mc mb --ignore-existing "local/${OBJECT_STORAGE_BUCKET:-product-files}"
+    secrets:
+      - object_storage_access_key
+      - object_storage_secret_key
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
     networks: [data]
 
 networks:

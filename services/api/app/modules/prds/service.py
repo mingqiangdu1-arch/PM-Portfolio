@@ -201,6 +201,73 @@ def _review(row: dict[str, Any], scope: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _current_review(connection: Any, *, prd: dict[str, Any]) -> dict[str, Any] | None:
+    current_version_id = prd.get("current_version_id")
+    if current_version_id is None:
+        return None
+    candidates = connection.execute(
+        _sql(
+            "SELECT dr.id FROM design_review dr "
+            "JOIN design_review_scope scope ON scope.design_review_id=dr.id "
+            "JOIN prd_version version ON version.id=scope.object_version_id "
+            "WHERE dr.archived_at IS NULL AND dr.project_version_id=:project_version_id "
+            "AND scope.object_type='PRD' AND scope.object_id=:prd_id "
+            "AND scope.object_version_id=:version_id AND version.prd_id=:prd_id "
+            "AND scope.content_hash=version.content_hash"
+        ),
+        {
+            "project_version_id": int(prd["project_version_id"]),
+            "prd_id": int(prd["id"]),
+            "version_id": int(current_version_id),
+        },
+    ).mappings().all()
+    if len(candidates) > 1:
+        raise ApiError(
+            code="INVALID_STATE",
+            message="Current PRD version is bound to multiple design reviews",
+            http_status=409,
+        )
+    if not candidates:
+        if prd["status"] in {
+            PrdStatus.IN_REVIEW.value,
+            PrdStatus.CHANGES_REQUESTED.value,
+            PrdStatus.CONFIRMED.value,
+        }:
+            raise ApiError(
+                code="INVALID_STATE",
+                message="Current PRD review relation is missing",
+                http_status=409,
+            )
+        return None
+    review_id = int(candidates[0]["id"])
+    review = _mapping(
+        connection.execute(
+            _sql("SELECT * FROM design_review WHERE id=:id AND archived_at IS NULL"),
+            {"id": review_id},
+        )
+    )
+    scope = _mapping(
+        connection.execute(
+            _sql(
+                "SELECT * FROM design_review_scope WHERE design_review_id=:review_id "
+                "AND object_type='PRD' AND object_id=:prd_id AND object_version_id=:version_id"
+            ),
+            {
+                "review_id": review_id,
+                "prd_id": int(prd["id"]),
+                "version_id": int(current_version_id),
+            },
+        )
+    )
+    if not review or not scope:
+        raise ApiError(
+            code="INVALID_STATE",
+            message="Current PRD review relation is incomplete",
+            http_status=409,
+        )
+    return _review(review, scope)
+
+
 def _audit_and_outbox(
     connection: Any,
     *,
@@ -290,7 +357,7 @@ class PrdService:
                 raise ApiError(code="NOT_FOUND", message="PRD was not found", http_status=404)
             project_version = _project_version(connection, int(prd["project_version_id"]))
             _require_access(connection, project_id=int(project_version["project_id"]), user_id=user_id, write=False)
-            return {"prd": _prd(prd)}
+            return {"prd": _prd(prd), "design_review": _current_review(connection, prd=prd)}
 
     def get_version(self, *, version_id: int, user_id: int) -> dict[str, Any]:
         with readonly() as connection:
@@ -323,7 +390,7 @@ class PrdService:
                 prd = _mapping(connection.execute(_sql("SELECT * FROM prd WHERE id=:id"), {"id": int(replay)}))
                 if not prd:
                     raise ApiError(code="NOT_FOUND", message="PRD was not found", http_status=404)
-                return {"prd": _prd(prd)}
+                return {"prd": _prd(prd), "design_review": None}
             existing = _mapping(connection.execute(_sql("SELECT id FROM prd WHERE project_version_id=:version_id AND is_main=1 AND archived_at IS NULL FOR UPDATE"), {"version_id": version_id}))
             if existing:
                 raise ApiError(code="INVALID_STATE", message="A main PRD already exists", http_status=409)
@@ -347,7 +414,7 @@ class PrdService:
             _idempotency_complete(connection, user_id=user_id, endpoint=endpoint, key=key, response_ref=prd_id)
             prd = _mapping(connection.execute(_sql("SELECT * FROM prd WHERE id=:id"), {"id": prd_id}))
             assert prd is not None
-            return {"prd": _prd(prd)}
+            return {"prd": _prd(prd), "design_review": None}
 
     def save_version(self, *, prd_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
         payload = _require_exact_keys(

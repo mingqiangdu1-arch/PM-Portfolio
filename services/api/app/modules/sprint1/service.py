@@ -438,8 +438,8 @@ class Sprint1Service:
 
     def register(self, *, email: str, password: str, display_name: str, trace_id: str) -> tuple[dict[str, Any], str]:
         normalized = email.strip().casefold()
-        if not 12 <= len(password) <= 128:
-            raise ApiError(code="WEAK_PASSWORD", message="Password must contain 12 to 128 characters")
+        if not 8 <= len(password) <= 128:
+            raise ApiError(code="WEAK_PASSWORD", message="Password must contain 8 to 128 characters")
         refresh = new_refresh_token()
         session_public_id = str(uuid.uuid4())
         command_id = _command_id()
@@ -773,10 +773,17 @@ class Sprint1Service:
             domains = [field for field in ("lifecycle_status", "workflow_node", "parent_version_id") if left[field] != right[field]]
             return {"left_version_id": str(left_id), "right_version_id": str(right_id), "changed_domains": domains, "summary": f"{len(domains)} version domains changed", "source_refs": []}
 
-    def _signer(self) -> S3Signer:
+    def _signer(self, *, public: bool = False) -> S3Signer:
         if not self.settings.object_storage_access_key or not self.settings.object_storage_secret_key:
             raise ApiError(code="STORAGE_UNAVAILABLE", message="Object storage is not configured", http_status=503)
-        return S3Signer(endpoint=self.settings.object_storage_endpoint, bucket=self.settings.object_storage_bucket, region=self.settings.object_storage_region, access_key=self.settings.object_storage_access_key, secret_key=self.settings.object_storage_secret_key)
+        endpoint = self.settings.object_storage_public_endpoint if public else self.settings.object_storage_endpoint
+        if not endpoint:
+            raise ApiError(
+                code="STORAGE_UNAVAILABLE",
+                message="Public object storage endpoint is not configured",
+                http_status=503,
+            )
+        return S3Signer(endpoint=endpoint, bucket=self.settings.object_storage_bucket, region=self.settings.object_storage_region, access_key=self.settings.object_storage_access_key, secret_key=self.settings.object_storage_secret_key)
 
     def _storage(self) -> S3ObjectStorage:
         return S3ObjectStorage(self._signer())
@@ -790,9 +797,27 @@ class Sprint1Service:
         return f"{body}.{signature}"
 
     def init_upload(self, *, user_id: int, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:
+        payload = _require_exact_keys(
+            payload,
+            required={"project_id", "logical_name", "size_bytes", "mime_type", "checksum_sha256"},
+            optional={"extension", "relation"},
+            command="Initialize file upload",
+        )
+        if not isinstance(payload["project_id"], str) or not _POSITIVE_ID.fullmatch(payload["project_id"]):
+            raise ApiError(code="VALIDATION_ERROR", message="project_id must be an ID", http_status=422)
+        if not isinstance(payload["logical_name"], str) or not payload["logical_name"].strip():
+            raise ApiError(code="VALIDATION_ERROR", message="File name is required", http_status=422)
+        if not isinstance(payload["size_bytes"], int) or isinstance(payload["size_bytes"], bool) or payload["size_bytes"] < 1:
+            raise ApiError(code="VALIDATION_ERROR", message="The selected file is empty", http_status=422)
+        if payload["size_bytes"] > 52_428_800:
+            raise ApiError(code="FILE_TOO_LARGE", message="The selected file exceeds the 50 MB limit", http_status=422)
+        if not isinstance(payload["mime_type"], str) or not payload["mime_type"].strip():
+            raise ApiError(code="VALIDATION_ERROR", message="File type is required", http_status=422)
+        if not isinstance(payload["checksum_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", payload["checksum_sha256"]):
+            raise ApiError(code="VALIDATION_ERROR", message="File checksum is invalid", http_status=422)
         project_id = int(payload["project_id"])
         endpoint = "POST:/api/v1/files/uploads"
-        signer = self._signer()
+        signer = self._signer(public=True)
         with transaction() as connection:
             replay = _idempotency_begin(connection, user_id=user_id, endpoint=endpoint, key=key, payload=payload)
             _require_action(connection, project_id=project_id, user_id=user_id, action="file:upload")
@@ -1094,6 +1119,22 @@ class Sprint1Service:
             current = None if not row["version_id"] else {"id": str(row["version_id"]), "stored_file_id": str(file_id), "version_no": row["version_no"], "mime_type": row["mime_type"], "extension": row["extension"], "size_bytes": row["size_bytes"], "checksum_sha256": row["checksum_sha256"], "storage_status": row["storage_status"], "created_at": row["version_created_at"].replace(tzinfo=UTC).isoformat()}
             return {"file": {"id": str(file_id), "project_id": str(row["project_id"]), "logical_name": row["logical_name"], "status": row["status"], "current_version_id": str(row["current_version_id"]) if row["current_version_id"] else None, "version": row["row_version"]}, "current_version": current, "relations": [{**relation, "object_id": str(relation["object_id"]), "object_version_id": str(relation["object_version_id"]) if relation["object_version_id"] else None} for relation in relations]}
 
+    def list_project_files(self, *, project_id: int, user_id: int) -> dict[str, Any]:
+        with readonly() as connection:
+            _require_action(connection, project_id=project_id, user_id=user_id, action="project:view")
+            file_ids = [
+                int(row["id"])
+                for row in connection.execute(
+                    _sql(
+                        "SELECT id FROM stored_file WHERE project_id=:project_id "
+                        "AND status='active' AND archived_at IS NULL AND current_version_id IS NOT NULL "
+                        "ORDER BY updated_at DESC,id DESC"
+                    ),
+                    {"project_id": project_id},
+                ).mappings().all()
+            ]
+        return {"items": [self.get_file(file_id=file_id, user_id=user_id) for file_id in file_ids]}
+
     def list_file_versions(self, *, file_id: int, user_id: int) -> dict[str, Any]:
         file_data = self.get_file(file_id=file_id, user_id=user_id)
         with readonly() as connection:
@@ -1108,7 +1149,7 @@ class Sprint1Service:
                 raise ApiError(code="RESOURCE_NOT_FOUND", message="Resource not found", http_status=404)
             _require_action(connection, project_id=row["project_id"], user_id=user_id, action="file:download")
             _audit(connection, actor_user_id=user_id, operation="file.download_sign", object_type="file_version", object_id=row["stored_file_id"], object_version_id=version_id, trace_id=trace_id, command_id=_command_id(), metadata={"disposition": disposition})
-        signed = self._signer().presign(method="GET", object_key=row["object_key"], expires_seconds=300)
+        signed = self._signer(public=True).presign(method="GET", object_key=row["object_key"], expires_seconds=300)
         return {"download_url": signed.url, "expires_at": signed.expires_at.isoformat(), "file_name": row["logical_name"], "mime_type": row["mime_type"], "size_bytes": row["size_bytes"]}
 
     def create_relation(self, *, version_id: int, user_id: int, payload: dict[str, Any], key: str, trace_id: str) -> dict[str, Any]:

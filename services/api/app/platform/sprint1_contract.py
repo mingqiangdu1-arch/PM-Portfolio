@@ -111,7 +111,7 @@ SPRINT1_SCHEMAS: dict[str, dict[str, Any]] = {
     "AuthRegisterRequest": _object(
         {
             "email": _string(format="email", maxLength=254),
-            "password": _string(minLength=12, maxLength=128, format="password"),
+            "password": _string(minLength=8, maxLength=128, format="password"),
             "display_name": _string(minLength=1, maxLength=128),
         },
         ["email", "password", "display_name"],
@@ -414,6 +414,11 @@ SPRINT1_SCHEMAS: dict[str, dict[str, Any]] = {
         ["file", "current_version", "relations"],
     ),
     "FileResponse": _envelope("FileData"),
+    "ProjectFileList": _object(
+        {"items": {"type": "array", "items": {"$ref": "#/components/schemas/FileData"}}},
+        ["items"],
+    ),
+    "ProjectFileListResponse": _envelope("ProjectFileList"),
     "FileVersionList": {
         **_object(
         {
@@ -484,6 +489,7 @@ SPRINT1_PATHS: dict[str, dict[str, Any]] = {
     "/api/v1/files/uploads/{upload_id}:complete": {"post": _operation("completeFileUpload", "files", "FileResponse", request_schema="CompleteFileUploadRequest", parameters=[UPLOAD_ID], idempotent=True)},
     "/api/v1/files/uploads/{upload_id}:abort": {"post": _operation("abortFileUpload", "files", "AbortFileUploadResponse", request_schema="AbortFileUploadRequest", parameters=[UPLOAD_ID], idempotent=True)},
     "/api/v1/files/{file_id}": {"get": _operation("getFile", "files", "FileResponse", parameters=[FILE_ID])},
+    "/api/v1/projects/{project_id}/files": {"get": _operation("listProjectFiles", "files", "ProjectFileListResponse", parameters=[PROJECT_ID], description="Lists only completed, available project files so the Public UI can recover after reload.")},
     "/api/v1/files/{file_id}/versions": {"get": _operation("listFileVersions", "files", "FileVersionListResponse", parameters=[FILE_ID, {"$ref": "#/components/parameters/Cursor"}])},
     "/api/v1/file-versions/{version_id}:download": {"post": _operation("createFileVersionDownload", "files", "DownloadFileVersionResponse", request_schema="DownloadFileVersionRequest", parameters=[VERSION_ID])},
     "/api/v1/file-versions/{version_id}/relations": {"post": _operation("createFileRelation", "files", "FileRelationResponse", request_schema="FileRelationInput", parameters=[VERSION_ID], idempotent=True)},

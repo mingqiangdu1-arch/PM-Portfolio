@@ -1424,7 +1424,7 @@
           "password": {
             "format": "password",
             "maxLength": 128,
-            "minLength": 12,
+            "minLength": 8,
             "type": "string"
           }
         },
@@ -3423,6 +3423,81 @@
       "Mvp2PrdData": {
         "additionalProperties": false,
         "properties": {
+          "design_review": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "project_version_id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "round_no": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "row_version": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "scope": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "content_hash": {
+                        "pattern": "^[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      "prd_id": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "prd_version_id": {
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "prd_id",
+                      "prd_version_id",
+                      "content_hash"
+                    ],
+                    "type": "object"
+                  },
+                  "status": {
+                    "enum": [
+                      "open",
+                      "changes_requested",
+                      "passed"
+                    ],
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "project_version_id",
+                  "round_no",
+                  "status",
+                  "summary",
+                  "row_version",
+                  "scope"
+                ],
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "prd": {
             "additionalProperties": false,
             "properties": {
@@ -3476,7 +3551,8 @@
           }
         },
         "required": [
-          "prd"
+          "prd",
+          "design_review"
         ],
         "type": "object"
       },
@@ -6252,6 +6328,46 @@
           },
           "data": {
             "$ref": "#/components/schemas/ProjectContext"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "trace_id"
+        ],
+        "type": "object"
+      },
+      "ProjectFileList": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FileData"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "ProjectFileListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "const": "OK",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProjectFileList"
           },
           "message": {
             "type": "string"
@@ -13532,6 +13648,65 @@
         ],
         "tags": [
           "projects"
+        ],
+        "x-contract-phase": "sprint-1-candidate",
+        "x-implementation-status": "implemented-candidate"
+      }
+    },
+    "/api/v1/projects/{project_id}/files": {
+      "get": {
+        "description": "Lists only completed, available project files so the Public UI can recover after reload.",
+        "operationId": "listProjectFiles",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectFileListResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "401": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "403": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "404": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "409": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "422": {
+            "$ref": "#/components/responses/StandardError"
+          },
+          "500": {
+            "$ref": "#/components/responses/StandardError"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "files"
         ],
         "x-contract-phase": "sprint-1-candidate",
         "x-implementation-status": "implemented-candidate"

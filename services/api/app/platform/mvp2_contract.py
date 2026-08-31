@@ -200,7 +200,10 @@ def _schemas() -> dict[str, Any]:
         "Mvp2Prd": prd,
         "Mvp2PrdVersion": version,
         "Mvp2DesignReview": review,
-        "Mvp2PrdData": _object({"prd": prd}, ["prd"]),
+        "Mvp2PrdData": _object(
+            {"prd": prd, "design_review": {"oneOf": [review, {"type": "null"}]}},
+            ["prd", "design_review"],
+        ),
         "Mvp2PrdVersionData": _object({"prd_version": version}, ["prd_version"]),
         "Mvp2DesignReviewData": _object({"design_review": review}, ["design_review"]),
         "Mvp2CreatePrdRequest": _object(

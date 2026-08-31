@@ -125,6 +125,9 @@ class PrdMySqlIntegrationTests(unittest.TestCase):
         review_2_id = int(review_2["design_review"]["id"])
         passed = self.service.decide_review(review_id=review_2_id, user_id=self.user_id, payload={"expected_version": 1, "decision": "pass"}, key=f"pass-{self.token}", trace_id=self.trace)
         self.assertEqual(passed["design_review"]["status"], "passed")
+        context = self.service.get_prd(prd_id=prd_id, user_id=self.user_id)
+        self.assertEqual(context["design_review"]["id"], str(review_2_id))
+        self.assertEqual(context["design_review"]["scope"]["prd_version_id"], str(version_2))
 
         with self.engine.connect() as connection:
             prd = connection.execute(text("SELECT status,current_version_id,row_version FROM prd WHERE id=:id"), {"id": prd_id}).one()

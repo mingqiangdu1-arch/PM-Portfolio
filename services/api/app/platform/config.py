@@ -36,6 +36,7 @@ class Settings(BaseModel):
     ai_api_url: str | None = None
     access_jwt_ttl_seconds: int = 900
     object_storage_endpoint: str = "http://minio:9000"
+    object_storage_public_endpoint: str | None = None
     object_storage_bucket: str = "product-files"
     object_storage_region: str = "us-east-1"
 
@@ -73,6 +74,7 @@ def get_settings() -> Settings:
         ai_api_url=os.getenv("AI_API_URL"),
         access_jwt_ttl_seconds=int(os.getenv("ACCESS_JWT_TTL_SECONDS", "900")),
         object_storage_endpoint=os.getenv("OBJECT_STORAGE_ENDPOINT", "http://minio:9000"),
+        object_storage_public_endpoint=os.getenv("OBJECT_STORAGE_PUBLIC_ENDPOINT"),
         object_storage_bucket=os.getenv("OBJECT_STORAGE_BUCKET", "product-files"),
         object_storage_region=os.getenv("OBJECT_STORAGE_REGION", "us-east-1"),
     )
