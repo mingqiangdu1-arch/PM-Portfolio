@@ -8,6 +8,7 @@ from unittest.mock import patch
 from app.main import app
 from app.modules.sprint1.service import Sprint1Service
 from app.platform.errors import ApiError
+from app.platform.http import require_idempotency_key
 
 
 class Sprint1ImplementationTests(unittest.TestCase):
@@ -55,6 +56,38 @@ class Sprint1ImplementationTests(unittest.TestCase):
             ("GET", "/internal/v1/health"),
         }
         self.assertTrue(required.issubset(runtime), required - runtime)
+
+    def test_upload_commands_bind_idempotency_key_from_header_dependency(self) -> None:
+        def find_route(routes: list[object], path: str) -> object | None:
+            for route in routes:
+                if getattr(route, "path", None) == path and "POST" in getattr(route, "methods", set()):
+                    return route
+                nested = getattr(route, "routes", None)
+                if nested and (match := find_route(list(nested), path)) is not None:
+                    return match
+                original_router = getattr(route, "original_router", None)
+                if original_router is not None and (
+                    match := find_route(list(original_router.routes), path)
+                ) is not None:
+                    return match
+            return None
+
+        for path in (
+            "/api/v1/files/uploads",
+            "/api/v1/files/uploads/{upload_id}:complete",
+            "/api/v1/files/uploads/{upload_id}:abort",
+        ):
+            with self.subTest(path=path):
+                route = find_route(list(app.routes), path)
+                self.assertIsNotNone(route)
+                assert route is not None
+                self.assertFalse(
+                    any(parameter.alias == "key" for parameter in route.dependant.query_params)
+                )
+                self.assertIn(
+                    ("key", require_idempotency_key),
+                    [(dependency.name, dependency.call) for dependency in route.dependant.dependencies],
+                )
 
     def test_refresh_replay_commits_family_revoke_before_error(self) -> None:
         source = inspect.getsource(Sprint1Service.refresh)

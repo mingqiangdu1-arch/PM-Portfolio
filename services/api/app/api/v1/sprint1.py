@@ -194,19 +194,19 @@ def update_context(project_id: int, request: Request, body: Annotated[dict[str, 
 
 
 @router.post("/api/v1/files/uploads")
-def init_upload(request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, require_idempotency_key], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+def init_upload(request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, Depends(require_idempotency_key)], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = _user(authorization)
     return _ok(request, service.init_upload(user_id=user["id"], payload=body, key=key, trace_id=request.state.trace_id))
 
 
 @router.post("/api/v1/files/uploads/{upload_id}:complete")
-def complete_upload(upload_id: str, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, require_idempotency_key], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+def complete_upload(upload_id: str, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, Depends(require_idempotency_key)], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = _user(authorization)
     return _ok(request, service.complete_upload(upload_id=upload_id, user_id=user["id"], payload=body, key=key, trace_id=request.state.trace_id))
 
 
 @router.post("/api/v1/files/uploads/{upload_id}:abort")
-def abort_upload(upload_id: str, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, require_idempotency_key], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+def abort_upload(upload_id: str, request: Request, body: Annotated[dict[str, Any], Body()], key: Annotated[str, Depends(require_idempotency_key)], authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
     user = _user(authorization)
     return _ok(request, service.abort_upload(upload_id=upload_id, user_id=user["id"], reason=body["reason"], key=key, trace_id=request.state.trace_id))
 
