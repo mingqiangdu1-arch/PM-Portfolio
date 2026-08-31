@@ -16,14 +16,13 @@ describe("ConfirmationWorkspace", () => {
   it("allows Round 2 draft creation after confirmed history when reconfirmation is required", async () => {
     const { api, create } = apiFor("owner");
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    expect((await screen.findAllByText("Round 1")).length).toBeGreaterThan(0);
-    expect(screen.getByText(/来源 round-1|当前适用|历史只读/)).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /第 1 轮/ })).toBeInTheDocument();
+    expect(screen.getByText("历史只读")).toBeInTheDocument();
     const summary = "本轮覆盖实现边界、配置检查与数据变更说明";
-    fireEvent.change(screen.getAllByLabelText("Plan Version ID")[0], { target: { value: "plan-version-1" } });
     fireEvent.change(screen.getAllByLabelText("实现范围摘要")[0], { target: { value: summary } });
     fireEvent.click(screen.getByRole("button", { name: "创建确认草稿" }));
     await waitFor(() => expect(create).toHaveBeenCalledWith("plan-1", expect.objectContaining({ planVersionId: "plan-version-1", implementationSummary: summary })));
-    expect(screen.getByText("确认草稿已创建；只有 owner 可以最终确认。")).toBeInTheDocument();
+    expect(screen.getByText("确认草稿已创建；只有项目负责人可以最终确认。")).toBeInTheDocument();
   });
 
   it("re-lists authoritative history after confirm and renders supersession", async () => {
@@ -33,12 +32,11 @@ describe("ConfirmationWorkspace", () => {
     const list = vi.fn().mockResolvedValueOnce([priorRound, draft]).mockResolvedValueOnce([superseded, confirmed]);
     const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { get: vi.fn().mockResolvedValue({ ...plan, confirmationState: "needs_confirmation" }) }, confirmationRounds: { list, create: vi.fn(), updateDraft: vi.fn(), confirm: vi.fn().mockResolvedValue(confirmed) } } as unknown as FrontendApi;
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    await screen.findByRole("button", { name: "Owner 最终确认" });
-    fireEvent.click(screen.getByRole("button", { name: "Owner 最终确认" }));
+    await screen.findByRole("button", { name: "项目负责人最终确认" });
+    fireEvent.click(screen.getByRole("button", { name: "项目负责人最终确认" }));
     await waitFor(() => expect(list).toHaveBeenCalledTimes(2));
-    expect(screen.getByText("superseded")).toBeInTheDocument();
-    expect(screen.getByText(/confirmed · Plan Version/)).toBeInTheDocument();
-    expect(screen.getByText(/来源 round-1/)).toBeInTheDocument();
+    expect(screen.getByText("已替代")).toBeInTheDocument();
+    expect(screen.getByText(/已确认 · 已绑定实施计划版本/)).toBeInTheDocument();
   });
 
   it("preserves draft input and exposes conflict/readiness recovery without false success", async () => {
@@ -52,7 +50,7 @@ describe("ConfirmationWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
     await waitFor(() => expect(screen.getByText(/VERSION_CONFLICT/)).toBeInTheDocument());
     expect(input).toHaveValue(local);
-    fireEvent.click(screen.getByRole("button", { name: "Owner 最终确认" }));
+    fireEvent.click(screen.getByRole("button", { name: "项目负责人最终确认" }));
     await waitFor(() => expect(screen.getByText(/READINESS_INCOMPLETE/)).toBeInTheDocument());
     expect(screen.queryByText("确认轮次已正式确认。")).not.toBeInTheDocument();
   });
@@ -60,7 +58,7 @@ describe("ConfirmationWorkspace", () => {
   it.each([["owner", true], ["implementer", true], ["reviewer", false]] as const)("exposes frozen confirmation capability for %s", async (role, enabled) => {
     const { api } = apiFor(role);
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    await screen.findAllByText("Round 1");
+    await screen.findByRole("button", { name: /第 1 轮/ });
     expect(screen.getByRole("button", { name: "创建确认草稿" })).toHaveProperty("disabled", !enabled);
     if (!enabled) expect(screen.getByText("当前身份只读")).toBeInTheDocument();
   });
@@ -68,9 +66,9 @@ describe("ConfirmationWorkspace", () => {
   it("keeps confirmed history readonly and shows readiness semantics", async () => {
     const { api } = apiFor("implementer");
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    await screen.findAllByText("Round 1");
+    await screen.findByRole("button", { name: /第 1 轮/ });
     expect(screen.getByText("历史只读")).toBeInTheDocument();
-    expect(screen.getByText(/不等同于 Test Passed/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Owner 最终确认" })).toBeDisabled();
+    expect(screen.getByText(/不等同于测试通过/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "项目负责人最终确认" })).toBeDisabled();
   });
 });

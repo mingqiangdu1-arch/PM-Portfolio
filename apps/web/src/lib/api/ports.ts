@@ -357,6 +357,8 @@ export interface DesignReviewView {
   contentHash: string;
 }
 
+export interface PrdContextView { prd: PrdView; review: DesignReviewView | null }
+
 export interface CreatePrdInput { name: string; sourceRequirementVersionId: string }
 export interface SavePrdVersionInput { expectedVersion: number; changeNote: string; content: PrdContentView }
 export interface SubmitPrdReviewInput { prdId: string; prdVersionId: string; contentHash: string; expectedVersion: number }
@@ -365,7 +367,7 @@ export interface DecidePrdReviewInput { decision: ReviewDecisionValue; expectedV
 export interface PrdPort {
   list(projectVersionId: string): Promise<PrdView[]>;
   create(projectVersionId: string, input: CreatePrdInput): Promise<PrdView>;
-  get(prdId: string): Promise<PrdView>;
+  get(prdId: string): Promise<PrdContextView>;
   getVersion(versionId: string): Promise<PrdVersionView>;
   saveVersion(prdId: string, input: SavePrdVersionInput): Promise<PrdVersionView>;
   submitReview(projectVersionId: string, input: SubmitPrdReviewInput): Promise<DesignReviewView>;

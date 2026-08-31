@@ -16,16 +16,16 @@ describe("TestRecordWorkspace", () => {
   it("creates, saves and submits a draft with expected version", async () => {
     const { api, testRecords } = apiFor();
     render(<TestRecordWorkspace round={round} capabilities={capabilitiesForRoles(["tester"])} api={api} />);
-    await screen.findByText("尚无 Test Record");
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "登录验证" } });
-    fireEvent.change(screen.getByLabelText("Scope"), { target: { value: "登录流程" } });
-    fireEvent.change(screen.getByLabelText(/Steps/), { target: { value: "输入账号\n提交" } });
-    fireEvent.change(screen.getByLabelText("Expected result"), { target: { value: "进入首页" } });
-    fireEvent.change(screen.getByLabelText("Actual result"), { target: { value: "进入首页" } });
+    await screen.findByText("尚无测试记录");
+    fireEvent.change(screen.getByLabelText("记录标题"), { target: { value: "登录验证" } });
+    fireEvent.change(screen.getByLabelText("测试范围"), { target: { value: "登录流程" } });
+    fireEvent.change(screen.getByLabelText(/测试步骤/), { target: { value: "输入账号\n提交" } });
+    fireEvent.change(screen.getByLabelText("预期结果"), { target: { value: "进入首页" } });
+    fireEvent.change(screen.getByLabelText("实际结果"), { target: { value: "进入首页" } });
     fireEvent.click(screen.getByRole("button", { name: "创建草稿" }));
     await waitFor(() => expect(testRecords.create).toHaveBeenCalledWith("round-1", expect.objectContaining({ steps: ["输入账号", "提交"] })));
-    await screen.findByText("编辑 Test Record 草稿");
-    fireEvent.change(screen.getByLabelText("Actual result"), { target: { value: "进入首页并显示欢迎语" } });
+    await screen.findByText("编辑测试记录草稿");
+    fireEvent.change(screen.getByLabelText("实际结果"), { target: { value: "进入首页并显示欢迎语" } });
     fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
     await waitFor(() => expect(testRecords.update).toHaveBeenCalledWith("record-1", expect.objectContaining({ expectedVersion: 1, actualResult: "进入首页并显示欢迎语" })));
     fireEvent.click(screen.getByRole("button", { name: "提交并冻结" }));
@@ -36,14 +36,14 @@ describe("TestRecordWorkspace", () => {
   it("allows an incomplete draft to be created and saved, while keeping result labels user-facing", async () => {
     const { api, testRecords } = apiFor();
     render(<TestRecordWorkspace round={round} capabilities={capabilitiesForRoles(["tester"])} api={api} />);
-    await screen.findByText("尚无 Test Record");
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "最小草稿" } });
+    await screen.findByText("尚无测试记录");
+    fireEvent.change(screen.getByLabelText("记录标题"), { target: { value: "最小草稿" } });
     fireEvent.click(screen.getByRole("button", { name: "创建草稿" }));
     await waitFor(() => expect(testRecords.create).toHaveBeenCalledWith("round-1", expect.objectContaining({ title: "最小草稿", scope: "", steps: [], expectedResult: "", actualResult: "" })));
     expect(screen.getByRole("option", { name: "通过" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "未通过" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "部分完成" })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Scope"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("测试范围"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
     await waitFor(() => expect(testRecords.update).toHaveBeenCalledWith("record-1", expect.objectContaining({ expectedVersion: 1, scope: "" })));
   });
@@ -79,11 +79,11 @@ describe("TestRecordWorkspace", () => {
     const submitted = { ...record, status: "submitted" as const, submittedAt: "2026-08-24T00:01:00Z", rowVersion: 3 };
     const { api, testRecords, issues } = apiFor({ list: vi.fn().mockResolvedValue([submitted]) });
     render(<TestRecordWorkspace round={round} capabilities={capabilitiesForRoles(["tester"])} api={api} />);
-    const action = await screen.findByRole("button", { name: "确认无 Issue，完成验证" });
+    const action = await screen.findByRole("button", { name: "确认无问题，完成验证" });
     await waitFor(() => expect(issues.list).toHaveBeenCalledWith("version-1"));
     fireEvent.click(action);
     await waitFor(() => expect(testRecords.concludeNoIssue).toHaveBeenCalledWith("record-1", 3));
-    expect(await screen.findByText("Validation Complete")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "创建 Issue" })).not.toBeInTheDocument();
+    expect(await screen.findByText("验证已完成")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "创建问题" })).not.toBeInTheDocument();
   });
 });

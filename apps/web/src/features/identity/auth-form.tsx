@@ -14,7 +14,7 @@ export function AuthForm({ mode, returnTo }: { mode: "login" | "register"; retur
     {error ? <div role="alert" className="status-banner bg-error-subtle text-error">{error}</div> : null}
     {mode === "register" ? <label className="block"><span className="field-label">显示名称</span><Input name="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} autoComplete="name" required /></label> : null}
     <label className="block"><span className="field-label">邮箱</span><Input name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required /></label>
-    <label className="block"><span className="field-label">密码</span><Input name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "register" ? 12 : undefined} required /></label>
+    <label className="block"><span className="field-label">密码</span><Input name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "register" ? 8 : undefined} required />{mode === "register" ? <span className="field-help">至少 8 个字符</span> : null}</label>
     <Button className="w-full" loading={busy} type="submit">{mode === "login" ? "登录" : "注册并进入"}</Button>
     <p className="text-center text-sm text-secondary">{mode === "login" ? <>没有账户？ <Link className="text-primary-action" href="/register">注册</Link></> : <>已有账户？ <Link className="text-primary-action" href="/login">登录</Link></>}</p>
   </form>;

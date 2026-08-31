@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { ImplementationPlanWorkspace } from "./implementation-plan-workspace";
-import { capabilitiesForRoles, PortError, type FrontendApi, type ImplementationPlanView } from "@/lib/api/ports";
+import { capabilitiesForRoles, PortError, type DesignReviewView, type FrontendApi, type ImplementationPlanView, type PrdView } from "@/lib/api/ports";
 
 const content = { schemaVersion: "implementation_plan.mvp3.v1" as const, features: [{ key: "feature", description: "A feature" }], businessRules: [], stateRequirements: [], exceptions: [], interactions: [], dependencies: [], acceptanceScope: [{ key: "acceptance", description: "An acceptance rule" }] };
 
@@ -12,6 +12,19 @@ function deferred<T>() {
 }
 
 describe("ImplementationPlanWorkspace", () => {
+  it("automatically binds the exact confirmed PRD review context without internal ID inputs", async () => {
+    const prd: PrdView = { id: "prd-1", projectVersionId: "atlas-v2", sourceRequirementVersionId: "req-v1", name: "Atlas PRD", status: "confirmed", currentVersionId: "prd-v1", rowVersion: 4 };
+    const review: DesignReviewView = { id: "review-1", projectVersionId: "atlas-v2", roundNo: 2, rowVersion: 2, status: "passed", summary: null, prdId: "prd-1", prdVersionId: "prd-v1", contentHash: "a".repeat(64) };
+    const create = vi.fn().mockResolvedValue({ id: "plan-1", projectVersionId: "atlas-v2", sourcePrdVersionId: "prd-v1", sourceDesignReviewId: "review-1", name: "实施计划", status: "draft", currentVersionId: null, effectiveVersionId: null, rowVersion: 1, confirmationState: "not_ready", versions: [] });
+    const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, prds: { list: vi.fn().mockResolvedValue([prd]), get: vi.fn().mockResolvedValue({ prd, review }) }, implementationPlans: { list: vi.fn().mockResolvedValue([]), create, get: vi.fn().mockResolvedValue({}) } } as unknown as FrontendApi;
+    render(<ImplementationPlanWorkspace projectId="atlas" projectVersionId="atlas-v2" api={api} />);
+    expect(await screen.findByText("Atlas PRD · 设计评审第 2 轮已通过")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Review ID|Version ID/)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("计划名称"), { target: { value: "实施计划" } });
+    fireEvent.click(screen.getByRole("button", { name: "创建计划" }));
+    await waitFor(() => expect(create).toHaveBeenCalledWith("atlas-v2", { name: "实施计划", sourcePrdVersionId: "prd-v1", sourceDesignReviewId: "review-1" }));
+  });
+
   it("loads summary then full detail before enabling save, and preserves the local edit on success", async () => {
     const detail = deferred<ImplementationPlanView>();
     const plan: ImplementationPlanView = { id: "plan-1", projectVersionId: "atlas-v2", sourcePrdVersionId: "prd-v1", sourceDesignReviewId: "review-1", name: "Atlas 实现计划", status: "active", currentVersionId: "plan-version-1", effectiveVersionId: "plan-version-1", rowVersion: 2, confirmationState: "needs_confirmation", versions: [{ id: "plan-version-1", implementationPlanId: "plan-1", sourceVersionId: null, versionNo: "V1", reviewId: "review-1", content, contentHash: "p".repeat(64), changeNote: "first", isEffective: true, createdBy: "user-1", createdAt: "2026-08-24T00:00:00Z" }] };
@@ -19,7 +32,7 @@ describe("ImplementationPlanWorkspace", () => {
     const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { list: vi.fn().mockResolvedValue([{ ...plan, versions: [] }]), get: vi.fn().mockReturnValue(detail.promise), saveVersion } } as unknown as FrontendApi;
 
     render(<ImplementationPlanWorkspace projectId="atlas" projectVersionId="atlas-v2" api={api} />);
-    expect(await screen.findByRole("heading", { name: "实现计划工作台" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "实施计划工作台" })).toBeInTheDocument();
     await waitFor(() => expect(api.implementationPlans.get).toHaveBeenCalledWith("plan-1"));
     expect(screen.getByRole("button", { name: "保存不可变版本" })).toBeDisabled();
     detail.resolve(plan);
@@ -57,7 +70,7 @@ describe("ImplementationPlanWorkspace", () => {
     expect(screen.getByRole("button", { name: "保存不可变版本" })).toBeDisabled();
     secondDetail.resolve(empty);
     await waitFor(() => expect(screen.getByText("尚未保存版本。")).toBeInTheDocument());
-    expect(screen.getByLabelText("Plan Content JSON")).toHaveValue("");
+    expect(screen.getByLabelText("计划内容（JSON）")).toHaveValue("");
     fireEvent.click(screen.getByRole("button", { name: "保存不可变版本" }));
     expect(saveVersion).not.toHaveBeenCalled();
   });
@@ -71,11 +84,11 @@ describe("ImplementationPlanWorkspace", () => {
     const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { list: vi.fn().mockResolvedValue([{ ...plan, versions: [] }]), get: vi.fn().mockResolvedValue(plan), saveVersion, setEffective } } as unknown as FrontendApi;
     render(<ImplementationPlanWorkspace projectId="atlas" projectVersionId="atlas-v2" api={api} />);
     await waitFor(() => expect(screen.getByDisplayValue(/implementation_plan\.mvp3\.v1/)).toBeInTheDocument());
-    fireEvent.change(screen.getByLabelText("Plan Content JSON"), { target: { value: editedContent } });
+    fireEvent.change(screen.getByLabelText("计划内容（JSON）"), { target: { value: editedContent } });
     fireEvent.change(screen.getByLabelText("变更说明"), { target: { value: changeNote } });
     fireEvent.click(screen.getByRole("button", { name: "保存不可变版本" }));
     await waitFor(() => expect(screen.getByText(/版本冲突/)).toBeInTheDocument());
-    expect(screen.getByLabelText("Plan Content JSON")).toHaveValue(editedContent);
+    expect(screen.getByLabelText("计划内容（JSON）")).toHaveValue(editedContent);
     expect(screen.getByLabelText("变更说明")).toHaveValue(changeNote);
     expect(screen.queryByText(/已保存为不可变版本/)).not.toBeInTheDocument();
     expect(screen.queryByText(/当前版本已设为有效版本/)).not.toBeInTheDocument();

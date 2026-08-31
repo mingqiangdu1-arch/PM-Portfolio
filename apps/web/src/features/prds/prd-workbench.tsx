@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPanel } from "@/components/status-panel";
@@ -44,7 +45,7 @@ const errorCopy = (reason: unknown) => {
 
 type InitialLoad =
   | { kind: "empty"; sourceVersionId: string | null; sourceBlocker: string; name: string }
-  | { kind: "existing"; prd: PrdView; version: PrdVersionView | null; content: PrdContentView };
+  | { kind: "existing"; prd: PrdView; version: PrdVersionView | null; review: DesignReviewView | null; content: PrdContentView };
 
 async function loadInitialPrdWorkbench(api: FrontendApi, projectVersionId: string): Promise<InitialLoad> {
   const existing = await api.prds.list(projectVersionId);
@@ -56,17 +57,17 @@ async function loadInitialPrdWorkbench(api: FrontendApi, projectVersionId: strin
     return {
       kind: "empty",
       sourceVersionId: null,
-      sourceBlocker: candidates.length === 0 ? "当前项目版本没有 confirmed Requirement / Baseline Version，不能创建 PRD。" : "当前项目版本存在多个 confirmed Requirement / Baseline Version，冻结接口未提供唯一选择规则，不能创建 PRD。",
+      sourceBlocker: candidates.length === 0 ? "当前项目版本没有已确认的需求基线版本，不能创建 PRD。" : "当前项目版本存在多个已确认的需求基线版本，现有接口无法唯一确定来源，不能创建 PRD。",
       name: "",
     };
   }
-  const prd = await api.prds.get(existing[0].id);
-  if (!prd.currentVersionId) return { kind: "existing", prd, version: null, content: blankContent() };
-  const version = await api.prds.getVersion(prd.currentVersionId);
-  return { kind: "existing", prd, version, content: version.content };
+  const context = await api.prds.get(existing[0].id);
+  if (!context.prd.currentVersionId) return { kind: "existing", prd: context.prd, version: null, review: context.review, content: blankContent() };
+  const version = await api.prds.getVersion(context.prd.currentVersionId);
+  return { kind: "existing", prd: context.prd, version, review: context.review, content: version.content };
 }
 
-export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectVersionId: string; api?: FrontendApi }) {
+export function PrdWorkbench({ projectId, projectVersionId, api = frontendApi }: { projectId?: string; projectVersionId: string; api?: FrontendApi }) {
   const [prd, setPrd] = useState<PrdView | null>(null);
   const [version, setVersion] = useState<PrdVersionView | null>(null);
   const [review, setReview] = useState<DesignReviewView | null>(null);
@@ -87,8 +88,8 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
       .then((initial) => {
         if (!active) return;
         setError("");
-        setReview(null);
         if (initial.kind === "empty") {
+          setReview(null);
           setPrd(null);
           setVersion(null);
           setContent(blankContent());
@@ -96,6 +97,7 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
           setSourceBlocker(initial.sourceBlocker);
           setName(initial.name);
         } else {
+          setReview(initial.review);
           setPrd(initial.prd);
           setVersion(initial.version);
           setContent(initial.content);
@@ -123,7 +125,7 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
       const created = await api.prds.create(projectVersionId, { name: name.trim(), sourceRequirementVersionId: sourceVersionId });
       setPrd(created);
       setContent(blankContent());
-      setMessage("PRD identity 已创建。请填写固定结构并显式保存首个不可变版本。");
+      setMessage("PRD 已创建。请填写固定结构并保存首个不可变版本。");
     } catch (reason) { setError(errorCopy(reason)); } finally { setBusy(false); }
   };
 
@@ -134,8 +136,8 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
     try {
       const saved = await api.prds.saveVersion(prd.id, { expectedVersion: prd.rowVersion, changeNote: changeNote.trim(), content });
       const aggregate = await api.prds.get(prd.id);
-      setVersion(saved); setPrd(aggregate); setChangeNote("");
-      setMessage(`已显式保存不可变 PRD Version ${saved.versionNo}。`);
+      setVersion(saved); setPrd(aggregate.prd); setReview(aggregate.review); setChangeNote("");
+      setMessage(`已保存不可变 PRD 版本 ${saved.versionNo}。`);
     } catch (reason) { setError(errorCopy(reason)); } finally { setBusy(false); }
   };
 
@@ -145,7 +147,7 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
     try {
       const submitted = await api.prds.submitReview(projectVersionId, { prdId: prd.id, prdVersionId: version.id, contentHash: version.contentHash, expectedVersion: prd.rowVersion });
       const aggregate = await api.prds.get(prd.id);
-      setReview(submitted); setPrd(aggregate); setMessage(`Design Review Round ${submitted.roundNo} 已提交。`);
+      setReview(aggregate.review ?? submitted); setPrd(aggregate.prd); setMessage(`设计评审第 ${submitted.roundNo} 轮已提交。`);
     } catch (reason) { setError(errorCopy(reason)); } finally { setBusy(false); }
   };
 
@@ -155,30 +157,30 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
     try {
       const decided = await api.prds.decideReview(review.id, { decision, expectedVersion: review.rowVersion, summary: decision === "changes_requested" ? decisionSummary.trim() : undefined });
       const aggregate = await api.prds.get(prd.id);
-      setReview(decided); setPrd(aggregate); setDecisionSummary("");
-      setMessage(decision === "pass" ? "Design Review 已通过；PRD 已 confirmed 并变为只读。" : "Design Review 已要求修改；请编辑后显式保存新 Version，再次提交。");
+      setReview(aggregate.review ?? decided); setPrd(aggregate.prd); setDecisionSummary("");
+      setMessage(decision === "pass" ? "设计评审已通过；PRD 已确认并变为只读。" : "设计评审已要求修改；请编辑并保存新版本后再次提交。");
     } catch (reason) { setError(errorCopy(reason)); } finally { setBusy(false); }
   };
 
   const update = <K extends keyof PrdContentView>(key: K, value: PrdContentView[K]) => setContent((current) => ({ ...current, [key]: value }));
 
-  if (loading) return <section><p className="text-sm font-medium text-ai">PC-04 · MVP2</p><h1 className="mt-token-xs text-3xl font-semibold">Structured PRD Workbench</h1><div role="status" className="panel mt-token-xl animate-pulse text-muted">正在读取 PRD 与 confirmed Requirement Baseline…</div></section>;
+  if (loading) return <section><p className="text-sm font-medium text-ai">PRD · 编写与评审</p><h1 className="mt-token-xs text-3xl font-semibold">PRD 工作台</h1><div role="status" className="panel mt-token-xl animate-pulse text-muted">正在读取 PRD 与已确认需求基线…</div></section>;
 
   return <section aria-labelledby="prd-workbench-title">
-    <p className="text-sm font-medium text-ai">PC-04 · MVP2</p>
-    <h1 id="prd-workbench-title" className="mt-token-xs text-3xl font-semibold">Structured PRD Workbench</h1>
-    <p className="mt-token-xs text-secondary">固定 schema：prd.mvp2.v1。保存始终创建新版本，不会覆盖历史。</p>
+    <p className="text-sm font-medium text-ai">PRD · 编写与评审</p>
+    <h1 id="prd-workbench-title" className="mt-token-xs text-3xl font-semibold">PRD 工作台</h1>
+    <p className="mt-token-xs text-secondary">采用固定结构；每次保存都会创建新版本，不会覆盖历史。</p>
     <div className="mt-token-xl space-y-token-md">
       {error ? <StatusPanel tone="error" title="PRD 操作未完成">{error}</StatusPanel> : null}
       {message ? <StatusPanel tone="success" title="操作完成">{message}</StatusPanel> : null}
       {!prd ? <form className="panel" onSubmit={create}>
-        <h2 className="font-semibold">从 confirmed Requirement / Baseline 创建 PRD</h2>
-        {sourceBlocker ? <StatusPanel tone="warning" title="无法唯一确定来源 Version">{sourceBlocker}</StatusPanel> : <p className="mt-token-sm text-sm text-secondary">来源 Requirement Version：{sourceVersionId}</p>}
+        <h2 className="font-semibold">从已确认需求基线创建 PRD</h2>
+        {sourceBlocker ? <StatusPanel tone="warning" title="无法唯一确定来源版本">{sourceBlocker}</StatusPanel> : <p className="mt-token-sm text-sm text-secondary">来源需求版本：{sourceVersionId}</p>}
         <label className="mt-token-md block"><span className="field-label">PRD 名称</span><Input value={name} onChange={(event) => setName(event.target.value)} disabled={!sourceVersionId || busy} required /></label>
-        <Button className="mt-token-md" type="submit" loading={busy} disabled={!sourceVersionId || !name.trim()}>创建 PRD identity</Button>
+        <Button className="mt-token-md" type="submit" loading={busy} disabled={!sourceVersionId || !name.trim()}>创建 PRD</Button>
       </form> : <>
-        <article className="panel"><h2 className="font-semibold">当前 PRD</h2><dl className="mt-token-sm grid gap-token-sm text-sm sm:grid-cols-2"><div><dt className="text-muted">名称</dt><dd>{prd.name}</dd></div><div><dt className="text-muted">状态</dt><dd>{prd.status}</dd></div><div><dt className="text-muted">row_version</dt><dd>{prd.rowVersion}</dd></div><div><dt className="text-muted">当前版本</dt><dd>{version?.versionNo ?? "尚未保存"}</dd></div></dl>{prd.status === "confirmed" ? <div className="mt-token-md"><StatusPanel tone="success" title="PRD 已 confirmed">当前 PRD 已通过 Design Review；结构化编辑器已只读。</StatusPanel></div> : null}</article>
-        {review ? <article className="panel"><h2 className="font-semibold">Design Review · Round {review.roundNo}</h2><p className="mt-token-xs text-sm text-secondary">状态：{review.status} · row_version：{review.rowVersion}</p>{review.status === "changes_requested" ? <StatusPanel tone="warning" title="要求修改">{review.summary}</StatusPanel> : null}{review.status === "open" ? <div className="mt-token-md space-y-token-sm"><label className="block"><span className="field-label">changes_requested summary</span><textarea aria-label="changes_requested summary" className="textarea-field min-h-24" value={decisionSummary} onChange={(event) => setDecisionSummary(event.target.value)} disabled={busy} /></label><div className="flex flex-wrap gap-token-sm"><Button type="button" variant="secondary" loading={busy} disabled={!decisionSummary.trim()} onClick={() => void decide("changes_requested")}>要求修改</Button><Button type="button" loading={busy} onClick={() => void decide("pass")}>通过 Review</Button></div></div> : null}</article> : null}
+        <article className="panel"><h2 className="font-semibold">当前 PRD</h2><dl className="mt-token-sm grid gap-token-sm text-sm sm:grid-cols-2"><div><dt className="text-muted">名称</dt><dd>{prd.name}</dd></div><div><dt className="text-muted">状态</dt><dd>{{ draft: "草稿", in_review: "评审中", changes_requested: "待修改", confirmed: "已确认" }[prd.status]}</dd></div><div><dt className="text-muted">记录版本</dt><dd>{prd.rowVersion}</dd></div><div><dt className="text-muted">当前版本</dt><dd>{version?.versionNo ?? "尚未保存"}</dd></div></dl>{prd.status === "confirmed" ? <div className="mt-token-md space-y-token-md"><StatusPanel tone="success" title="PRD 已确认">当前 PRD 已通过设计评审；结构化编辑器已只读。</StatusPanel>{projectId && review?.status === "passed" ? <Link className="inline-flex" href={`/projects/${projectId}/versions/${projectVersionId}/implementation-plan`}><Button>进入实施计划</Button></Link> : null}</div> : null}</article>
+        {review ? <article className="panel"><h2 className="font-semibold">设计评审 · 第 {review.roundNo} 轮</h2><p className="mt-token-xs text-sm text-secondary">状态：{{ open: "待评审", changes_requested: "要求修改", passed: "已通过" }[review.status]} · 记录版本：{review.rowVersion}</p>{review.status === "changes_requested" ? <StatusPanel tone="warning" title="要求修改">{review.summary}</StatusPanel> : null}{review.status === "open" ? <div className="mt-token-md space-y-token-sm"><label className="block"><span className="field-label">修改意见</span><textarea aria-label="修改意见" className="textarea-field min-h-24" value={decisionSummary} onChange={(event) => setDecisionSummary(event.target.value)} disabled={busy} placeholder="说明需要修改的内容" /></label><div className="flex flex-wrap gap-token-sm"><Button type="button" variant="secondary" loading={busy} disabled={!decisionSummary.trim()} onClick={() => void decide("changes_requested")}>要求修改</Button><Button type="button" loading={busy} onClick={() => void decide("pass")}>通过评审</Button></div></div> : null}</article> : null}
         <form className="space-y-token-md" onSubmit={save}>
           <article className="panel"><h2 className="font-semibold">固定 PRD 结构</h2><p className="mt-token-xs text-sm text-secondary">schema_version：prd.mvp2.v1</p>
             <div className="mt-token-md grid gap-token-md lg:grid-cols-2">
@@ -188,9 +190,9 @@ export function PrdWorkbench({ projectVersionId, api = frontendApi }: { projectV
               {arrayFields.map((field) => <label key={field.key}><span className="field-label">{field.label}</span><textarea aria-label={field.label} className="textarea-field min-h-24" value={content[field.key].join("\n")} onChange={(event) => update(field.key, lines(event.target.value))} disabled={isReadOnly || busy} required /></label>)}
             </div>
           </article>
-          {!isReadOnly ? <article className="panel"><h2 className="font-semibold">显式保存新 PRD Version</h2><label className="mt-token-md block"><span className="field-label">变更说明</span><Input value={changeNote} onChange={(event) => setChangeNote(event.target.value)} disabled={busy} required /></label><Button className="mt-token-md" type="submit" loading={busy} disabled={!changeNote.trim()}>显式保存新版本</Button></article> : null}
+          {!isReadOnly ? <article className="panel"><h2 className="font-semibold">保存新 PRD 版本</h2><label className="mt-token-md block"><span className="field-label">变更说明</span><Input value={changeNote} onChange={(event) => setChangeNote(event.target.value)} disabled={busy} required /></label><Button className="mt-token-md" type="submit" loading={busy} disabled={!changeNote.trim()}>保存新版本</Button></article> : null}
         </form>
-        {canEdit && version ? <article className="panel"><h2 className="font-semibold">提交 Design Review</h2><p className="mt-token-xs text-sm text-secondary">提交固定为当前 PRD Version {version.versionNo}。</p><Button className="mt-token-md" type="button" loading={busy} disabled={busy || Boolean(review?.status === "open")} onClick={() => void submit()}>提交 Review</Button></article> : null}
+        {canEdit && version ? <article className="panel"><h2 className="font-semibold">提交设计评审</h2><p className="mt-token-xs text-sm text-secondary">提交对象固定为当前 PRD 版本 {version.versionNo}。</p><Button className="mt-token-md" type="button" loading={busy} disabled={busy || Boolean(review?.status === "open")} onClick={() => void submit()}>提交评审</Button></article> : null}
       </>}
     </div>
   </section>;

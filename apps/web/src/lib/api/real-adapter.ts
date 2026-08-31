@@ -16,6 +16,7 @@ import {
   getSession,
   initFileUpload,
   listProjects,
+  listProjectFiles,
   listProjectVersions,
   listRequirements,
   login,
@@ -67,6 +68,7 @@ import type {
   FileData,
   FileUploadData,
   ProjectListData,
+  ProjectFileList,
   ProjectSummary,
   ProjectVersionListData,
   ProjectVersionSummary,
@@ -1244,7 +1246,10 @@ export const realApi: FrontendApi = {
     },
     async get(prdId: string) {
       const result = await protectedRequest<Mvp2PrdData>(() => getPrd(prdId, requestOptions()));
-      return mapPrd(result.data.prd);
+      return {
+        prd: mapPrd(result.data.prd),
+        review: result.data.design_review ? mapDesignReview(result.data.design_review) : null,
+      };
     },
     async getVersion(versionId: string) {
       const result = await protectedRequest<Mvp2PrdVersionData>(() => getPrdVersion(versionId, requestOptions()));
@@ -1344,7 +1349,10 @@ export const realApi: FrontendApi = {
     },
   } satisfies AiPort,
   files: {
-    async list() { return []; },
+    async list(projectId) {
+      const result = await protectedRequest<ProjectFileList>(() => listProjectFiles(projectId, requestOptions()));
+      return result.data.items.map(mapFile);
+    },
     upload: uploadFile,
     async retry(projectId, item) {
       if (item.pendingUpload) return reconcileCompletion(item.pendingUpload);

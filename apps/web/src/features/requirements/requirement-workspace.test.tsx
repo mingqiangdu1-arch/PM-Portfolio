@@ -190,7 +190,7 @@ async function reachSkipBaseline(api: FrontendApi) {
   await screen.findByRole("heading", { name: "团队需求" });
   fireEvent.change(screen.getByLabelText("澄清模式"), { target: { value: "skip" } });
   fireEvent.click(screen.getByRole("button", { name: "开始预检 / 澄清" }));
-  await screen.findByText("Baseline 候选已就绪，请核对质量与来源后采用。");
+  await screen.findByText("需求基线候选已就绪，请核对质量与来源后采用。");
 }
 
 describe("RequirementWorkspace", () => {
@@ -210,7 +210,7 @@ describe("RequirementWorkspace", () => {
     expect(findClarificationResult).toHaveBeenCalledWith("recovery-version-29", "standard", 1);
     expect(createTask).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "开始预检 / 澄清" })).not.toBeInTheDocument();
-    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。")).not.toBeInTheDocument();
+    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工需求基线并确认。")).not.toBeInTheDocument();
     for (const questionId of ["q-1", "q-2", "q-3"]) {
       expect(screen.getByLabelText(`恢复问题 ${questionId}`)).toHaveValue("");
     }
@@ -253,7 +253,7 @@ describe("RequirementWorkspace", () => {
     };
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
     await screen.findByRole("button", { name: "开始预检 / 澄清" });
-    expect(screen.getByRole("button", { name: "人工确认 Baseline" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "人工确认需求基线" })).toBeEnabled();
     expect(createTask).not.toHaveBeenCalled();
   });
 
@@ -286,7 +286,7 @@ describe("RequirementWorkspace", () => {
       ai: { ...mockApi.ai, findClarificationResult: async () => ({ ...result, ...override }), createTask },
     };
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
-    await screen.findByText("已读取的 AI 澄清结果与当前 Requirement Version 不一致。");
+    await screen.findByText("已读取的 AI 澄清结果与当前需求版本不一致。");
     expect(screen.queryByText("恢复问题 q-1")).not.toBeInTheDocument();
     expect(createTask).not.toHaveBeenCalled();
   });
@@ -298,9 +298,9 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("正在读取当前查看版本的 Requirement");
-    expect(screen.queryByRole("heading", { name: "1. 手工输入 Requirement" })).not.toBeInTheDocument();
-    await screen.findByRole("heading", { name: "1. 手工输入 Requirement" });
+    expect(screen.getByRole("status")).toHaveTextContent("正在读取当前查看版本的需求");
+    expect(screen.queryByRole("heading", { name: "1. 手工输入需求" })).not.toBeInTheDocument();
+    await screen.findByRole("heading", { name: "1. 手工输入需求" });
     expect(list).toHaveBeenCalledWith("atlas-v2");
     expect(get).not.toHaveBeenCalled();
   });
@@ -312,10 +312,10 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("正在读取当前查看版本的 Requirement");
-    expect(screen.queryByRole("heading", { name: "1. 手工输入 Requirement" })).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("正在读取当前查看版本的需求");
+    expect(screen.queryByRole("heading", { name: "1. 手工输入需求" })).not.toBeInTheDocument();
     resolveList?.([]);
-    await screen.findByRole("heading", { name: "1. 手工输入 Requirement" });
+    await screen.findByRole("heading", { name: "1. 手工输入需求" });
   });
 
   it("gets the sole persisted Requirement and restores its adopted draft confirmation", async () => {
@@ -328,10 +328,10 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByText("版本 V2 · draft · 尚未设为当前 Baseline");
+    await screen.findByText("版本 V2 · 草稿 · 尚未设为当前需求基线");
     expect(get).toHaveBeenCalledWith("persisted-requirement");
-    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
-    await screen.findByText("版本 V2 · confirmed · 当前 Baseline");
+    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前需求基线" }));
+    await screen.findByText("版本 V2 · 已确认 · 当前需求基线");
     expect(confirm).toHaveBeenCalledWith("persisted-v2", { expectedVersion: 7 });
     expect(get).toHaveBeenLastCalledWith("persisted-requirement");
   });
@@ -351,10 +351,10 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByText("版本 V2 · draft");
+    await screen.findByText("版本 V2 · 草稿");
     fireEvent.change(screen.getByLabelText("目标"), { target: { value: "人工确认目标" } });
-    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
-    await screen.findByText("Baseline 已确认（passed）。");
+    fireEvent.click(screen.getByRole("button", { name: "人工确认需求基线" }));
+    await screen.findByText("需求基线已确认（passed）。");
 
     expect(revise).toHaveBeenCalledWith("persisted-v2", expect.objectContaining({
       expectedVersion: 7,
@@ -367,10 +367,10 @@ describe("RequirementWorkspace", () => {
       }),
     }));
     expect(confirm).toHaveBeenCalledWith("manual-v3", { expectedVersion: 8 });
-    expect(screen.getByText("版本 V3 · confirmed · 当前 Baseline")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Requirement 已完成" })).toBeInTheDocument();
-    expect(screen.getByText(/来源：人工 Baseline 确认。/)).toBeInTheDocument();
-    expect(screen.getByText(/当前 Requirement \/ Baseline 阶段已完成；PRD 为后续阶段，当前在线 Demo 未启用。/)).toBeInTheDocument();
+    expect(screen.getByText("版本 V3 · 已确认 · 当前需求基线")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "需求阶段已完成" })).toBeInTheDocument();
+    expect(screen.getByText(/来源：人工确认需求基线。/)).toBeInTheDocument();
+    expect(screen.getByText(/当前需求阶段已满足进入 PRD 的业务条件/)).toBeInTheDocument();
   });
 
   it("surfaces a real stale aggregate version conflict without retrying or masking it", async () => {
@@ -387,9 +387,9 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByText("版本 V2 · draft");
+    await screen.findByText("版本 V2 · 草稿");
     serverVersion = 8;
-    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
+    fireEvent.click(screen.getByRole("button", { name: "人工确认需求基线" }));
     await screen.findByText("Requirement has changed");
 
     expect(revise).toHaveBeenCalledWith("persisted-v2", expect.objectContaining({ expectedVersion: 7 }));
@@ -401,10 +401,10 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByRole("heading", { name: "Requirement 已完成" });
-    expect(screen.getByText(/版本 V2 已设为当前 Baseline。/)).toBeInTheDocument();
-    expect(screen.getByText(/来源：AI 候选采用。/)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "确认并设为当前 Baseline" })).not.toBeInTheDocument();
+    await screen.findByRole("heading", { name: "需求阶段已完成" });
+    expect(screen.getByText(/需求基线已确认，版本 V2 已设为当前基线。/)).toBeInTheDocument();
+    expect(screen.getByText(/来源：采用 AI 候选。/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "确认并设为当前需求基线" })).not.toBeInTheDocument();
   });
 
   it("keeps the completed state after a fresh GET for an effective manual Baseline", async () => {
@@ -413,9 +413,9 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByRole("heading", { name: "Requirement 已完成" });
-    expect(screen.getByText(/版本 V2 已设为当前 Baseline。/)).toBeInTheDocument();
-    expect(screen.getByText(/来源：人工 Baseline 确认。/)).toBeInTheDocument();
+    await screen.findByRole("heading", { name: "需求阶段已完成" });
+    expect(screen.getByText(/需求基线已确认，版本 V2 已设为当前基线。/)).toBeInTheDocument();
+    expect(screen.getByText(/来源：人工确认需求基线。/)).toBeInTheDocument();
   });
 
   it("does not show the completed state for a draft Requirement", async () => {
@@ -424,8 +424,8 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByText("版本 V2 · draft");
-    expect(screen.queryByRole("heading", { name: "Requirement 已完成" })).not.toBeInTheDocument();
+    await screen.findByText("版本 V2 · 草稿");
+    expect(screen.queryByRole("heading", { name: "需求阶段已完成" })).not.toBeInTheDocument();
   });
 
   it("requires an explicit selection when the viewed version has multiple Requirements", async () => {
@@ -437,10 +437,10 @@ describe("RequirementWorkspace", () => {
 
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
 
-    await screen.findByRole("heading", { name: "选择 Requirement" });
+    await screen.findByRole("heading", { name: "选择需求" });
     expect(get).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "已恢复 Requirement" }));
-    await screen.findByText("版本 V2 · draft · 尚未设为当前 Baseline");
+    await screen.findByText("版本 V2 · 草稿 · 尚未设为当前需求基线");
     expect(get).toHaveBeenCalledWith("persisted-requirement");
   });
 
@@ -453,7 +453,7 @@ describe("RequirementWorkspace", () => {
 
     await screen.findByText("读取服务暂不可用");
     fireEvent.click(screen.getByRole("button", { name: "重新读取当前查看版本" }));
-    await screen.findByRole("heading", { name: "1. 手工输入 Requirement" });
+    await screen.findByRole("heading", { name: "1. 手工输入需求" });
     expect(list).toHaveBeenCalledTimes(2);
     expect(create).not.toHaveBeenCalled();
   });
@@ -469,64 +469,64 @@ describe("RequirementWorkspace", () => {
 
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: "重新读取当前查看版本" }));
-    await screen.findByText("版本 V2 · draft · 尚未设为当前 Baseline");
+    await screen.findByText("版本 V2 · 草稿 · 尚未设为当前需求基线");
     expect(create).not.toHaveBeenCalled();
   });
 
   it("renders assessment separately, then adopts a draft and explicitly confirms the current baseline", async () => {
     const { api, get, setClarificationMode, confirm, formalizeBaseline } = createTwoStepApi();
     render(<RequirementWorkspace projectVersionId="atlas-v2" api={api} />);
-    expect(screen.getByRole("heading", { name: "需求澄清与 Baseline" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "需求澄清与需求基线" })).toBeInTheDocument();
     await screen.findByLabelText("标题");
     fireEvent.change(screen.getByLabelText("标题"), { target: { value: "团队需求" } });
     fireEvent.change(screen.getByLabelText("原始需求"), { target: { value: "需要澄清目标和权限" } });
     fireEvent.click(screen.getByRole("button", { name: "保存需求草稿" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "团队需求" })).toBeInTheDocument());
-    expect(screen.getByText("FORMAL_MOCK")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "4. 人工 Baseline 编辑与确认" })).toBeInTheDocument();
+    expect(screen.getByText("演示数据")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "4. 人工需求基线编辑与确认" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "开始预检 / 澄清" }));
     await waitFor(() => expect(screen.getByText("AI 预检已就绪，请明确选择下一步模式。")).toBeInTheDocument());
     expect(setClarificationMode).toHaveBeenNthCalledWith(1, expect.any(String), expect.objectContaining({ mode: "auto", reason: null }));
     expect(screen.getByText("复杂度 medium · 建议 standard")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "采用需求基线并形成新版本" })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("澄清模式"), { target: { value: "skip" } });
     fireEvent.click(screen.getByRole("button", { name: "按所选模式继续" }));
-    await waitFor(() => expect(screen.getByText("Baseline 候选已就绪，请核对质量与来源后采用。")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("需求基线候选已就绪，请核对质量与来源后采用。")).toBeInTheDocument());
     expect(setClarificationMode).toHaveBeenNthCalledWith(2, expect.any(String), expect.objectContaining({ mode: "skip", reason: "用户明确选择跳过澄清并进入人工审核" }));
-    expect(screen.getByText("Provider truth: FORMAL_MOCK")).toBeInTheDocument();
+    expect(screen.getByText("AI 能力来源：正式模拟")).toBeInTheDocument();
     expect(screen.getByText("格式 passed · 可追溯性 passed · 安全 passed")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "采用 Baseline 并形成新版本" }));
-    await waitFor(() => expect(screen.getByText("Baseline 已采用，形成待确认版本 V10。")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "采用需求基线并形成新版本" }));
+    await waitFor(() => expect(screen.getByText("需求基线已采用，形成待确认版本 V10。")).toBeInTheDocument());
     expect(setClarificationMode).toHaveBeenNthCalledWith(1, expect.any(String), expect.objectContaining({ expectedVersion: 7 }));
     expect(setClarificationMode).toHaveBeenNthCalledWith(2, expect.any(String), expect.objectContaining({ expectedVersion: 8 }));
     expect(formalizeBaseline.mock.calls[0]?.[1]).toEqual({ requirementId: "version-carrier-20", expectedVersion: 9, targetSnapshotHash: "2".repeat(64) });
-    expect(screen.getByText("版本 V10 · draft · 尚未设为当前 Baseline")).toBeInTheDocument();
-    expect(screen.queryByText("版本 V10 · confirmed · 当前 Baseline")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
+    expect(screen.getByText("版本 V10 · 草稿 · 尚未设为当前需求基线")).toBeInTheDocument();
+    expect(screen.queryByText("版本 V10 · 已确认 · 当前需求基线")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "采用需求基线并形成新版本" })).not.toBeInTheDocument();
     expect(get).toHaveBeenCalledWith("req-atlas-1");
     expect(get).not.toHaveBeenCalledWith("version-carrier-20");
 
-    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
-    await waitFor(() => expect(screen.getByText("Baseline 已确认并设为当前 Baseline。")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前需求基线" }));
+    await waitFor(() => expect(screen.getByText("需求基线已确认并设为当前基线。")).toBeInTheDocument());
     expect(confirm).toHaveBeenCalledWith("req-v10", { expectedVersion: 10 });
-    expect(screen.getByText("版本 V10 · confirmed · 当前 Baseline")).toBeInTheDocument();
+    expect(screen.getByText("版本 V10 · 已确认 · 当前需求基线")).toBeInTheDocument();
     expect(screen.getByLabelText("目标")).toBeInTheDocument();
   });
 
   it("retains the adopted draft and safe retry when explicit confirmation fails", async () => {
     const { api, confirm } = createTwoStepApi(true);
     await reachSkipBaseline(api);
-    fireEvent.click(screen.getByRole("button", { name: "采用 Baseline 并形成新版本" }));
-    await screen.findByText(/尚未设为当前 Baseline/);
+    fireEvent.click(screen.getByRole("button", { name: "采用需求基线并形成新版本" }));
+    await screen.findByText(/尚未设为当前需求基线/);
 
-    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
+    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前需求基线" }));
     await screen.findByText("确认服务暂不可用");
     expect(confirm).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ expectedVersion: expect.any(Number) }));
-    expect(screen.getByText(/尚未设为当前 Baseline/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "确认并设为当前 Baseline" })).toBeEnabled();
-    expect(screen.queryByText("Baseline 已确认并设为当前 Baseline。")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
+    expect(screen.getByText(/尚未设为当前需求基线/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "确认并设为当前需求基线" })).toBeEnabled();
+    expect(screen.queryByText("需求基线已确认并设为当前基线。")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "采用需求基线并形成新版本" })).not.toBeInTheDocument();
   });
 
   it("requires explicit handling of every unresolved candidate item before modified adoption", async () => {
@@ -535,27 +535,27 @@ describe("RequirementWorkspace", () => {
 
     expect(screen.getByText("R4 未决项一")).toBeInTheDocument();
     expect(screen.getByText("R4 未决项二")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "采用 Baseline 并形成新版本" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "采用需求基线并形成新版本" })).toBeDisabled();
     expect(formalizeBaseline).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "标记已处理：R4 未决项一" }));
     expect(screen.queryByText("R4 未决项一")).not.toBeInTheDocument();
     expect(screen.getByText("R4 未决项二")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "采用 Baseline 并形成新版本" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "采用需求基线并形成新版本" })).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: "标记已处理：R4 未决项二" }));
     const modifiedAdopt = screen.getByRole("button", { name: "修改后采用并形成新版本" });
     expect(modifiedAdopt).toBeEnabled();
     fireEvent.click(modifiedAdopt);
-    await screen.findByText(/Baseline 已采用，形成待确认版本 V\d+。/);
+    await screen.findByText(/需求基线已采用，形成待确认版本 V\d+。/);
     expect(formalizeBaseline).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
       adoption: "modified_adopt",
       modificationIntensity: "minor",
       modifiedContent: expect.objectContaining({ baseline: expect.objectContaining({ unresolvedItems: [] }) }),
     }));
-    expect(screen.getByText(/版本 V\d+ · draft · 尚未设为当前 Baseline/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前 Baseline" }));
-    await screen.findByText("Baseline 已确认并设为当前 Baseline。");
+    expect(screen.getByText(/版本 V\d+ · 草稿 · 尚未设为当前需求基线/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "确认并设为当前需求基线" }));
+    await screen.findByText("需求基线已确认并设为当前基线。");
     expect(confirm).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ expectedVersion: expect.any(Number) }));
   });
 
@@ -570,7 +570,7 @@ describe("RequirementWorkspace", () => {
     expect(formalizeBaseline).toHaveBeenCalledTimes(1);
     expect(screen.getByText("未决项已显式处理")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "修改后采用并形成新版本" })).toBeEnabled();
-    expect(screen.queryByText("Baseline 已采用，形成待确认版本 V2。")).not.toBeInTheDocument();
+    expect(screen.queryByText("需求基线已采用，形成待确认版本 V2。")).not.toBeInTheDocument();
   });
 
   it("keeps the existing deep reason unchanged", async () => {
@@ -602,8 +602,8 @@ describe("RequirementWorkspace", () => {
     await screen.findByRole("heading", { name: "Provider 真相缺失需求" });
     fireEvent.change(screen.getByLabelText("澄清模式"), { target: { value: "skip" } });
     fireEvent.click(screen.getByRole("button", { name: "开始预检 / 澄清" }));
-    await waitFor(() => expect(screen.getByText("Provider truth: unavailable")).toBeInTheDocument());
-    expect(screen.queryByText("Provider truth: FORMAL_MOCK")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("AI 能力来源：不可用")).toBeInTheDocument());
+    expect(screen.queryByText("AI 能力来源：正式模拟")).not.toBeInTheDocument();
   });
 
   it("keeps the manual baseline path available when the AI task fails", async () => {
@@ -636,13 +636,13 @@ describe("RequirementWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "保存需求草稿" }));
     await waitFor(() => expect(screen.getByRole("heading", { name: "失败恢复需求" })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "开始预检 / 澄清" }));
-    await waitFor(() => expect(screen.getByText("候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("候选结果未正式化。你仍可以直接编辑人工需求基线并确认。")).toBeInTheDocument());
     expect(screen.getByText("AI 不可用时继续人工确认")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "人工确认 Baseline" })).toBeEnabled();
-    expect(screen.queryByRole("button", { name: "采用 Baseline 并形成新版本" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "人工确认需求基线" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "采用需求基线并形成新版本" })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("目标"), { target: { value: "人工完成目标" } });
-    fireEvent.click(screen.getByRole("button", { name: "人工确认 Baseline" }));
-    await screen.findByRole("heading", { name: "Requirement 已完成" });
-    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工 Baseline 并确认。")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "人工确认需求基线" }));
+    await screen.findByRole("heading", { name: "需求阶段已完成" });
+    expect(screen.queryByText("候选结果未正式化。你仍可以直接编辑人工需求基线并确认。")).not.toBeInTheDocument();
   });
 });

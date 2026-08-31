@@ -33,24 +33,24 @@ it("creates a conditionally valid defect and records owner disposition", async (
   const presence = vi.fn();
   render(<IssueWorkspace projectId="project-1" projectVersionId="version-1" record={record} capabilities={capabilitiesForRoles(["owner"])} api={api} onIssuePresenceChange={presence} />);
 
-  await screen.findByText("尚无 Issue");
-  fireEvent.click(screen.getByRole("button", { name: "创建 Issue" }));
-  fireEvent.change(screen.getByLabelText("Title"), { target: { value: "提交失败" } });
-  fireEvent.change(screen.getByLabelText("Description"), { target: { value: "提交后返回错误" } });
-  fireEvent.change(screen.getByLabelText("Priority"), { target: { value: "high" } });
-  fireEvent.change(screen.getByLabelText("Severity"), { target: { value: "high" } });
-  fireEvent.change(screen.getByLabelText("Reproduce steps"), { target: { value: "submit" } });
-  fireEvent.change(screen.getByLabelText("Expected result"), { target: { value: "saved" } });
-  fireEvent.change(screen.getByLabelText("Actual result"), { target: { value: "error" } });
-  fireEvent.click(screen.getByRole("button", { name: "保存 Issue" }));
+  await screen.findByText("尚无问题");
+  fireEvent.click(screen.getByRole("button", { name: "创建问题" }));
+  fireEvent.change(screen.getByLabelText("标题"), { target: { value: "提交失败" } });
+  fireEvent.change(screen.getByLabelText("问题描述"), { target: { value: "提交后返回错误" } });
+  fireEvent.change(screen.getByLabelText("优先级"), { target: { value: "high" } });
+  fireEvent.change(screen.getByLabelText("严重程度"), { target: { value: "high" } });
+  fireEvent.change(screen.getByLabelText("复现步骤"), { target: { value: "submit" } });
+  fireEvent.change(screen.getByLabelText("预期结果"), { target: { value: "saved" } });
+  fireEvent.change(screen.getByLabelText("实际结果"), { target: { value: "error" } });
+  fireEvent.click(screen.getByRole("button", { name: "保存问题" }));
 
   await waitFor(() => expect(issues.create).toHaveBeenCalledWith("version-1", expect.objectContaining({
     testRecordId: "record-1", issueType: "defect", bugDetail: expect.objectContaining({ reproduceSteps: "submit" }), optimizationDetail: null,
   })));
   expect(presence).toHaveBeenLastCalledWith(true);
-  fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "在当前版本修复" } });
-  fireEvent.change(screen.getByLabelText("Responsible user ID"), { target: { value: "7" } });
+  fireEvent.change(screen.getByLabelText("处置原因"), { target: { value: "在当前版本修复" } });
+  fireEvent.change(screen.getByLabelText("负责人用户 ID"), { target: { value: "7" } });
   fireEvent.click(screen.getByRole("button", { name: "当前版本修正" }));
   await waitFor(() => expect(issues.dispose).toHaveBeenCalledWith("issue-1", 1, "current_version_fix", "在当前版本修复", "7"));
-  expect(await screen.findByText(/请创建新的 Confirmation Round/)).toBeInTheDocument();
+  expect(await screen.findByText(/请创建新的确认轮次/)).toBeInTheDocument();
 });

@@ -18,7 +18,7 @@ function createApi(): FrontendApi {
     prds: {
       async list() { return prd ? [prd] : []; },
       async create(projectVersionId, input) { prd = { id: "prd-1", projectVersionId, sourceRequirementVersionId: input.sourceRequirementVersionId, name: input.name, status: "draft", rowVersion: 1, currentVersionId: null }; return prd; },
-      async get() { if (!prd) throw new Error("missing prd"); return prd; },
+      async get() { if (!prd) throw new Error("missing prd"); return { prd, review }; },
       async getVersion() { if (!version) throw new Error("missing version"); return version; },
       async saveVersion(_prdId, input) { if (!prd || prd.rowVersion !== input.expectedVersion) throw new PortError("CONFLICT", "版本冲突", 409, undefined, [], "VERSION_CONFLICT"); const number = version ? "V2" : "V1"; version = { id: `prd-${number}`, prdId: prd.id, versionNo: number, contentHash: number === "V1" ? "a".repeat(64) : "b".repeat(64), content: input.content, sourceVersionId: prd.currentVersionId, isEffective: true }; prd = { ...prd, currentVersionId: version.id, rowVersion: prd.rowVersion + 1, status: "draft" }; return version; },
       async submitReview(_projectVersionId, input) { if (!prd || prd.rowVersion !== input.expectedVersion || !version) throw new PortError("CONFLICT", "版本冲突", 409, undefined, [], "VERSION_CONFLICT"); round += 1; review = { id: `review-${round}`, projectVersionId: prd.projectVersionId, roundNo: round, rowVersion: 1, status: "open", summary: null, prdId: input.prdId, prdVersionId: input.prdVersionId, contentHash: input.contentHash }; prd = { ...prd, status: "in_review", rowVersion: prd.rowVersion + 1 }; return review; },
@@ -45,29 +45,29 @@ describe("PrdWorkbench", () => {
     render(<PrdWorkbench projectVersionId="pv-1" api={createApi()} />);
     const name = await screen.findByLabelText("PRD 名称");
     fireEvent.change(name, { target: { value: "冻结 PRD" } });
-    fireEvent.click(screen.getByRole("button", { name: "创建 PRD identity" }));
-    await screen.findByText(/PRD identity 已创建/);
+    fireEvent.click(screen.getByRole("button", { name: "创建 PRD" }));
+    await screen.findByText(/PRD 已创建/);
 
     fillContent();
     fireEvent.change(screen.getByLabelText("变更说明"), { target: { value: "首次保存" } });
-    fireEvent.click(screen.getByRole("button", { name: "显式保存新版本" }));
-    await screen.findByText("已显式保存不可变 PRD Version V1。");
-    fireEvent.click(screen.getByRole("button", { name: "提交 Review" }));
-    await screen.findByText(/Design Review Round 1 已提交/);
-    fireEvent.change(screen.getByLabelText("changes_requested summary"), { target: { value: "请补充边界" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存新版本" }));
+    await screen.findByText("已保存不可变 PRD 版本 V1。");
+    fireEvent.click(screen.getByRole("button", { name: "提交评审" }));
+    await screen.findByText(/设计评审第 1 轮已提交/);
+    fireEvent.change(screen.getByLabelText("修改意见"), { target: { value: "请补充边界" } });
     fireEvent.click(screen.getByRole("button", { name: "要求修改" }));
     await screen.findByText("请补充边界");
 
     fireEvent.change(screen.getByLabelText("背景"), { target: { value: "已修订背景" } });
     fireEvent.change(screen.getByLabelText("变更说明"), { target: { value: "处理 Review 意见" } });
-    fireEvent.click(screen.getByRole("button", { name: "显式保存新版本" }));
-    await screen.findByText("已显式保存不可变 PRD Version V2。");
-    fireEvent.click(screen.getByRole("button", { name: "提交 Review" }));
-    await screen.findByText(/Design Review Round 2 已提交/);
-    fireEvent.click(screen.getByRole("button", { name: "通过 Review" }));
-    await screen.findByText("当前 PRD 已通过 Design Review；结构化编辑器已只读。");
+    fireEvent.click(screen.getByRole("button", { name: "保存新版本" }));
+    await screen.findByText("已保存不可变 PRD 版本 V2。");
+    fireEvent.click(screen.getByRole("button", { name: "提交评审" }));
+    await screen.findByText(/设计评审第 2 轮已提交/);
+    fireEvent.click(screen.getByRole("button", { name: "通过评审" }));
+    await screen.findByText("当前 PRD 已通过设计评审；结构化编辑器已只读。");
     expect(screen.getByLabelText("背景")).toBeDisabled();
-    expect(screen.queryByRole("button", { name: "显式保存新版本" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "保存新版本" })).not.toBeInTheDocument();
   });
 
   it.each(["VERSION_CONFLICT", "INVALID_STATE", "IDEMPOTENCY_CONFLICT", "VALIDATION_ERROR", "FORBIDDEN", "NOT_FOUND"])("surfaces frozen %s feedback", async (code) => {
@@ -75,7 +75,7 @@ describe("PrdWorkbench", () => {
     api.prds.create = async () => { throw new PortError(code === "FORBIDDEN" ? "FORBIDDEN" : "FAILED", "冻结错误反馈", code === "FORBIDDEN" ? 403 : 409, undefined, [], code as never); };
     render(<PrdWorkbench projectVersionId="pv-1" api={api} />);
     await screen.findByLabelText("PRD 名称");
-    fireEvent.click(screen.getByRole("button", { name: "创建 PRD identity" }));
+    fireEvent.click(screen.getByRole("button", { name: "创建 PRD" }));
     await screen.findByText(`${code}：冻结错误反馈`);
   });
 
@@ -83,7 +83,17 @@ describe("PrdWorkbench", () => {
     const api = createApi();
     api.requirements.list = async () => [confirmedRequirement, { ...confirmedRequirement, id: "req-2", effectiveVersionId: "req-v3" }];
     render(<PrdWorkbench projectVersionId="pv-1" api={api} />);
-    await screen.findByText(/冻结接口未提供唯一选择规则/);
-    expect(screen.getByRole("button", { name: "创建 PRD identity" })).toBeDisabled();
+    await screen.findByText(/现有接口无法唯一确定来源/);
+    expect(screen.getByRole("button", { name: "创建 PRD" })).toBeDisabled();
+  });
+
+  it("restores the exact design review relation after reopening", async () => {
+    const api = createApi();
+    await api.prds.create("pv-1", { name: "可恢复 PRD", sourceRequirementVersionId: "req-v2" });
+    const saved = await api.prds.saveVersion("prd-1", { expectedVersion: 1, changeNote: "保存", content: { schemaVersion: "prd.mvp2.v1", background: "背景", goal: "目标", primaryUser: "负责人", inScope: ["范围"], outOfScope: ["排除"], coreWorkflow: ["流程"], keyRules: ["规则"], exceptionsAndBoundaries: [], acceptanceCriteria: ["验收"] } });
+    await api.prds.submitReview("pv-1", { prdId: "prd-1", prdVersionId: saved.id, contentHash: saved.contentHash, expectedVersion: 2 });
+    render(<PrdWorkbench projectVersionId="pv-1" api={api} />);
+    expect(await screen.findByRole("heading", { name: /设计评审 · 第 1 轮/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "通过评审" })).toBeInTheDocument();
   });
 });
