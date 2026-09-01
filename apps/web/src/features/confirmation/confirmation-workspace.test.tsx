@@ -32,8 +32,9 @@ describe("ConfirmationWorkspace", () => {
     const list = vi.fn().mockResolvedValueOnce([priorRound, draft]).mockResolvedValueOnce([superseded, confirmed]);
     const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { get: vi.fn().mockResolvedValue({ ...plan, confirmationState: "needs_confirmation" }) }, confirmationRounds: { list, create: vi.fn(), updateDraft: vi.fn(), confirm: vi.fn().mockResolvedValue(confirmed) } } as unknown as FrontendApi;
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    await screen.findByRole("button", { name: "项目负责人最终确认" });
-    fireEvent.click(screen.getByRole("button", { name: "项目负责人最终确认" }));
+    const confirmButton = await screen.findByRole("button", { name: "项目负责人最终确认" });
+    await waitFor(() => expect(confirmButton).toBeEnabled());
+    fireEvent.click(confirmButton);
     await waitFor(() => expect(list).toHaveBeenCalledTimes(2));
     expect(screen.getByText("已替代")).toBeInTheDocument();
     expect(screen.getByText(/已确认 · 已绑定实施计划版本/)).toBeInTheDocument();

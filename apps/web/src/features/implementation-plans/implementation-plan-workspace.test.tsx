@@ -51,7 +51,7 @@ describe("ImplementationPlanWorkspace", () => {
     render(<ImplementationPlanWorkspace projectId="atlas" projectVersionId="atlas-v2" api={api} />);
     await waitFor(() => expect(screen.getByDisplayValue(/implementation_plan\.mvp3\.v1/)).toBeInTheDocument());
     const legacyContent = JSON.parse(JSON.stringify({ ...content, features: ["支持字符串形式的历史计划项"], businessRules: ["保留业务规则"], acceptanceScope: ["完成保存验收"] })) as unknown;
-    fireEvent.change(screen.getByLabelText("Plan Content JSON"), { target: { value: JSON.stringify(legacyContent) } });
+    fireEvent.change(screen.getByLabelText("计划内容（JSON）"), { target: { value: JSON.stringify(legacyContent) } });
     fireEvent.change(screen.getByLabelText("变更说明"), { target: { value: "兼容历史计划内容格式" } });
     fireEvent.click(screen.getByRole("button", { name: "保存不可变版本" }));
     await waitFor(() => expect(screen.getByText(/已保存为不可变版本/)).toBeInTheDocument());

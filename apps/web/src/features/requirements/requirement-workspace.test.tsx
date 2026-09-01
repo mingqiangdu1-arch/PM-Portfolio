@@ -203,7 +203,7 @@ async function submitRecoveredAnswers(completedRounds: number[], options: { mode
   for (const [index, questionId] of ["q-1", "q-2", "q-3"].entries()) {
     fireEvent.change(screen.getByLabelText(`恢复问题 ${questionId}`), { target: { value: `回答${index + 1}` } });
   }
-  fireEvent.click(screen.getByRole("button", { name: finishNow ? "结束并审核 Baseline" : "保存回答" }));
+  fireEvent.click(screen.getByRole("button", { name: finishNow ? "结束并审核需求基线" : "保存回答" }));
   await waitFor(() => expect(submitClarificationAnswers).toHaveBeenCalledOnce());
   await waitFor(() => expect(createTask).toHaveBeenCalledOnce());
   return { requirement, result, submitClarificationAnswers, createTask };

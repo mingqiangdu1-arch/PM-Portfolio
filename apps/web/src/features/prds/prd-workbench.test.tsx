@@ -101,8 +101,8 @@ describe("PrdWorkbench", () => {
     render(<PrdWorkbench projectVersionId="pv-1" api={createApi()} />);
     const name = await screen.findByLabelText("PRD 名称");
     fireEvent.change(name, { target: { value: "冻结 PRD" } });
-    fireEvent.click(screen.getByRole("button", { name: "创建 PRD identity" }));
-    await screen.findByText(/PRD identity 已创建/);
+    fireEvent.click(screen.getByRole("button", { name: "创建 PRD" }));
+    await screen.findByText(/PRD 已创建/);
 
     fireEvent.change(screen.getByLabelText("背景"), { target: { value: "背景" } });
     fireEvent.change(screen.getByLabelText("目标"), { target: { value: "目标" } });

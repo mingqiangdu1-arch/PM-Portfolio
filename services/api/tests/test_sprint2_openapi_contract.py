@@ -240,7 +240,11 @@ class Sprint2OpenApiCandidateTests(unittest.TestCase):
 
     def test_old_module1_paths_operations_and_security_are_preserved(self) -> None:
         root = Path(__file__).resolve().parents[3]
-        old = json.loads(subprocess.check_output(["git", "show", "HEAD:packages/contracts/openapi/openapi.json"], cwd=root))
+        sprint1_contract_commit = "ea3d001bc8e702d0444bbcec3b2d5e9b0ed577c2"
+        old = json.loads(subprocess.check_output(
+            ["git", "show", f"{sprint1_contract_commit}:packages/contracts/openapi/openapi.json"],
+            cwd=root,
+        ))
         self.assertEqual(len(old["paths"]), 29)
         self.assertEqual(sum(1 for path in old["paths"].values() for value in path.values() if isinstance(value, dict) and "operationId" in value), 32)
         self.assertEqual(set(old["components"]["securitySchemes"]), set(self.schema["components"]["securitySchemes"]))
