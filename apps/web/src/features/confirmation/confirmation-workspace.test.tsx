@@ -44,11 +44,12 @@ describe("ConfirmationWorkspace", () => {
     const draft = { ...priorRound, id: "round-draft", status: "draft" as const, confirmStatus: null, isEffective: false, rowVersion: 4 };
     const api = { projects: { overview: vi.fn().mockResolvedValue({ capabilities: capabilitiesForRoles(["owner"]) }) }, implementationPlans: { get: vi.fn().mockResolvedValue({ ...plan, confirmationState: "needs_confirmation" }) }, confirmationRounds: { list: vi.fn().mockResolvedValue([draft]), create: vi.fn(), updateDraft: vi.fn().mockRejectedValue(new Error("VERSION_CONFLICT")), confirm: vi.fn().mockRejectedValue(new Error("READINESS_INCOMPLETE")) } } as unknown as FrontendApi;
     render(<ConfirmationWorkspace projectId="atlas" planId="plan-1" api={api} />);
-    await screen.findByRole("button", { name: "保存草稿" });
+    const saveButton = await screen.findByRole("button", { name: "保存草稿" });
+    await waitFor(() => expect(saveButton).toBeEnabled());
     const input = screen.getAllByLabelText("实现范围摘要")[0];
     const local = "本地未保存的实现范围摘要，冲突后仍需保留";
     fireEvent.change(input, { target: { value: local } });
-    fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
+    fireEvent.click(saveButton);
     await waitFor(() => expect(screen.getByText(/VERSION_CONFLICT/)).toBeInTheDocument());
     expect(input).toHaveValue(local);
     const confirmButton = screen.getByRole("button", { name: "项目负责人最终确认" });
