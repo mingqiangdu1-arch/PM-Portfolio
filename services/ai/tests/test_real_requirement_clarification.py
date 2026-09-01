@@ -64,8 +64,10 @@ class JsonProvider:
         self.content = content
         self.raw = raw
         self.request = None
+        self.call_count = 0
 
     def generate(self, request):
+        self.call_count += 1
         self.request = request
         return ProviderResponse(
             provider="deepseek",
@@ -390,7 +392,7 @@ class RealRequirementClarificationTests(unittest.TestCase):
             with self.subTest(subtype=subtype):
                 self.assert_malformed(candidate, subtype, raw=raw)
 
-    def test_standard_questions_accepts_only_structurally_equivalent_json_normalization(self) -> None:
+    def test_standard_questions_accepts_only_deterministic_json_normalization(self) -> None:
         candidate = self.questions_candidate(
             [
                 {
@@ -408,11 +410,68 @@ class RealRequirementClarificationTests(unittest.TestCase):
             requirement_content={"raw_input": "fixture"},
         )
         self.assertEqual(execution.result["questions"][0]["question_id"], "q-1")
-        self.assert_malformed(
+        fenced = RealRequirementClarifier(JsonProvider(
             f"```json\n{json.dumps(candidate)}\n```",
-            MalformedResponseSubtype.INVALID_JSON,
             raw=True,
+        )).run(
+            task(mode="standard", round_no=1),
+            (source(),),
+            requirement_content={"raw_input": "fixture"},
         )
+        self.assertEqual(fenced.result["questions"][0]["question_id"], "q-1")
+
+    def test_standard_questions_fail_closed_for_ambiguous_or_malformed_envelopes(self) -> None:
+        candidate = self.questions_candidate(
+            [{
+                "question_id": "q-1",
+                "dimension": "goal",
+                "question_text": "需要确认什么目标？",
+                "reason": "目标需要明确。",
+            }]
+        )
+        raw_candidate = json.dumps(candidate, ensure_ascii=False)
+        cases = (
+            (
+                f"说明：{raw_candidate}\n补充：{raw_candidate}",
+                "single_output_text:ambiguous_multiple_json_objects",
+            ),
+            (
+                f"说明：{raw_candidate}",
+                "single_output_text:prose_wrapped_single_json_object",
+            ),
+            (
+                '{"result_kind":"questions"',
+                "single_output_text:json_syntax_malformed",
+            ),
+            (
+                f"```\n{raw_candidate}\n```",
+                "single_output_text:unsupported_or_malformed_fence",
+            ),
+        )
+        for raw, rule in cases:
+            provider = JsonProvider(raw, raw=True)
+            with self.subTest(rule=rule), self.assertRaises(ProviderMalformedResponse) as caught:
+                RealRequirementClarifier(provider).run(
+                    task(mode="standard", round_no=1),
+                    (source(),),
+                    requirement_content={"raw_input": "fixture"},
+                )
+            self.assertEqual(caught.exception.subtype, MalformedResponseSubtype.INVALID_JSON)
+            self.assertEqual(caught.exception.field, "content")
+            self.assertEqual(caught.exception.rule, rule)
+            self.assertNotIn("说明", str(caught.exception))
+            self.assertEqual(provider.call_count, 1)
+
+    def test_semantic_contract_failure_does_not_retry_provider(self) -> None:
+        provider = JsonProvider({"result_kind": "questions"})
+        with self.assertRaises(ProviderMalformedResponse) as caught:
+            RealRequirementClarifier(provider).run(
+                task(mode="standard", round_no=1),
+                (source(),),
+                requirement_content={"raw_input": "fixture"},
+            )
+        self.assertEqual(caught.exception.subtype, MalformedResponseSubtype.MISSING_QUESTIONS)
+        self.assertEqual(provider.call_count, 1)
 
 
 if __name__ == "__main__":

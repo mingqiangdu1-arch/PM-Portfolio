@@ -67,13 +67,7 @@ class RealRequirementClarifier:
                 response_schema=self._response_schema(task),
             )
         )
-        try:
-            candidate = json.loads(response.content)
-        except (TypeError, ValueError) as exc:
-            raise ProviderMalformedResponse(
-                "provider returned invalid JSON",
-                subtype=MalformedResponseSubtype.INVALID_JSON,
-            ) from exc
+        candidate = self._parse_candidate(response.content)
         result = self._materialize(task, candidate, source_refs)
         validate_result_content(result)
         return ClarificationExecution(
@@ -92,6 +86,72 @@ class RealRequirementClarifier:
             recovery=None,
             provider_response=response.model_dump(mode="json"),
         )
+
+    @staticmethod
+    def _parse_candidate(content: str) -> Any:
+        """Parse one provider object without weakening the frozen result contract.
+
+        DeepSeek structured output should be plain JSON.  A single, exact
+        ``json`` Markdown fence is nevertheless a deterministic transport
+        envelope: removing it cannot change the enclosed JSON value.  No
+        prose, multiple objects, unknown fences, or malformed JSON is repaired.
+        The rule attached to a rejection is deliberately content-free so
+        production diagnostics can classify the failure without logging user
+        or provider text.
+        """
+
+        stripped = content.strip()
+        fenced = re.fullmatch(
+            r"```json[ \t]*\r?\n(?P<body>[\s\S]*?)\r?\n```",
+            stripped,
+            flags=re.IGNORECASE,
+        )
+        normalized = fenced.group("body") if fenced else stripped
+        try:
+            return json.loads(normalized)
+        except (TypeError, ValueError) as exc:
+            raise ProviderMalformedResponse(
+                "provider returned invalid JSON",
+                subtype=MalformedResponseSubtype.INVALID_JSON,
+                field="content",
+                rule=(
+                    "single_output_text:exact_json_fence_invalid_json"
+                    if fenced
+                    else f"single_output_text:{RealRequirementClarifier._invalid_json_shape(stripped)}"
+                ),
+            ) from exc
+
+    @staticmethod
+    def _invalid_json_shape(content: str) -> str:
+        """Return a sanitized structural category; never include content."""
+
+        if content.startswith("```") or content.endswith("```"):
+            return "unsupported_or_malformed_fence"
+
+        decoder = json.JSONDecoder()
+        decoded_objects: list[tuple[int, int]] = []
+        for index, character in enumerate(content):
+            if character != "{":
+                continue
+            try:
+                value, end = decoder.raw_decode(content[index:])
+            except ValueError:
+                continue
+            if isinstance(value, dict):
+                decoded_objects.append((index, index + end))
+        top_level_objects = [
+            candidate
+            for candidate in decoded_objects
+            if not any(
+                outer_start < candidate[0] and candidate[1] <= outer_end
+                for outer_start, outer_end in decoded_objects
+            )
+        ]
+        if len(top_level_objects) > 1:
+            return "ambiguous_multiple_json_objects"
+        if len(top_level_objects) == 1:
+            return "prose_wrapped_single_json_object"
+        return "json_syntax_malformed"
 
     @staticmethod
     def _prompt(task: RequirementClarifyTask, requirement_content: dict[str, Any]) -> str:
