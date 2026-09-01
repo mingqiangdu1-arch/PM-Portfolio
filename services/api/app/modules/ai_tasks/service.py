@@ -430,6 +430,99 @@ class AiTaskService:
             raise
         return summary
 
+    def list_tasks(
+        self,
+        *,
+        user_id: int,
+        project_id: str | None = None,
+        status: str | None = None,
+        cursor: str | None = None,
+    ) -> dict[str, Any]:
+        """List AI-owned task facts visible through active project membership."""
+
+        def positive_id(value: str | None, field: str) -> int | None:
+            if value is None:
+                return None
+            if not value.isdigit() or value.startswith("0") or int(value) <= 0:
+                raise ApiError(
+                    code="VALIDATION_ERROR",
+                    message=f"{field} must be a positive identifier",
+                    http_status=422,
+                )
+            return int(value)
+
+        project_filter = positive_id(project_id, "project_id")
+        cursor_id = positive_id(cursor, "cursor")
+        allowed_statuses = set(SPRINT2_SCHEMAS["AiTaskStatus"]["enum"])
+        if status is not None and status not in allowed_statuses:
+            raise ApiError(
+                code="VALIDATION_ERROR",
+                message="status is not a valid AI task status",
+                http_status=422,
+            )
+
+        page_size = 20
+        with readonly() as connection:
+            rows = (
+                connection.execute(
+                    _sql(
+                        "SELECT at.* FROM ai_task at "
+                        "WHERE EXISTS ("
+                        "SELECT 1 FROM project_member pm "
+                        "WHERE pm.project_id=at.project_id AND pm.user_id=:user_id "
+                        "AND pm.status='active' "
+                        "AND pm.role_code IN ('owner','reviewer','implementer','tester')"
+                        ") "
+                        "AND (:project_id IS NULL OR at.project_id=:project_id) "
+                        "AND (:status IS NULL OR at.status=:status) "
+                        "AND (:cursor IS NULL OR at.id<:cursor) "
+                        "ORDER BY at.id DESC LIMIT :limit"
+                    ),
+                    {
+                        "user_id": user_id,
+                        "project_id": project_filter,
+                        "status": status,
+                        "cursor": cursor_id,
+                        "limit": page_size + 1,
+                    },
+                )
+                .mappings()
+                .all()
+            )
+            has_more = len(rows) > page_size
+            visible = [dict(row) for row in rows[:page_size]]
+            for row in visible:
+                refs = (
+                    connection.execute(
+                        _sql(
+                            "SELECT ar.id AS ai_result_id,ar.ai_call_id,ar.result_no,ar.status,"
+                            "ar.target_snapshot_hash,ar.content_ref,ar.content_fingerprint "
+                            "FROM ai_result ar JOIN ai_call ac ON ac.id=ar.ai_call_id "
+                            "WHERE ac.ai_task_id=:task_id ORDER BY ar.result_no,ar.id"
+                        ),
+                        {"task_id": row["id"]},
+                    )
+                    .mappings()
+                    .all()
+                )
+                row["result_refs"] = [
+                    {
+                        "ai_result_id": str(ref["ai_result_id"]),
+                        "ai_call_id": str(ref["ai_call_id"]),
+                        "result_no": ref["result_no"],
+                        "status": ref["status"],
+                        "target_snapshot_hash": ref["target_snapshot_hash"],
+                        "content_ref": ref["content_ref"],
+                        "content_fingerprint": ref["content_fingerprint"],
+                    }
+                    for ref in refs
+                ]
+        return {
+            "items": [_task_summary(row) for row in visible],
+            "next_cursor": str(visible[-1]["id"]) if has_more and visible else None,
+            "has_more": has_more,
+        }
+
     def get_task(self, *, user_id: int, task_id: str) -> dict[str, Any]:
         with readonly() as connection:
             row = _mapping(connection.execute(_sql("SELECT * FROM ai_task WHERE task_public_id=:task_id"), {"task_id": task_id}))
