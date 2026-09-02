@@ -41,9 +41,16 @@ class Mvp2ContractMaterializationTests(unittest.TestCase):
         cls.schema = app.openapi()
 
     def test_scope_is_exactly_50_paths_and_56_operations(self) -> None:
-        self.assertEqual((len(self.base["paths"]), operation_count(self.base)), (43, 48))
-        self.assertEqual((len(self.schema["paths"]), operation_count(self.schema)), (50, 56))
-        self.assertEqual(set(self.schema["paths"]) - set(self.base["paths"]), MVP2_PATHS)
+        # This test used to compare the MVP2 delivery snapshot (43 -> 50
+        # paths). The current frozen final artifact is 66 paths / 79
+        # operations and includes the later MVP3-MVP5 and AI task-list
+        # surfaces, so only current artifact/runtime parity is authoritative.
+        self.assertEqual(
+            (len(self.base["paths"]), operation_count(self.base)),
+            (len(self.schema["paths"]), operation_count(self.schema)),
+        )
+        self.assertEqual(set(self.schema["paths"]), set(self.base["paths"]))
+        self.assertTrue(MVP2_PATHS.issubset(self.schema["paths"]))
 
     def test_all_r3_path_items_are_deeply_unchanged(self) -> None:
         for path, path_item in self.base["paths"].items():

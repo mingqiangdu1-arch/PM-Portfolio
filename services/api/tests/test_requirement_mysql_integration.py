@@ -46,8 +46,8 @@ class RequirementMySqlIntegrationTests(unittest.TestCase):
             if re.match(r"^8\.4(?:\.|$)", cls.server_version) is None:
                 raise AssertionError("Requirement integration Gate requires MySQL 8.4.x")
             head = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-            if head != "20260729_0004":
-                raise AssertionError("Requirement integration Gate requires Alembic head 20260729_0004")
+            if head != "20260823_0006":
+                raise AssertionError("Requirement integration Gate requires Alembic head 20260823_0006")
 
         cls.database_name = database_name
         cls.endpoint = f"{parsed_url.host}:{parsed_url.port or 3306}"

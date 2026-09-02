@@ -59,7 +59,7 @@ def test_mvp4_test_record_real_http_mysql() -> None:
     from app.main import app
 
     client = TestClient(app)
-    password = "MVP4-integration-pass-123"
+    password = "mvp4-pass"
     seed = uuid.uuid4().hex
     users: dict[str, dict] = {}
 

@@ -37,8 +37,11 @@ def test_runtime_materializes_frozen_mvp4_surface_exactly() -> None:
     operations = _operations(runtime)
     ids = [operation["operationId"] for operation in operations]
 
-    assert len(runtime["paths"]) == 60
-    assert len(operations) == 71
+    # The current frozen final artifact is 66 paths / 79 operations and
+    # includes subsequent MVP5 and AI task-list routes; MVP4 coverage is the
+    # explicit path/metadata/schema assertions below.
+    assert len(runtime["paths"]) == len(artifact["paths"])
+    assert len(operations) == len(_operations(artifact))
     assert len(ids) == len(set(ids))
     assert set(ids) >= MVP4_OPERATION_IDS
     assert set(runtime["paths"]) >= MVP4_PATHS

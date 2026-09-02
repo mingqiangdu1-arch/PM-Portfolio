@@ -35,7 +35,7 @@ def test_mvp5_feedback_real_http_mysql_and_atomic_derived_version() -> None:
 
     client = TestClient(app)
     suffix = uuid.uuid4().hex
-    password = "MVP5-feedback-pass-123"
+    password = "mvp5-pass"
     users: dict[str, dict[str, object]] = {}
 
     def register(role: str) -> None:

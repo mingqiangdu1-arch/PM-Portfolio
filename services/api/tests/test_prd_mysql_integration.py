@@ -51,8 +51,8 @@ class PrdMySqlIntegrationTests(unittest.TestCase):
         with cls.engine.connect() as connection:
             cls.server_version = str(connection.execute(text("SELECT VERSION()")).scalar_one())
             cls.head = str(connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one())
-        if re.match(r"^8\.4(?:\.|$)", cls.server_version) is None or cls.head != "20260821_0005":
-            raise AssertionError("PRD integration Gate requires MySQL 8.4 and Alembic 20260821_0005")
+        if re.match(r"^8\.4(?:\.|$)", cls.server_version) is None or cls.head != "20260823_0006":
+            raise AssertionError("PRD integration Gate requires MySQL 8.4 and Alembic 20260823_0006")
 
     @classmethod
     def tearDownClass(cls) -> None:

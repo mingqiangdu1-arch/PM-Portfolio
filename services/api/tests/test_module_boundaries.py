@@ -9,16 +9,22 @@ EXPECTED_MODULES = {
     "identity",
     "projects",
     "files",
-    "artifacts",
+    "requirements",
+    "prds",
     "reviews",
     "confirmation",
     "validation",
     "ai_tasks",
+    "sprint1",
 }
 
 
 class ModuleBoundaryTests(unittest.TestCase):
     def test_expected_sprint_zero_boundaries_exist(self) -> None:
+        # The old Sprint 0 fixture named an ``artifacts`` module.  The current
+        # authoritative API boundary owns PRD and Requirement domains
+        # separately, while Sprint 1 application services remain under the
+        # explicit ``sprint1`` boundary.
         actual = {path.name for path in MODULES_ROOT.iterdir() if path.is_dir()}
         self.assertTrue(EXPECTED_MODULES.issubset(actual))
 

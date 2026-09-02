@@ -113,7 +113,7 @@ class AiTaskRuntimeTests(unittest.TestCase):
             run([4], {"4": mismatched})
 
     def test_production_ai_http_tokens_bind_post_and_get_task_trace(self) -> None:
-        settings = Settings(internal_service_jwt_secret="service-secret", ai_api_url="http://ai-api")
+        settings = Settings(internal_service_jwt_secret="svc-secret", ai_api_url="http://ai-api")
         captured = []
 
         def urlopen(request, timeout):
@@ -145,7 +145,7 @@ class AiTaskRuntimeTests(unittest.TestCase):
             token = request.get_header("Authorization").removeprefix("Bearer ")
             claims = decode_hs256(
                 token,
-                "service-secret",
+                "svc-secret",
                 audience="ai-api",
                 issuer="business-api",
                 required_scope=expected[0],
@@ -157,7 +157,7 @@ class AiTaskRuntimeTests(unittest.TestCase):
             self.assertEqual(claims["trace_id"], expected[2])
 
     def test_production_ai_http_rejects_inconsistent_or_missing_binding_before_send(self) -> None:
-        settings = Settings(internal_service_jwt_secret="service-secret", ai_api_url="http://ai-api")
+        settings = Settings(internal_service_jwt_secret="svc-secret", ai_api_url="http://ai-api")
         client = AiApiClient(base_url="http://ai-api")
         with (
             patch("app.modules.ai_tasks.service.get_settings", return_value=settings),

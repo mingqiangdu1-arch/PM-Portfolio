@@ -9,6 +9,10 @@ from app.platform.mvp3_contract import install_mvp3_contract
 
 
 OPENAPI_PATH = Path(__file__).parents[3] / "packages" / "contracts" / "openapi" / "openapi.json"
+# Accepted MVP2 artifact immediately before MVP3 contract materialization.
+# The current HEAD artifact already contains later MVP phases and cannot be
+# used as the pre-materialization input for this historical materializer test.
+MVP2_AUTHORITY_COMMIT = "1ca41c531475e62af026301684353657c567c6fa"
 EXPECTED_OPERATIONS = {
     "listProjectVersionImplementationPlans",
     "createProjectVersionImplementationPlan",
@@ -78,7 +82,7 @@ FROZEN_OPERATIONS = {
 
 def _materialized() -> tuple[dict, dict]:
     baseline = subprocess.run(
-        ["git", "show", "HEAD:packages/contracts/openapi/openapi.json"],
+        ["git", "show", f"{MVP2_AUTHORITY_COMMIT}:packages/contracts/openapi/openapi.json"],
         check=True,
         capture_output=True,
     ).stdout
@@ -170,6 +174,16 @@ def test_mvp3_optional_fields_empty_blockers_and_frozen_metadata() -> None:
 
 
 def test_committed_openapi_is_baseline_plus_materialization() -> None:
-    _, materialized = _materialized()
+    before, materialized = _materialized()
     committed = json.loads(OPENAPI_PATH.read_text(encoding="utf-8"))
-    assert committed == materialized
+    # Later MVP phases are intentionally present in the committed artifact.
+    # Verify the current artifact still retains the exact MVP3 materialized
+    # paths, schemas, and metadata without treating the whole later artifact
+    # as an MVP3-only snapshot.
+    added_paths = set(materialized["paths"]) - set(before["paths"])
+    for path in added_paths:
+        assert committed["paths"][path] == materialized["paths"][path]
+    for name, schema in materialized["components"]["schemas"].items():
+        if name.startswith("Mvp3"):
+            assert committed["components"]["schemas"][name] == schema
+    assert committed["x-mvp3"] == materialized["x-mvp3"]

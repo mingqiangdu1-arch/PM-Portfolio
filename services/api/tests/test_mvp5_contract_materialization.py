@@ -39,8 +39,11 @@ def test_runtime_materializes_frozen_mvp5_surface_exactly() -> None:
     operations = _operations(runtime)
     ids = [operation["operationId"] for operation in operations]
 
-    assert len(runtime["paths"]) == 64
-    assert len(operations) == 77
+    # The current frozen final artifact is 66 paths / 79 operations and also
+    # contains the AI task-list surface; keep this invariant tied to that
+    # artifact instead of the pre-AI 64/77 count.
+    assert len(runtime["paths"]) == len(artifact["paths"])
+    assert len(operations) == len(_operations(artifact))
     assert len(ids) == len(set(ids))
     assert set(ids) >= MVP5_OPERATIONS
     assert set(runtime["paths"]) >= MVP5_PATHS
